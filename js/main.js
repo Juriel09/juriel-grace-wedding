@@ -13,4 +13,5 @@
   }
 
   scene.init();
+  if (window.W.initSections) window.W.initSections();
 })();

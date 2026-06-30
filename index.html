@@ -38,7 +38,59 @@
         </div>
       </div>
     </section>
-    <!-- Sections (Act 3) injected here in Task 7 -->
+    <section id="gallery" class="section section-gallery reveal">
+      <p class="eyebrow">moments</p>
+      <h2 class="section-title">Our Gallery</h2>
+      <div class="flourish"></div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </section>
+
+    <section id="film" class="section section-film reveal">
+      <p class="eyebrow">our prenup</p>
+      <h2 class="section-title">The Film</h2>
+      <div class="flourish"></div>
+      <button class="film-poster" id="filmPlay" aria-label="Play prenup film">
+        <span class="film-play">▶</span>
+      </button>
+    </section>
+
+    <section id="entourage" class="section section-entourage reveal">
+      <p class="eyebrow">with us</p>
+      <h2 class="section-title">Entourage &amp; Sponsors</h2>
+      <div class="flourish"></div>
+      <div class="entourage-cols">
+        <div><h3>Principal Sponsors</h3><p>Mr. &amp; Mrs. Reyes · Mr. &amp; Mrs. Santos · Mr. &amp; Mrs. Cruz</p></div>
+        <div><h3>Best Man &amp; Maid of Honor</h3><p>Daniel Lim · Sofia Marquez</p></div>
+        <div><h3>Groomsmen &amp; Bridesmaids</h3><p>Names · Names · Names · Names</p></div>
+      </div>
+    </section>
+
+    <section id="rsvp" class="section section-rsvp reveal">
+      <p class="eyebrow">kindly respond</p>
+      <h2 class="section-title">RSVP</h2>
+      <div class="flourish"></div>
+      <p class="rsvp-note">We would be honored by your presence. Please respond by October 1, 2026.</p>
+      <div class="rsvp-embed" id="rsvpEmbed">
+        <!-- Replace with the couple's chosen form embed (Formspree / Google Form iframe). Demo below. -->
+        <form class="rsvp-form" onsubmit="return false">
+          <label>Full name <input type="text" name="name" placeholder="Your name" /></label>
+          <label>Will you attend?
+            <select name="attending"><option>Joyfully accepts</option><option>Regretfully declines</option></select>
+          </label>
+          <label>Number of guests <input type="number" name="guests" min="0" value="1" /></label>
+          <label>A note for the couple <textarea name="note" rows="3"></textarea></label>
+          <button class="btn-gold" type="submit">Send RSVP</button>
+        </form>
+      </div>
+    </section>
+
+    <footer class="footer" id="footer">
+      <video class="footer-video" id="footerVideo" muted loop playsinline preload="none" poster="media/video/drone-poster.jpg"></video>
+      <div class="footer-overlay">
+        <p class="footer-names foil">Grace &amp; Juriel</p>
+        <p class="footer-date">November 11, 2026</p>
+      </div>
+    </footer>
   </main>
 
   <div class="lightbox" id="lightbox" aria-hidden="true">
