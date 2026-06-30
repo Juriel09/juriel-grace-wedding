@@ -185,5 +185,19 @@
     if (hint) hint.style.opacity = p > 0.02 ? "0" : "1";
   };
 
+  CardScene.prototype.initLite = function () {
+    const self = this;
+    document.body.classList.add("lite");
+    this.doc.innerHTML = DOC_HTML;
+    this.pre = new window.W.Preloader({
+      count: FRAME_COUNT, path: framePath,
+      onFirst: () => { self.sizeCanvas(); self.draw(FRAME_COUNT - 1); self.hideLoader(); },
+      onDone: () => self.hideLoader(),
+    });
+    this.pre.start();
+    setTimeout(() => self.hideLoader(), 8000);
+    window.addEventListener("resize", () => { self.sizeCanvas(); self.draw(FRAME_COUNT - 1); });
+  };
+
   window.W.CardScene = CardScene;
 })();

@@ -44,3 +44,14 @@
 .doc-facts { margin-top: .8em; display: grid; gap: .5em; }
 .doc-facts .k { font-family: var(--sans); text-transform: uppercase; letter-spacing: .25em; font-size: .55em; color: var(--gold-deep); }
 .doc-facts .v { font-family: var(--serif); font-size: 1.05em; color: var(--green-800); }
+
+body.lite .card-scroll { height: auto; }
+body.lite .card-stage { position: relative; height: auto; min-height: 100vh; padding: 8vh 0; }
+body.lite .card-layer { position: relative; transform: none !important; }
+body.lite .card-canvas { position: relative; height: 60vh; }
+body.lite .card-doc {
+  position: relative !important; left: auto !important; top: auto !important;
+  width: min(640px, 92%) !important; height: auto !important; margin: 6vh auto 0;
+  opacity: 1 !important; font-size: 18px !important; aspect-ratio: 3/4;
+}
+body.lite .doc-block { opacity: 1 !important; transform: none !important; }
