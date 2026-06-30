@@ -45,6 +45,8 @@
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.eased = 0; this.target = 0; this.lastIdx = -1;
     this.doc = document.getElementById("cardDoc");
+    this.still = document.getElementById("cardStill");
+    this.vignette = document.querySelector(".card-vignette");
   }
 
   CardScene.prototype.init = function () {
@@ -135,11 +137,18 @@
   CardScene.prototype.render = function () {
     const p = this.eased;
     this.layout();
+
+    // crossfade the live frames -> the clean extracted still as the card finishes opening
+    const x = G.mapRange(p, P_OPEN, P_OPEN + 0.06, 0, 1, true);
+    this.canvas.style.opacity = String(1 - x);
+    if (this.still) this.still.style.opacity = String(x);
+    if (this.vignette) this.vignette.style.opacity = String(1 - x);
+
     if (p < P_OPEN) {                          // OPEN: scrub frames open the card
       this.draw(G.frameIndexForProgress(p / P_OPEN, FRAME_COUNT));
       this.doc.style.opacity = "0";
       this.reveals(-1);
-    } else {                                   // DETAILS: card open, fade details in
+    } else {                                   // DETAILS: card open, fade details onto the page
       this.draw(FRAME_COUNT - 1);
       this.doc.style.opacity = "1";
       this.reveals(G.mapRange(p, P_OPEN, 1, 0, 1, true));
@@ -154,14 +163,13 @@
     document.body.classList.add("lite");
     this.doc.innerHTML = DOC_HTML;
     this.doc.querySelectorAll(".doc-block").forEach((b) => b.classList.add("show"));
-    this.pre = new window.W.Preloader({
-      count: FRAME_COUNT, path: framePath,
-      onFirst: () => { self.sizeCanvas(); self.draw(FRAME_COUNT - 1); self.hideLoader(); },
-      onDone: () => self.hideLoader(),
-    });
-    this.pre.start();
-    setTimeout(() => self.hideLoader(), 8000);
-    window.addEventListener("resize", () => { self.sizeCanvas(); self.draw(FRAME_COUNT - 1); });
+    if (this.still) this.still.style.opacity = "1";
+    if (this.canvas) this.canvas.style.opacity = "0";
+    if (this.vignette) this.vignette.style.opacity = "0";
+    this.doc.style.opacity = "1";
+    if (this.still && this.still.complete) self.hideLoader();
+    else if (this.still) this.still.addEventListener("load", () => self.hideLoader());
+    setTimeout(() => self.hideLoader(), 6000);
   };
 
   window.W.CardScene = CardScene;
