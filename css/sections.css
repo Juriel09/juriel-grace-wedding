@@ -35,9 +35,18 @@
   background: var(--gold-foil);
 }
 
-.footer { position: relative; height: 70vh; display: grid; place-content: center; text-align: center; overflow: hidden; }
-.footer-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.footer::after { content: ""; position: absolute; inset: 0; background: rgba(10,18,13,.55); }
+/* full-screen drone shot — first section after the card intro, footage as backdrop */
+.drone-shot { position: relative; height: 100vh; overflow: hidden; background: var(--green-900); display: grid; place-content: center; text-align: center; }
+.drone-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transform: scale(1.25); transform-origin: center; will-change: transform; }
+.drone-scrim { position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse at center, rgba(10,18,13,.22), rgba(10,18,13,.62)); }
+.drone-caption { position: relative; z-index: 2; color: var(--cream); padding: 0 6vw; }
+.drone-eyebrow { font-family: var(--sans); text-transform: uppercase; letter-spacing: .45em; font-size: .8rem; color: var(--gold-light); margin: 0 0 1rem; }
+.drone-title { font-family: var(--serif); font-weight: 500; font-size: clamp(2.8rem, 9vw, 6rem); line-height: 1; color: #fff; margin: 0; text-shadow: 0 4px 34px rgba(0,0,0,.55); }
+.drone-title .amp { font-style: italic; }
+.drone-rule { display: block; width: 90px; height: 1px; margin: 1.4rem auto; background: linear-gradient(90deg, transparent, var(--gold-light), transparent); }
+.drone-sub { font-family: var(--serif); font-size: clamp(1.05rem, 2.6vw, 1.5rem); letter-spacing: .14em; color: var(--cream); margin: 0; text-shadow: 0 2px 20px rgba(0,0,0,.55); }
+
+.footer { position: relative; height: 60vh; display: grid; place-content: center; text-align: center; overflow: hidden; background: var(--green-900); }
 .footer-overlay { position: relative; z-index: 1; color: var(--cream); }
 .footer-names { font-family: var(--serif); font-size: clamp(2rem,6vw,3.6rem); }
 .footer-date { letter-spacing: .3em; text-transform: uppercase; font-size: .8rem; opacity: .85; }

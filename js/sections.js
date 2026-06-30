@@ -41,19 +41,51 @@
       openBox('<video src="media/video/prenup.mp4" controls autoplay playsinline style="max-width:90vw;max-height:85vh"></video>')
     );
 
-    // footer drone video: play only when visible (perf)
-    const fv = document.getElementById("footerVideo");
-    if (fv) {
+    // drone-shot section video: lazy-load + play only when visible (perf)
+    const dv = document.getElementById("droneVideo");
+    if (dv) {
       const vio = new IntersectionObserver((es) => es.forEach((e) => {
-        if (e.isIntersecting) { if (!fv.src) fv.src = "media/video/drone-loop.mp4"; fv.play().catch(() => {}); }
-        else fv.pause();
-      }), { threshold: 0.25 });
-      vio.observe(document.getElementById("footer"));
+        if (e.isIntersecting) { if (!dv.src) dv.src = "media/video/drone-shot.mp4"; dv.play().catch(() => {}); }
+        else dv.pause();
+      }), { threshold: 0.2 });
+      vio.observe(document.getElementById("drone"));
     }
 
-    // nav state + jump links
+    // drone section: smooth parallax backdrop + magnetic snap.
+    // Parallax: the video drifts slower than the scroll for depth.
+    // Snap: once the section is >=50% in view and scrolling settles, glide it
+    // to fill the screen — so one scroll auto-shows the drone shot.
+    const lenis = window.__lenis;
+    const droneSec = document.getElementById("drone");
+    const droneVid = document.getElementById("droneVideo");
+    if (lenis && droneSec) {
+      const parallax = () => {
+        const top = droneSec.getBoundingClientRect().top;
+        if (droneVid) droneVid.style.transform = "translate3d(0," + (top * -0.12) + "px,0) scale(1.25)";
+      };
+      let snapT;
+      lenis.on("scroll", () => {
+        parallax();
+        clearTimeout(snapT);
+        snapT = setTimeout(() => {
+          const top = droneSec.getBoundingClientRect().top, ih = window.innerHeight;
+          if (Math.abs(top) < ih * 0.5 && Math.abs(top) > 6) lenis.scrollTo(droneSec, { duration: 0.8 });
+        }, 110);
+      });
+      parallax();
+      window.addEventListener("resize", parallax);
+    }
+
+    // nav: hidden during the full-screen card intro, slides in for the site body
     const nav = document.getElementById("nav");
-    const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 80);
+    const cardScroll = document.getElementById("cardScroll");
+    const onScroll = () => {
+      const total = cardScroll ? cardScroll.offsetHeight - window.innerHeight : 0;
+      const past = cardScroll ? window.scrollY >= total * 0.96 : window.scrollY > 80;
+      document.body.classList.toggle("nav-visible", past);
+      document.documentElement.classList.toggle("intro", !past); // hide scrollbar during intro
+      nav.classList.toggle("scrolled", past);
+    };
     window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
     document.querySelectorAll("[data-jump]").forEach((a) => a.addEventListener("click", (e) => {
       const id = a.getAttribute("data-jump");

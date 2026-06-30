@@ -1,57 +1,38 @@
-.card-scroll { position: relative; height: 600vh; background: var(--green-900); }
+.card-scroll { position: relative; height: 400vh; background: #e6d8c2; }
 .card-stage {
   position: sticky; top: 0; height: 100vh; width: 100%;
-  overflow: hidden; background: var(--green-900);
+  overflow: hidden; background: #e6d8c2; /* beige tabletop — blends with the card art */
 }
-.card-layer {
-  position: absolute; inset: 0; transform-origin: 0 0; will-change: transform;
-}
+.card-layer { position: absolute; inset: 0; }
 .card-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-/* Reading surface (Task 6) — placed over the frame's inner page by JS */
+/* Details fitted onto the real frosted acrylic page of the open card.
+   JS sets left/top/width/height/font-size so the text fits inside that page.
+   No zoom, no extra acrylic panel — text sits on the real card. */
 .card-doc {
   position: absolute; left: 0; top: 0; width: 0; height: 0;
   opacity: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
 }
-.card-doc {
-  border-radius: 4px;
-  background:
-    linear-gradient(160deg, rgba(228,236,226,.86), rgba(196,210,198,.82) 60%, rgba(208,220,206,.86));
-  box-shadow: inset 0 0 0 1px rgba(201,162,75,.55), inset 0 0 60px rgba(255,255,255,.25);
-  backdrop-filter: blur(2px);
-  overflow: hidden;
-}
-.card-doc::before, .card-doc::after {
-  content: ""; position: absolute; width: 26%; aspect-ratio: 1;
-  background: url("../media/art/corner.svg") center/contain no-repeat; opacity: .9;
-}
-.card-doc::before { top: 2%; right: 2%; transform: scaleX(-1); }
-.card-doc::after  { bottom: 2%; left: 2%; }
-
-.doc-inner { position: absolute; inset: 0; padding: 7% 9%; display: flex; flex-direction: column; }
-.doc-block { opacity: 0; transform: translateY(14px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+.doc-inner { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; padding: 4% 6%; }
+.doc-block { opacity: 0; transform: translateY(0.5em); transition: opacity .9s var(--ease), transform .9s var(--ease); }
 .doc-block.show { opacity: 1; transform: none; }
 
-.doc-names { text-align: center; margin: auto 0; }
-.doc-eyebrow { font-family: var(--sans); text-transform: uppercase; letter-spacing: .4em; font-size: .55em; color: var(--gold-deep); }
-.doc-couple { font-family: var(--serif); font-size: 3.4em; line-height: 1; color: var(--green-800); margin: .2em 0; }
-.doc-couple .amp { font-style: italic; display: inline-block; margin: 0 .15em; }
-.doc-date { font-family: var(--serif); font-size: 1.1em; letter-spacing: .12em; color: var(--green-700); }
+.doc-eyebrow { font-family: var(--sans); text-transform: uppercase; letter-spacing: .3em; font-size: .5em; color: var(--gold-deep); margin: 0; }
+.doc-couple { font-family: var(--serif); font-weight: 500; font-size: 1.8em; line-height: 1.05; color: var(--green-800); margin: .25em 0; }
+.doc-couple .amp { font-style: italic; }
+.doc-date { font-family: var(--serif); font-size: .8em; letter-spacing: .1em; color: var(--green-700); margin: 0; }
+.doc-rule { display: block; width: 40%; height: 1px; margin: .9em auto; background: linear-gradient(90deg, transparent, var(--gold-deep), transparent); }
+.doc-facts { display: grid; gap: .65em; }
+.doc-facts .k { display: block; font-family: var(--sans); text-transform: uppercase; letter-spacing: .2em; font-size: .46em; color: var(--gold-deep); margin-bottom: .12em; }
+.doc-facts .v { display: block; font-family: var(--serif); font-size: .78em; color: var(--green-800); }
 
-.doc-section { margin: 6% 0; }
-.doc-section h2 { font-size: 2em; color: var(--green-800); margin-bottom: .3em; }
-.doc-section p { font-family: var(--serif); font-size: 1.1em; line-height: 1.5; color: var(--ink); }
-.doc-facts { margin-top: .8em; display: grid; gap: .5em; }
-.doc-facts .k { font-family: var(--sans); text-transform: uppercase; letter-spacing: .25em; font-size: .55em; color: var(--gold-deep); }
-.doc-facts .v { font-family: var(--serif); font-size: 1.05em; color: var(--green-800); }
-
+/* reduced-motion / lite: static open card, details below it on the dark bg */
 body.lite .card-scroll { height: auto; }
 body.lite .card-stage { position: relative; height: auto; min-height: 100vh; padding: 8vh 0; }
-body.lite .card-layer { position: relative; transform: none !important; }
-body.lite .card-canvas { position: relative; height: 60vh; }
-body.lite .card-doc {
-  position: relative !important; left: auto !important; top: auto !important;
-  width: min(640px, 92%) !important; height: auto !important; margin: 6vh auto 0;
-  opacity: 1 !important; font-size: 18px !important; aspect-ratio: 3/4;
-}
+body.lite .card-layer { position: relative; }
+body.lite .card-canvas { position: relative; height: 55vh; }
+body.lite .card-doc { position: relative; inset: auto; width: min(620px, 92%); height: auto; margin: 4vh auto 0; font-size: 18px; opacity: 1 !important; }
 body.lite .doc-block { opacity: 1 !important; transform: none !important; }
+body.lite .doc-couple, body.lite .doc-date, body.lite .doc-facts .v { color: var(--cream); }
+body.lite .doc-eyebrow, body.lite .doc-facts .k { color: var(--gold-light); }

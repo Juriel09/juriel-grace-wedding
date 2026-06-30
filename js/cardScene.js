@@ -1,9 +1,10 @@
-/* Act 1 + Act 2 controller. Driven by one smoothed progress value.
-   Phases (of eased progress p in [0,1]):
-     OPEN   [0.00, 0.42)  card cover opens (frame scrub), camera identity
-     INTRO  [0.42, 0.52)  zoom to whole inner page, names fade in        (Task 6)
-     READ   [0.52, 0.90)  zoom + pan top->bottom through the text         (Task 6)
-     OUT    [0.90, 1.00]  pull back to whole open card                    (Task 6) */
+/* Card scene controller. One smoothed progress value (lerp + rAF) drives:
+     OPEN     [0, P_OPEN)  the card cover opens (frame scrub)
+     DETAILS  [P_OPEN, 1]  the card is open; the main details fade in.
+   The card is drawn to fit the screen (contain-fit, whole frame visible) as the
+   site intro, on a beige tabletop background so it feels full-screen. The details are
+   fitted onto the real frosted acrylic page of the open card — no zoom, no extra
+   acrylic panel. */
 (function () {
   "use strict";
   window.W = window.W || {};
@@ -13,35 +14,27 @@
   const FRAME_W = 1280, FRAME_H = 720;
   const framePath = (i) => `media/frames/frame_${String(i).padStart(4, "0")}.webp`;
 
-  // inner (right) page of the open frame, as fractions of the drawn frame
+  // the acrylic (right) page as a fraction of the frame
   const AX0 = 0.371, AX1 = 0.719, AY0 = 0.094, AY1 = 0.919;
 
   const DOC_HTML =
     '<div class="doc-inner">' +
-      '<div class="doc-block doc-names" data-at="0.10">' +
+      '<div class="doc-block doc-names" data-at="0.0">' +
         '<p class="doc-eyebrow">together with their families</p>' +
-        '<h1 class="doc-couple"><span>Grace</span><span class="amp foil">&amp;</span><span>Juriel</span></h1>' +
+        '<h1 class="doc-couple"><span>Grace</span> <span class="amp foil">&amp;</span> <span>Juriel</span></h1>' +
         '<p class="doc-date">November 11, 2026</p>' +
       '</div>' +
-      '<div class="doc-block doc-section" data-at="0.34">' +
-        '<p class="eyebrow">our story</p><h2>How it began</h2>' +
-        '<p>A rainy afternoon, a shared umbrella, and a conversation that never quite ended. ' +
-        'Five years later, the question was finally asked — and the answer was always going to be yes.</p>' +
-      '</div>' +
-      '<div class="doc-block doc-section" data-at="0.58">' +
-        '<p class="eyebrow">when &amp; where</p><h2>The Celebration</h2>' +
+      '<div class="doc-block" data-at="0.4">' +
+        '<span class="doc-rule" aria-hidden="true"></span>' +
         '<div class="doc-facts">' +
-          '<div><span class="k">When</span><br><span class="v">November 11, 2026 · 3:00 PM</span></div>' +
-          '<div><span class="k">Where</span><br><span class="v">The Forest Pavilion, Your City</span></div>' +
+          '<div><span class="k">When</span><span class="v">November 11, 2026 · 3:00 PM</span></div>' +
+          '<div><span class="k">Where</span><span class="v">The Forest Pavilion, Your City</span></div>' +
+          '<div><span class="k">Attire</span><span class="v">Formal · Emerald &amp; Gold</span></div>' +
         '</div>' +
-      '</div>' +
-      '<div class="doc-block doc-section" data-at="0.82">' +
-        '<p class="eyebrow">attire</p><h2>Dress Code</h2>' +
-        '<p>Formal · Emerald &amp; Gold. Join us dressed for an evening among the trees.</p>' +
       '</div>' +
     '</div>';
 
-  const P_OPEN = 0.42;
+  const P_OPEN = 0.7;
 
   function CardScene() {
     this.canvas = document.getElementById("cardCanvas");
@@ -70,7 +63,7 @@
     setTimeout(() => self.hideLoader(), 15000); // safety
 
     this.sizeCanvas();
-    window.addEventListener("resize", () => { self.sizeCanvas(); self.render(true); });
+    window.addEventListener("resize", () => { self.sizeCanvas(); self.render(); });
     requestAnimationFrame(function loop() { self.tick(); requestAnimationFrame(loop); });
   };
 
@@ -86,6 +79,26 @@
     this.draw(this.lastIdx < 0 ? 0 : this.lastIdx);
   };
 
+  // contain-fit the frame into a w×h box, centered (whole frame visible, no crop)
+  CardScene.prototype.frameDrawRect = function (w, h) {
+    const scale = Math.min(w / FRAME_W, h / FRAME_H);
+    const dw = FRAME_W * scale, dh = FRAME_H * scale;
+    return { x: (w - dw) / 2, y: (h - dh) / 2, w: dw, h: dh };
+  };
+
+  // the acrylic page rect in CSS px (for positioning the details over it)
+  CardScene.prototype.acRect = function () {
+    const f = this.frameDrawRect(this.canvas.clientWidth, this.canvas.clientHeight);
+    return { x: f.x + AX0 * f.w, y: f.y + AY0 * f.h, w: (AX1 - AX0) * f.w, h: (AY1 - AY0) * f.h };
+  };
+
+  // size/position the details onto the acrylic page; type scales with the page
+  CardScene.prototype.layout = function () {
+    const a = this.acRect(), s = this.doc.style;
+    s.left = a.x + "px"; s.top = a.y + "px"; s.width = a.w + "px"; s.height = a.h + "px";
+    s.fontSize = (a.w * 0.075) + "px";
+  };
+
   CardScene.prototype.progress = function () {
     const rect = this.scroll.getBoundingClientRect();
     const total = this.scroll.offsetHeight - window.innerHeight;
@@ -96,98 +109,51 @@
     this.target = this.progress();
     this.eased += (this.target - this.eased) * 0.09;        // smoothing
     if (Math.abs(this.target - this.eased) < 0.0002) this.eased = this.target;
-    this.render(false);
+    this.render();
   };
 
-  // draw a frame index to the canvas (contain-fit, centered)
+  // draw a frame index to the canvas (contain-fit, whole frame visible)
   CardScene.prototype.draw = function (idx) {
     const ctx = this.ctx; if (!ctx || !this.pre) return;
     idx = G.clamp(idx, 0, FRAME_COUNT - 1);
     const img = this.pre.frame(idx); if (!img) return;
     this.lastIdx = idx;
     const cw = this.canvas.width, ch = this.canvas.height;
-    const r = G.frameRect(cw, ch, img.naturalWidth, img.naturalHeight);
+    const r = this.frameDrawRect(cw, ch);
     ctx.clearRect(0, 0, cw, ch);
     ctx.drawImage(img, r.x, r.y, r.w, r.h);
   };
 
-  CardScene.prototype.acRect = function () {
-    const r = G.frameRect(this.canvas.clientWidth, this.canvas.clientHeight, FRAME_W, FRAME_H);
-    return G.subRect(r, AX0, AY0, AX1, AY1);
-  };
-
-  CardScene.prototype.layout = function () {
-    const a = this.acRect();
-    const s = this.doc.style;
-    s.left = a.x + "px"; s.top = a.y + "px"; s.width = a.w + "px"; s.height = a.h + "px";
-    s.fontSize = (a.w * 0.062) + "px"; // type scales with card; tuned for the read zoom
-  };
-
-  // camera presets
-  CardScene.prototype.camFull = function () {
-    return G.frameTo(this.acRect(), window.innerWidth, window.innerHeight, "contain", 0.92);
-  };
-  CardScene.prototype.camRead = function (rp) {
-    const a = this.acRect(), vw = window.innerWidth, vh = window.innerHeight;
-    const s = (vw / a.w) * 0.94;                       // zoom so the page width nearly fills
-    const x = vw / 2 - s * (a.x + a.w / 2);            // centered horizontally
-    const yTop = -s * a.y;                             // page top at viewport top
-    const yBot = vh - s * (a.y + a.h);                 // page bottom at viewport bottom
-    return { x, y: G.lerp(yTop, yBot, rp), scale: s };
-  };
-  CardScene.prototype.setCam = function (c) {
-    this.layer.style.transform = "translate(" + c.x + "px," + c.y + "px) scale(" + c.scale + ")";
-  };
-  CardScene.prototype.lerpCam = function (a, b, t) {
-    return { x: G.lerp(a.x, b.x, t), y: G.lerp(a.y, b.y, t), scale: G.lerp(a.scale, b.scale, t) };
-  };
-
-  CardScene.prototype.reveals = function (rp) {
-    const blocks = this.doc.querySelectorAll(".doc-block");
-    blocks.forEach((b) => {
-      const at = parseFloat(b.getAttribute("data-at"));
-      b.classList.toggle("show", rp >= at - 0.08);
+  // fade the detail blocks in, staggered by their data-at over the details progress
+  CardScene.prototype.reveals = function (dp) {
+    this.doc.querySelectorAll(".doc-block").forEach((b) => {
+      const at = parseFloat(b.getAttribute("data-at")) || 0;
+      b.classList.toggle("show", dp >= at);
     });
   };
 
   CardScene.prototype.render = function () {
     const p = this.eased;
     this.layout();
-
-    if (p < P_OPEN) {                          // OPEN
-      const op = G.clamp(p / P_OPEN, 0, 1);
-      this.draw(G.frameIndexForProgress(op, FRAME_COUNT));
-      this.setCam({ x: 0, y: 0, scale: 1 });
+    if (p < P_OPEN) {                          // OPEN: scrub frames open the card
+      this.draw(G.frameIndexForProgress(p / P_OPEN, FRAME_COUNT));
       this.doc.style.opacity = "0";
-    } else {
-      this.draw(FRAME_COUNT - 1);              // hold fully-open frame
-      const idnt = { x: 0, y: 0, scale: 1 };
-      if (p < 0.52) {                          // INTRO: identity -> full page
-        const t = G.mapRange(p, P_OPEN, 0.52, 0, 1, true);
-        this.setCam(this.lerpCam(idnt, this.camFull(), t));
-        this.doc.style.opacity = String(t);
-        this.reveals(0.05);                    // names only
-      } else if (p < 0.90) {                   // READ: pan top -> bottom
-        const rp = G.mapRange(p, 0.52, 0.90, 0, 1, true);
-        this.setCam(this.camRead(rp));
-        this.doc.style.opacity = "1";
-        this.reveals(rp);
-      } else {                                 // OUT: read-bottom -> whole card
-        const t = G.mapRange(p, 0.90, 1, 0, 1, true);
-        this.setCam(this.lerpCam(this.camRead(1), this.camFull(), t));
-        this.doc.style.opacity = String(1 - t * 0.6);
-        this.reveals(1);
-      }
+      this.reveals(-1);
+    } else {                                   // DETAILS: card open, fade details in
+      this.draw(FRAME_COUNT - 1);
+      this.doc.style.opacity = "1";
+      this.reveals(G.mapRange(p, P_OPEN, 1, 0, 1, true));
     }
-
     const hint = document.getElementById("scrollHint");
     if (hint) hint.style.opacity = p > 0.02 ? "0" : "1";
   };
 
+  // reduced-motion: static open card + details shown immediately, no scrub
   CardScene.prototype.initLite = function () {
     const self = this;
     document.body.classList.add("lite");
     this.doc.innerHTML = DOC_HTML;
+    this.doc.querySelectorAll(".doc-block").forEach((b) => b.classList.add("show"));
     this.pre = new window.W.Preloader({
       count: FRAME_COUNT, path: framePath,
       onFirst: () => { self.sizeCanvas(); self.draw(FRAME_COUNT - 1); self.hideLoader(); },

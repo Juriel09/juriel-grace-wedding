@@ -1,6 +1,9 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 html { scroll-behavior: auto; } /* Lenis handles smoothing */
+/* hide the native scrollbar during the intro (scroll still works) */
+html.intro { scrollbar-width: none; -ms-overflow-style: none; }
+html.intro::-webkit-scrollbar { width: 0; height: 0; display: none; }
 body {
   background: var(--green-900);
   color: var(--ink);
@@ -39,8 +42,10 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0; line-height
   position: fixed; inset: 0 0 auto 0; z-index: 40;
   display: flex; align-items: center; justify-content: space-between;
   padding: var(--space-2) var(--space-4);
-  transition: background .4s var(--ease), backdrop-filter .4s var(--ease);
+  transform: translateY(-100%); opacity: 0; pointer-events: none; /* hidden during the intro */
+  transition: transform .5s var(--ease), opacity .5s var(--ease), background .4s var(--ease), backdrop-filter .4s var(--ease);
 }
+body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
 .nav.scrolled { background: rgba(20,39,27,.92); backdrop-filter: blur(8px); }
 .nav-monogram { font-family: var(--serif); font-size: 1.4rem; color: var(--cream); letter-spacing: .1em; }
 .nav-links { display: flex; gap: var(--space-3); align-items: center; }
