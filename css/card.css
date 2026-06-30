@@ -1,0 +1,15 @@
+.card-scroll { position: relative; height: 600vh; background: var(--green-900); }
+.card-stage {
+  position: sticky; top: 0; height: 100vh; width: 100%;
+  overflow: hidden; background: var(--green-900);
+}
+.card-layer {
+  position: absolute; inset: 0; transform-origin: 0 0; will-change: transform;
+}
+.card-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* Reading surface (Task 6) — placed over the frame's inner page by JS */
+.card-doc {
+  position: absolute; left: 0; top: 0; width: 0; height: 0;
+  opacity: 0; pointer-events: none;
+}
