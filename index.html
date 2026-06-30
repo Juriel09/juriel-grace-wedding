@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="css/sections.css" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preload" as="image" href="media/frames/frame_0001.webp" />
+<link rel="preload" as="image" href="media/card/open-card.png" />
 </head>
 <body>
   <div id="loader" class="loader">
@@ -36,6 +37,8 @@
       <div class="card-stage" id="cardStage">
         <div class="card-layer" id="cardLayer">
           <canvas id="cardCanvas" class="card-canvas"></canvas>
+          <img id="cardStill" class="card-still" src="media/card/open-card.png" alt="" aria-hidden="true" />
+          <div class="card-vignette" aria-hidden="true"></div>
           <div class="card-doc" id="cardDoc" aria-hidden="true"></div>
         </div>
       </div>

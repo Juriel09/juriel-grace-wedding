@@ -1,10 +1,12 @@
-.card-scroll { position: relative; height: 400vh; background: #e6d8c2; }
+.card-scroll { position: relative; height: 400vh; background: var(--green-900); }
 .card-stage {
   position: sticky; top: 0; height: 100vh; width: 100%;
-  overflow: hidden; background: #e6d8c2; /* beige tabletop — blends with the card art */
+  overflow: hidden; background: radial-gradient(ellipse at center, var(--green-800), var(--green-900));
 }
 .card-layer { position: absolute; inset: 0; }
 .card-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.card-still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; pointer-events: none; }
+.card-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 42%, var(--green-900) 100%); }
 
 /* Details fitted onto the real frosted acrylic page of the open card.
    JS sets left/top/width/height/font-size so the text fits inside that page.
@@ -31,7 +33,9 @@
 body.lite .card-scroll { height: auto; }
 body.lite .card-stage { position: relative; height: auto; min-height: 100vh; padding: 8vh 0; }
 body.lite .card-layer { position: relative; }
-body.lite .card-canvas { position: relative; height: 55vh; }
+body.lite .card-canvas { display: none; }
+body.lite .card-vignette { display: none; }
+body.lite .card-still { position: relative; inset: auto; display: block; width: min(680px, 92%); height: auto; opacity: 1 !important; margin: 0 auto; }
 body.lite .card-doc { position: relative; inset: auto; width: min(620px, 92%); height: auto; margin: 4vh auto 0; font-size: 18px; opacity: 1 !important; }
 body.lite .doc-block { opacity: 1 !important; transform: none !important; }
 body.lite .doc-couple, body.lite .doc-date, body.lite .doc-facts .v { color: var(--cream); }
