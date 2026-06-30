@@ -51,7 +51,6 @@
     this.scroll = document.getElementById("cardScroll");
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.eased = 0; this.target = 0; this.lastIdx = -1;
-    this.getScroll = () => window.scrollY; // overridden by main.js when Lenis is active
     this.doc = document.getElementById("cardDoc");
   }
 
