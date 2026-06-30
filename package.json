@@ -1,0 +1,11 @@
+{
+  "name": "wedding-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Grace & Juriel wedding invitation site",
+  "scripts": {
+    "test": "node --test",
+    "optimize:frames": "node tools/optimize-frames.js",
+    "transcode:drone": "node tools/transcode-drone.js"
+  }
+}

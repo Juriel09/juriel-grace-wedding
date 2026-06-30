@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Grace &amp; Juriel — November 11, 2026</title>
+<meta name="description" content="You're invited — join us as we celebrate the wedding of Grace &amp; Juriel." />
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/card.css" />
+<link rel="stylesheet" href="css/sections.css" />
+</head>
+<body>
+  <div id="loader" class="loader">
+    <div class="loader-seal">&amp;</div>
+    <div class="loader-text">preparing your invitation</div>
+    <div class="loader-pct" id="loaderPct">0%</div>
+  </div>
+
+  <header class="nav" id="nav">
+    <a class="nav-monogram" href="#top" data-jump="intro">G&nbsp;&amp;&nbsp;J</a>
+    <nav class="nav-links">
+      <a href="#gallery" data-jump="gallery">Gallery</a>
+      <a href="#film" data-jump="film">Film</a>
+      <a href="#rsvp" class="nav-cta" data-jump="rsvp">RSVP</a>
+    </nav>
+  </header>
+
+  <div class="scroll-hint" id="scrollHint"><span>scroll to open</span><span class="scroll-hint-arrow">⌄</span></div>
+
+  <main id="top">
+    <!-- Card scene (Act 1 + Act 2) injected here in Task 5/6 -->
+    <section id="cardScroll" class="card-scroll">
+      <div class="card-stage" id="cardStage">
+        <div class="card-layer" id="cardLayer">
+          <canvas id="cardCanvas" class="card-canvas"></canvas>
+          <div class="card-doc" id="cardDoc" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Sections (Act 3) injected here in Task 7 -->
+  </main>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close">×</button>
+    <div class="lightbox-body" id="lightboxBody"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="js/lib/geometry.js"></script>
+  <script src="js/lib/preloader.js"></script>
+  <script src="js/cardScene.js"></script>
+  <script src="js/sections.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
