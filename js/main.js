@@ -22,6 +22,11 @@
     scene.init();
   }
 
+  if (window.W.StoryScene) {
+    const story = new window.W.StoryScene();
+    if (reduce) story.initLite(); else story.init();
+  }
+
   if (window.W.initSections) window.W.initSections();
   if (window.W.Theme) window.W.Theme.init();
   if (window.W.BackgroundScene) { var bg = new window.W.BackgroundScene(); bg.start(); window.__bg = bg; }

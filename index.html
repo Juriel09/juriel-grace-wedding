@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="css/base.css" />
 <link rel="stylesheet" href="css/card.css" />
 <link rel="stylesheet" href="css/sections.css" />
+<link rel="stylesheet" href="css/story.css" />
 <link rel="stylesheet" href="css/theme.css" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preload" as="image" href="media/frames/frame_0001.webp" media="(orientation: landscape)" />
@@ -52,6 +53,7 @@
   <header class="nav" id="nav">
     <a class="nav-monogram" href="#top" data-jump="intro">J&nbsp;&amp;&nbsp;G</a>
     <nav class="nav-links">
+      <a href="#story" data-jump="story">Our Story</a>
       <a href="#gallery" data-jump="gallery">Gallery</a>
       <a href="#film" data-jump="film">Film</a>
       <a href="#rsvp" class="nav-cta" data-jump="rsvp">RSVP</a>
@@ -106,6 +108,19 @@
         <h2 class="drone-title"><span>Juriel</span> <span class="amp foil">&amp;</span> <span>Grace</span></h2>
         <span class="drone-rule" aria-hidden="true"></span>
         <p class="drone-sub">November 11, 2026 · The Forest Barn, Alfonso, Cavite</p>
+      </div>
+    </section>
+
+    <section id="story" class="story">
+      <div class="story-scroll" id="storyScroll">
+        <div class="story-stage" id="storyStage">
+          <div class="story-head">
+            <p class="eyebrow">how we began</p>
+            <h2 class="story-title">Our Story</h2>
+          </div>
+          <div class="story-track" id="storyTrack"></div>
+          <button class="story-skip" id="storySkip" type="button">Skip our story &rsaquo;</button>
+        </div>
       </div>
     </section>
 
@@ -173,9 +188,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
   <script src="js/lib/geometry.js"></script>
+  <script src="js/lib/storyGeometry.js"></script>
   <script src="js/lib/preloader.js"></script>
   <script src="js/cardScene.js"></script>
   <script src="js/sections.js"></script>
+  <script src="js/story.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/three-scene.js"></script>
   <script src="js/main.js"></script>

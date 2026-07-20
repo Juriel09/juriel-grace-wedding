@@ -1,0 +1,113 @@
+/* "Our Story" — a pinned timeline that pans sideways through the years.
+   .story-scroll is a tall wrapper; .story-stage pins to it; .story-track (as wide as
+   the whole timeline) slides left as you scroll. Height of the wrapper is set by JS
+   so the pan is 1:1 with scrolling. */
+.story { position: relative; background: var(--ivory-deep); }
+.story::before { /* faint paper grain, matching the rest of the site */
+  content: ""; position: absolute; inset: 0; background: var(--paper-grain); opacity: .5; pointer-events: none;
+}
+.story-scroll { position: relative; }              /* height set inline by story.js */
+.story-stage {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: flex; align-items: center;
+}
+
+/* fixed headline — stays put while the timeline pans beneath it */
+.story-head {
+  position: absolute; top: clamp(3.4rem, 10vh, 7rem); left: 0; right: 0; z-index: 3;
+  text-align: center; pointer-events: none; transition: opacity .4s var(--ease);
+}
+.story-head .eyebrow {
+  font-family: var(--sans); text-transform: uppercase; letter-spacing: .45em;
+  font-size: .72rem; color: var(--olive); margin: 0 0 .5rem;
+}
+.story-head .story-title {
+  font-family: var(--serif); font-weight: 500; font-style: italic;
+  font-size: clamp(2rem, 5vw, 3.2rem); color: var(--forest-deep); margin: 0; line-height: 1;
+}
+
+/* the sliding timeline */
+.story-track { position: absolute; left: 0; top: 50%; will-change: transform; }
+.story-lines { position: absolute; inset: 0; overflow: visible; }
+.story-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.story-line-j    { stroke: var(--forest); stroke-width: 2.5; }
+.story-line-g    { stroke: var(--mocha);  stroke-width: 2.5; }
+.story-line-gold { stroke: var(--gold);   stroke-width: 3.5; }
+
+/* a milestone: photo disc + tick to the line + year + caption. The wrapper sits on
+   the line (top = the line point) and grows outward: upward for is-above, down for
+   is-below. */
+.story-node {
+  position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: center;
+  transform: translate(-50%, 0);
+  opacity: 0; transition: opacity .7s var(--ease), translate .7s var(--ease);
+  translate: 0 14px;
+}
+.story-node.is-above { transform: translate(-50%, -100%); }
+.story-node.in { opacity: 1; translate: 0 0; }
+
+.story-tick { width: 1px; height: var(--tick, 60px); background: linear-gradient(var(--gold), transparent); }
+.story-node.is-below .story-tick { background: linear-gradient(transparent, var(--gold)); }
+
+.story-disc {
+  width: clamp(74px, 12vw, 104px); aspect-ratio: 1; border-radius: 999px; overflow: hidden;
+  border: 2px solid var(--gold); background: var(--mint);
+  display: grid; place-content: center; flex: none;
+  box-shadow: 0 8px 26px rgba(60, 79, 67, .18);
+}
+.story-disc img { width: 100%; height: 100%; object-fit: cover; }
+.story-disc.is-empty { background: radial-gradient(circle at 32% 28%, var(--mint), var(--sage)); }
+.story-disc-glyph {
+  font-family: var(--serif); font-style: italic; font-size: 1.1rem; letter-spacing: .04em;
+  color: var(--forest-deep); opacity: .8;
+}
+.story-node.is-kiss .story-disc { border-color: var(--gold-light); }
+.story-node.is-merge .story-disc { border-width: 3px; box-shadow: 0 8px 30px rgba(154, 125, 76, .3); }
+
+.story-year {
+  font-family: var(--sans); font-weight: 500; letter-spacing: .18em; font-size: .82rem;
+  color: var(--gold-deep); margin: .55rem 0 .15rem;
+}
+.story-caption {
+  font-family: var(--serif); font-size: clamp(.95rem, 1.9vw, 1.2rem); color: var(--ink);
+  max-width: 15ch; text-align: center; line-height: 1.25;
+}
+/* above the line the text reads above the disc, so flip the vertical margins */
+.story-node.is-above .story-year { margin: .15rem 0 .55rem; }
+
+/* Skip pill — bottom-right of the pinned stage */
+.story-skip {
+  position: absolute; right: 1.15rem; bottom: 1.4rem; z-index: 4; cursor: pointer;
+  padding: .6em 1.25em; border: 1px solid var(--gold); border-radius: 999px;
+  background: rgba(248, 243, 234, .6); backdrop-filter: blur(6px);
+  color: var(--gold-deep); font-family: var(--sans); letter-spacing: .12em;
+  text-transform: uppercase; font-size: .68rem;
+  transition: background .3s var(--ease), transform .3s var(--ease);
+}
+.story-skip:hover { background: rgba(248, 243, 234, .9); transform: translateY(-1px); }
+
+/* ---- reduced-motion / very small: a plain vertical list, no pin ---- */
+.story--lite .story-stage { position: static; height: auto; display: block; overflow: visible; padding: var(--space-6) var(--space-3); }
+.story--lite .story-track { position: static; top: auto; width: auto !important; height: auto !important; transform: none; }
+.story--lite .story-head { position: static; opacity: 1 !important; margin-bottom: var(--space-4); }
+.story-list { list-style: none; max-width: 520px; margin: 0 auto; padding: 0; display: grid; gap: var(--space-3); }
+.story-list-item { display: flex; align-items: center; gap: var(--space-3); }
+.story-list-item .story-disc { width: 64px; }
+.story-list-text { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+.story-list-text .story-caption { max-width: none; text-align: left; }
+
+/* ---- dark theme ---- */
+/* .story background uses --ivory-deep, which already flips to night in dark theme —
+   do NOT re-point it at --forest-deep (that token is a *light* heading colour in dark). */
+:root[data-theme="dark"] .story-line-j { stroke: var(--sage); }
+:root[data-theme="dark"] .story-line-g { stroke: var(--nude); }
+:root[data-theme="dark"] .story-disc { background: rgba(255, 255, 255, .06); box-shadow: 0 8px 26px rgba(0, 0, 0, .4); }
+:root[data-theme="dark"] .story-disc.is-empty { background: radial-gradient(circle at 32% 28%, #2b352d, #1c241e); }
+:root[data-theme="dark"] .story-disc-glyph { color: var(--mint); }
+:root[data-theme="dark"] .story-skip { background: rgba(18, 22, 15, .5); border-color: var(--gold-light); color: var(--gold-light); }
+:root[data-theme="dark"] .story-skip:hover { background: rgba(30, 38, 28, .7); }
+
+@media (max-width: 720px) {
+  .story-caption { font-size: 1rem; }
+  .story-skip { right: .8rem; bottom: 1rem; }
+}

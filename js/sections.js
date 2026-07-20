@@ -179,7 +179,7 @@
     window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
     document.querySelectorAll("[data-jump]").forEach((a) => a.addEventListener("click", (e) => {
       const id = a.getAttribute("data-jump");
-      const map = { intro: "#top", gallery: "#gallery", film: "#film", rsvp: "#rsvp" };
+      const map = { intro: "#top", story: "#story", gallery: "#gallery", film: "#film", rsvp: "#rsvp" };
       const t = document.querySelector(map[id] || "#top"); if (!t) return;
       e.preventDefault();
       if (window.__lenis) window.__lenis.scrollTo(t, { duration: 1.4 });
