@@ -55,12 +55,14 @@
   function layout(opts) {
     const nodes = opts.nodes || [];
     const vw = opts.vw, vh = opts.vh;
-    const band = opts.band != null ? opts.band : clamp(Math.min(vh * 0.62, 380), 220, 420);
+    // vh here is the height actually available to the timeline (below the headline),
+    // so short/landscape screens get a proportionally shorter band rather than clipping
+    const band = opts.band != null ? opts.band : clamp(Math.min(vh * 0.62, 380), 150, 420);
     const gap = opts.gap != null ? opts.gap : clamp(vw * 0.6, 240, 440);
     const padX = opts.padX != null ? opts.padX : vw / 2;
     const centerY = band / 2;
     const laneGap = band * 0.17;   // how far the two lanes sit from centre
-    const lane = band * 0.30;      // how far a photo sits from its line
+    const lane = band * 0.28;      // how far a photo sits from its line
     const topY = centerY - laneGap, bottomY = centerY + laneGap;
 
     const width = padX * 2 + Math.max(0, nodes.length - 1) * gap;

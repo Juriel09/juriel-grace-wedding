@@ -9,14 +9,16 @@
 .story-scroll { position: relative; }              /* height set inline by story.js */
 .story-stage {
   position: sticky; top: 0; height: 100vh; overflow: hidden;
-  display: flex; align-items: center;
+  display: flex; flex-direction: column;
 }
 
-/* fixed headline — stays put while the timeline pans beneath it */
+/* headline sits above the timeline in flow, so the two can never collide; the
+   timeline then centres itself in whatever height is left (.story-viewport) */
 .story-head {
-  position: absolute; top: clamp(3.4rem, 10vh, 7rem); left: 0; right: 0; z-index: 3;
+  flex: none; z-index: 3; padding: clamp(3.2rem, 9vh, 6.5rem) 1rem 0;
   text-align: center; pointer-events: none; transition: opacity .4s var(--ease);
 }
+.story-viewport { position: relative; flex: 1; min-height: 0; width: 100%; }
 .story-head .eyebrow {
   font-family: var(--sans); text-transform: uppercase; letter-spacing: .45em;
   font-size: .72rem; color: var(--olive); margin: 0 0 .5rem;
@@ -51,7 +53,7 @@
 
 .story-disc {
   position: relative;
-  width: clamp(74px, 12vw, 104px); aspect-ratio: 1; border-radius: 999px; overflow: hidden;
+  width: clamp(64px, min(22vw, 14vh), 104px); aspect-ratio: 1; border-radius: 999px; overflow: hidden;
   border: 2px solid var(--gold); background: var(--mint);
   display: grid; place-content: center; flex: none;
   box-shadow: 0 8px 26px rgba(60, 79, 67, .18);
@@ -111,4 +113,14 @@
 @media (max-width: 720px) {
   .story-caption { font-size: 1rem; }
   .story-skip { right: .8rem; bottom: 1rem; }
+}
+/* short viewports (landscape phones): tighten the headline and labels so the
+   milestones still fit in the height left over below the title */
+@media (max-height: 560px) {
+  .story-head { padding-top: 4.2rem; }  /* clears the fixed nav bar */
+  .story-head .story-title { font-size: 1.45rem; }
+  .story-head .eyebrow { font-size: .6rem; margin-bottom: .25rem; }
+  .story-year { font-size: .7rem; margin: .3rem 0 .1rem; }
+  .story-node.is-above .story-year { margin: .1rem 0 .3rem; }
+  .story-caption { font-size: .85rem; }
 }

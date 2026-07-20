@@ -69,6 +69,9 @@
     const droneVid = document.getElementById("droneVideo");
     if (lenis) {
       const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+      // Phones scroll by gesture, so they get "smart scroll" instead of the peek-snap:
+      // a quick flick jumps to the next section, a gentle drag scrolls normally.
+      const isTouch = window.matchMedia("(pointer: coarse)").matches;
       // ordered full-screen stops, top to bottom. The card scrub scene above is
       // deliberately excluded; the footer sits naturally below the last stop.
       const stops = ["drone", "gallery", "film", "entourage", "rsvp"]
@@ -128,6 +131,9 @@
         const dir = e && e.direction != null ? e.direction : 0;
         // scrolled well back up into the card scrub — arm the reveal-pause again
         if (curIdx === -1 && y < cardEndY() - ih * 0.5) cardParked = false;
+        // touch: flicks drive navigation and the branches below bail out, so re-arm
+        // the card scene here when the visitor scrolls back up into it
+        if (isTouch && y < cardEndY() - 4 && curIdx !== -1) { curIdx = -1; cardParked = false; }
 
         if (dir > 0) {
           if (curIdx === -1) {
@@ -142,6 +148,7 @@
             }
             return;
           }
+          if (isTouch) return;   // touch: only a deliberate flick navigates (below)
           // scrolling down through the sections: the instant the next stop peeks in,
           // glide to it. A tall current stop only lets the next peek once its end is
           // reached, so it is scrolled through normally first.
@@ -155,6 +162,7 @@
           // the previous stop (entering a tall one at its bottom). Above the first
           // stop lies the card scene — released to free scroll.
           if (curIdx < 0) return;
+          if (isTouch) return;   // touch: only a deliberate flick navigates (below)
           if (stops[curIdx].getBoundingClientRect().top > EPS) {
             const p = curIdx - 1;
             if (p < 0) { curIdx = -1; cardParked = true; return; }
@@ -163,6 +171,71 @@
           }
         }
       });
+      // MOBILE SMART SCROLL. A quick flick reads as "take me to the next section" and
+      // glides to it; a gentle drag is left alone so the whole section can be read at
+      // the visitor's own pace. Thresholds: the swipe must be both long enough and
+      // fast enough, so ordinary reading-scrolls never trigger navigation.
+      if (isTouch) {
+        const FLICK_V = 0.55;  // px per ms — above this reads as a deliberate swipe
+        const FLICK_D = 45;    // px — ignore small nudges
+        let sy = 0, st = 0;
+        // Flick destinations are the sections a visitor actually moves between — the
+        // linked ones plus the drone. Note this INCLUDES the tall Our Story timeline,
+        // which the desktop peek-snap deliberately skips; a flick should land on it,
+        // not jump over it to the gallery.
+        const flickStops = ["drone", "story", "gallery", "film", "entourage", "rsvp"]
+          .map((id) => document.getElementById(id)).filter(Boolean);
+
+        // glide to a section that may or may not be a peek-snap stop, keeping curIdx
+        // meaningful (it only has to stay >= 0 to mean "past the card scene")
+        const flickGlide = (el, align) => {
+          snapping = true; cardParked = false;
+          clearTimeout(releaseT);
+          const release = () => { snapping = false; };
+          const i = stops.indexOf(el);
+          curIdx = i >= 0 ? i : (curIdx < 0 ? 0 : curIdx);
+          snapTo(el, align, release);
+          releaseT = setTimeout(release, 1300);
+        };
+
+        // Which section are we on? Test against a probe line a third of the way down
+        // the screen rather than the very top edge — parking on a section leaves its
+        // top at ~0 give or take a sub-pixel, and a hairline test flickers between
+        // this section and the previous one. -1 = above them all (the card scene).
+        const currentIdx = () => {
+          const probe = window.innerHeight * 0.3;
+          for (let i = flickStops.length - 1; i >= 0; i--) {
+            const r = flickStops[i].getBoundingClientRect();
+            if (r.top <= probe && r.bottom > probe) return i;
+          }
+          return -1;
+        };
+
+        const flick = (d) => {
+          if (snapping || locked) return;
+          if (window.scrollY < cardEndY() - 4) return; // the card intro owns its own scrub
+          const t = currentIdx() + (d > 0 ? 1 : -1);
+          if (t < 0 || t >= flickStops.length) return;
+          const el = flickStops[t];
+          const tall = el.getBoundingClientRect().height > window.innerHeight + 8;
+          // going back up into a tall section, enter at its far end
+          flickGlide(el, d < 0 && tall ? "bottom" : "top");
+        };
+        window.addEventListener("touchstart", (e) => {
+          if (!e.touches || !e.touches.length) return;
+          sy = e.touches[0].clientY; st = performance.now();
+        }, { passive: true });
+        window.addEventListener("touchend", (e) => {
+          const t = e.changedTouches && e.changedTouches[0];
+          if (!t || !st) return;
+          const dy = sy - t.clientY, dt = performance.now() - st;
+          st = 0;
+          if (dt <= 0 || Math.abs(dy) < FLICK_D) return;   // too small — normal scroll
+          if (Math.abs(dy) / dt < FLICK_V) return;          // too slow — normal scroll
+          flick(dy > 0 ? 1 : -1);                           // swipe up = go down the page
+        }, { passive: true });
+      }
+
       parallax();
       window.addEventListener("resize", parallax);
     }
@@ -184,7 +257,8 @@
     window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
     document.querySelectorAll("[data-jump]").forEach((a) => a.addEventListener("click", (e) => {
       const id = a.getAttribute("data-jump");
-      const map = { intro: "#top", story: "#story", gallery: "#gallery", film: "#film", rsvp: "#rsvp" };
+      const map = { intro: "#top", story: "#story", gallery: "#gallery", film: "#film",
+                    entourage: "#entourage", rsvp: "#rsvp" };
       const t = document.querySelector(map[id] || "#top"); if (!t) return;
       e.preventDefault();
       if (window.__lenis) window.__lenis.scrollTo(t, { duration: 1.4 });

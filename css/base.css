@@ -63,13 +63,34 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0; line-height
 }
 body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
 .nav.scrolled { background: rgba(248,243,234,.9); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(175,191,170,.35); }
-.nav-monogram { font-family: var(--serif); font-size: 1.4rem; color: var(--forest-deep); letter-spacing: .1em; }
+.nav-monogram { font-family: var(--serif); font-size: 1.4rem; color: var(--forest-deep); letter-spacing: .1em; flex: none; white-space: nowrap; }
 .nav-links { display: flex; gap: var(--space-3); align-items: center; }
-.nav-links a { font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--forest-deep); opacity: .85; }
+.nav-links a { font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--forest-deep); opacity: .85; white-space: nowrap; }
 .nav-links a:hover { opacity: 1; color: var(--olive); }
 .nav-cta {
   border: 1px solid var(--gold); border-radius: 999px;
   padding: .5rem 1.1rem; color: var(--gold-deep) !important; opacity: 1 !important;
+}
+/* Phones: the bar carries a monogram + 4 links, so tighten it down rather than let
+   a link wrap onto two lines (which collided with the monogram). */
+@media (max-width: 720px) {
+  .nav { padding: var(--space-2); }
+  .nav-monogram { font-size: 1.15rem; }
+  .nav-links { gap: var(--space-2); }
+  .nav-links a { font-size: .66rem; letter-spacing: .1em; }
+  .nav-cta { padding: .42rem .8rem; }
+}
+@media (max-width: 480px) {
+  .nav { padding: .6rem .7rem; gap: .5rem; }
+  .nav-monogram { font-size: 1rem; letter-spacing: .03em; }
+  /* if five links still can't fit, let the row scroll sideways instead of colliding */
+  .nav-links {
+    gap: .6rem; min-width: 0; overflow-x: auto;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a { font-size: .58rem; letter-spacing: .06em; }
+  .nav-cta { padding: .38rem .66rem; }
 }
 
 /* OPENING FILM — fullscreen intro video, fades away to reveal the card */

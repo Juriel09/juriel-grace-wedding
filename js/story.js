@@ -83,12 +83,15 @@
     this.scroll = document.getElementById("storyScroll");
     this.stage = document.getElementById("storyStage");
     this.track = document.getElementById("storyTrack");
+    this.viewport = this.section ? this.section.querySelector(".story-viewport") : null;
     this.eased = 0; this.target = 0; this.pinScroll = 0; this.built = false;
   }
 
   StoryScene.prototype.build = function () {
     const vw = window.innerWidth, vh = window.innerHeight;
-    const L = geom.layout({ nodes: STORY, vw: vw, vh: vh });
+    // lay the band out in the height left below the headline, not the whole screen
+    const avail = (this.viewport && this.viewport.clientHeight) || vh;
+    const L = geom.layout({ nodes: STORY, vw: vw, vh: avail });
     this.L = L;
     this.pinScroll = Math.max(0, L.width - vw);
     // give the outer wrapper exactly enough scroll to pan the whole track (1:1)
