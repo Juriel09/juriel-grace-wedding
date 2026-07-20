@@ -9,13 +9,14 @@
     // remove entries in `shots` to match how many photos the couple has.
     const grid = document.getElementById("galleryGrid");
     if (grid) {
-      const shots = ["01","02","03","04","05","06","07","08","09"];
-      const ars = ["3/4","4/5","1/1","4/5","3/4","4/3","3/4","1/1","4/5"]; // uneven placeholder heights
+      const shots = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+      // deliberately mixed tile shapes — this is what gives the mosaic its Pinterest
+      // stagger; the couple's photos fill whichever tile they land in
+      const ars = ["3/4","1/1","2/3","4/5","4/3","3/4","2/3","1/1","4/5","3/4","4/3","2/3"];
       grid.innerHTML = shots.map((n, i) =>
-        '<button class="gallery-item is-empty" style="--ar:' + ars[i % ars.length] + '" ' +
+        '<button class="gallery-item" style="--ar:' + ars[i % ars.length] + '" ' +
         'data-full="media/gallery/photo-' + n + '.jpg">' +
         '<img loading="lazy" src="media/gallery/photo-' + n + '.jpg" alt="Juriel and Grace, photo ' + n + '" ' +
-        'onload="this.closest(\'.gallery-item\').classList.remove(\'is-empty\')" ' +
         'onerror="this.remove()"></button>'
       ).join("");
     }
@@ -122,6 +123,18 @@
       // glides, then mark the card revealed so one later scroll advances to the drone.
       window.W.snapLock = (v) => { locked = !!v; };
       window.W.cardOpened = () => { snapping = false; curIdx = -1; cardParked = true; };
+
+      // A deep link drops the visitor straight into a section, so the snap has to be
+      // told where they landed — otherwise curIdx is still -1 ("in the card scene")
+      // and the card branch would glide them back up to the envelope on first scroll.
+      window.W.snapSyncFromScroll = () => {
+        snapping = false; cardParked = false;
+        if (window.scrollY < cardEndY() - 4) { curIdx = -1; return; }
+        const probe = window.innerHeight * 0.3;
+        let idx = 0;
+        stops.forEach((s, i) => { if (s.getBoundingClientRect().top <= probe) idx = i; });
+        curIdx = idx;
+      };
 
       const EPS = 8; // a small peek (px) of the next stop commits — no settle delay
       lenis.on("scroll", (e) => {

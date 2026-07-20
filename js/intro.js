@@ -18,7 +18,9 @@
   const offLabel = soundBtn ? soundBtn.querySelector(".intro-sound-off") : null;
 
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce) { film.style.display = "none"; return; } // loader stays frame-driven
+  // Reduced motion, or a shared deep link (/#gallery …) — the visitor asked for a
+  // specific section, so don't make them sit through the opening film.
+  if (reduce || window.W.deepLink) { film.style.display = "none"; return; } // loader stays frame-driven
 
   window.W.filmGate = true; // claim the loader (cardScene.hideLoader defers to us)
   let dismissed = false, started = false;

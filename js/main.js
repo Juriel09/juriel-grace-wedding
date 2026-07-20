@@ -28,6 +28,7 @@
   }
 
   if (window.W.initSections) window.W.initSections();
+  if (window.W.Router) window.W.Router.init(); // after the snap exists, so deep links can sync it
   if (window.W.Theme) window.W.Theme.init();
   if (window.W.BackgroundScene) { var bg = new window.W.BackgroundScene(); bg.start(); window.__bg = bg; }
 })();
