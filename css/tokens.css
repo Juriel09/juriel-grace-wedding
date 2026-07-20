@@ -1,22 +1,31 @@
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap");
 
 :root {
-  /* greens */
-  --green-900: #14271b;
-  --green-800: #1d3527;
-  --green-700: #2a4d38;
-  --green-600: #3a6149;
-  /* gold */
-  --gold-deep: #a17f30;
-  --gold: #c9a24b;
-  --gold-light: #e3c581;
-  /* paper */
-  --beige: #e9ddc9;
-  --cream: #faf4e8;
-  --ink: #3a352c;
-  --ink-soft: #6f6757;
+  /* palette — sampled from the couple's wedding vision board (11.11.26) */
+  --forest: #576f61;      /* Deep Forest */
+  --forest-deep: #3c4f43; /* darkened forest — headings, dark bands */
+  --olive: #85966e;       /* Olive Green */
+  --sage: #afbfaa;        /* Soft Sage */
+  --mint: #d2dbcb;        /* Moss Mint */
+  --mushroom: #beb6ac;    /* Mushroom */
+  --mocha: #b7ada2;       /* Soft Mocha */
+  --nude: #d9c6b2;        /* Muted Nude */
 
-  --gold-foil: linear-gradient(100deg, var(--gold-deep) 0%, var(--gold-light) 40%, #fff4d6 50%, var(--gold-light) 60%, var(--gold-deep) 100%);
+  /* warm ivory paper base */
+  --ivory: #f8f3ea;
+  --ivory-deep: #f0e9db;
+  --cream: #f8f3ea;
+  --ink: #3f4a41;
+  --ink-soft: #7c7466;
+
+  /* antique gold — matched to the vision board's flourishes */
+  --gold-deep: #9a7d4c;
+  --gold: #bfa372;
+  --gold-light: #dbc69c;
+  --gold-foil: linear-gradient(100deg, var(--gold-deep) 0%, var(--gold-light) 40%, #f2e6c8 50%, var(--gold-light) 60%, var(--gold-deep) 100%);
+
+  /* fine paper grain, tiled over the ivory base */
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23p)' opacity='0.055'/%3E%3C/svg%3E");
 
   --serif: "Cormorant Garamond", Georgia, serif;
   --sans: "Jost", system-ui, sans-serif;

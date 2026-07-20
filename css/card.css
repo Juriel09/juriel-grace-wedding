@@ -1,12 +1,42 @@
-.card-scroll { position: relative; height: 220vh; background: #000; }
+.card-scroll { position: relative; height: 340vh; }
 .card-stage {
   position: sticky; top: 0; height: 100vh; width: 100%;
-  overflow: hidden; background: #000;
+  overflow: hidden;
+  background: #d5d5d5; /* matches the video's studio-gray backdrop while the frames scrub */
 }
 .card-layer { position: absolute; inset: 0; }
-.card-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+/* ivory wash that fades in as the card finishes rising, so the transparent still
+   rests on the same paper as the rest of the site (JS drives its opacity) */
+.card-bg-ivory { position: absolute; inset: 0; background: var(--ivory); opacity: 0; pointer-events: none; }
+.card-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* "A Love Letter from Juriel & Grace" — the greeting on the closed-card screen.
+   Sits in the top band above the sealed envelope; JS fades it out as scrolling
+   begins. Readable on the studio-gray backdrop (deep forest ink). */
+.card-intro {
+  position: absolute; left: 0; right: 0; top: 8%; z-index: 5;
+  display: flex; justify-content: center; text-align: center;
+  pointer-events: none; padding: 0 6vw;
+}
+.card-intro-inner { animation: introRise 1.5s var(--ease) both; }
+.card-intro-eyebrow {
+  display: block; font-family: var(--sans); text-transform: uppercase;
+  letter-spacing: .42em; font-size: clamp(.62rem, 1.6vw, .85rem);
+  color: var(--forest-deep); opacity: .82;
+}
+.card-intro-names {
+  display: block; font-family: var(--serif); font-style: italic; font-weight: 500;
+  font-size: clamp(1.8rem, 6vw, 3.2rem); line-height: 1.1; color: var(--forest-deep);
+  margin-top: .35em;
+}
+.card-intro-names .amp { font-style: italic; }
+@keyframes introRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
 .card-still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; pointer-events: none; }
-.card-vignette { display: none; }
+/* kept for the JS opacity hook, but no vignette/haze — clean flat backdrop */
+.card-vignette { position: absolute; inset: 0; pointer-events: none; background: none; }
 
 /* Details fitted onto the real frosted acrylic page of the open card.
    JS sets left/top/width/height/font-size so the text fits inside that page.
@@ -20,23 +50,34 @@
 .doc-block { opacity: 0; transform: translateY(0.5em); transition: opacity .9s var(--ease), transform .9s var(--ease); }
 .doc-block.show { opacity: 1; transform: none; }
 
-.doc-eyebrow { font-family: var(--sans); text-transform: uppercase; letter-spacing: .3em; font-size: .5em; color: var(--gold-deep); margin: 0; }
-.doc-couple { font-family: var(--serif); font-weight: 500; font-size: 1.8em; line-height: 1.05; color: var(--green-800); margin: .25em 0; }
+.doc-eyebrow { font-family: var(--sans); text-transform: uppercase; letter-spacing: .2em; font-size: .44em; color: var(--forest-deep); margin: 0; white-space: nowrap; }
+.doc-couple { font-family: var(--serif); font-weight: 500; font-size: 1.8em; line-height: 1.05; color: var(--forest-deep); margin: .25em 0; }
 .doc-couple .amp { font-style: italic; }
-.doc-date { font-family: var(--serif); font-size: .8em; letter-spacing: .1em; color: var(--green-700); margin: 0; }
+.doc-date { font-family: var(--serif); font-size: .8em; letter-spacing: .1em; color: var(--forest); margin: 0; }
 .doc-rule { display: block; width: 40%; height: 1px; margin: .9em auto; background: linear-gradient(90deg, transparent, var(--gold-deep), transparent); }
 .doc-facts { display: grid; gap: .65em; }
 .doc-facts .k { display: block; font-family: var(--sans); text-transform: uppercase; letter-spacing: .2em; font-size: .46em; color: var(--gold-deep); margin-bottom: .12em; }
-.doc-facts .v { display: block; font-family: var(--serif); font-size: .78em; color: var(--green-800); }
+.doc-facts .v { display: block; font-family: var(--serif); font-size: .78em; color: var(--forest-deep); }
 
-/* reduced-motion / lite: static open card, details below it on the dark bg */
+/* portrait card is narrower/taller: tighten the vertical rhythm so the same
+   content packs onto the card face without shrinking the type. Not in lite (that
+   layout stacks the details below the card and sets its own sizes). */
+@media (orientation: portrait) {
+  body:not(.lite) .doc-inner { padding: 3% 5%; }
+  body:not(.lite) .doc-couple { margin: .12em 0; }
+  body:not(.lite) .doc-rule { margin: .55em auto; }
+  body:not(.lite) .doc-facts { gap: .42em; }
+  body:not(.lite) .doc-facts .k { font-size: .5em; margin-bottom: .08em; }
+  body:not(.lite) .doc-facts .v { font-size: .82em; }
+}
+
+/* reduced-motion / lite: static open card, details below it on the ivory paper */
 body.lite .card-scroll { height: auto; }
-body.lite .card-stage { position: relative; height: auto; min-height: 100vh; padding: 8vh 0; }
+body.lite .card-stage { position: relative; height: auto; min-height: 100vh; padding: 8vh 0; background: none; }
 body.lite .card-layer { position: relative; }
+body.lite .card-bg-ivory { display: none; }
 body.lite .card-canvas { display: none; }
 body.lite .card-vignette { display: none; }
 body.lite .card-still { position: relative; inset: auto; display: block; width: min(680px, 92%); height: auto; opacity: 1 !important; margin: 0 auto; }
 body.lite .card-doc { position: relative; inset: auto; width: min(620px, 92%); height: auto; margin: 4vh auto 0; font-size: 18px; opacity: 1 !important; }
 body.lite .doc-block { opacity: 1 !important; transform: none !important; }
-body.lite .doc-couple, body.lite .doc-date, body.lite .doc-facts .v { color: var(--cream); }
-body.lite .doc-eyebrow, body.lite .doc-facts .k { color: var(--gold-light); }

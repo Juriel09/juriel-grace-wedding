@@ -1,0 +1,71 @@
+/* Dark "night forest" palette — overrides the light tokens from tokens.css.
+   Only the vars that must flip for legibility on a dark ground are overridden. */
+:root[data-theme="dark"] {
+  --ivory: #12160f;          /* page base becomes night */
+  --ivory-deep: #0d110b;
+  --cream: #eef0e6;
+  --ink: #e7e3d6;            /* body text → warm off-white */
+  --ink-soft: #b7b1a0;
+  --forest-deep: #e6ede0;    /* headings → light */
+  --forest: #c3d0ba;
+  --olive: #b7c79c;
+  --sage: #8fa389;
+  /* gold stays as-is; it pops on dark */
+}
+
+/* body background already uses --ivory + --paper-grain, so it flips automatically.
+   Smooth the change. */
+body { transition: background-color .6s var(--ease), color .6s var(--ease); }
+
+/* --- Persistent floating theme toggle (bottom-left, above all content) --- */
+.theme-toggle {
+  position: fixed; left: 1.15rem; bottom: 1.15rem; z-index: 45;
+  display: inline-grid; place-content: center; width: 2.6rem; height: 2.6rem;
+  border: 1px solid var(--gold); border-radius: 999px;
+  background: rgba(248,243,234,.55); backdrop-filter: blur(6px);
+  color: var(--gold-deep); cursor: pointer; padding: 0;
+  box-shadow: 0 4px 18px rgba(0,0,0,.14);
+  transition: color .3s var(--ease), border-color .3s var(--ease), background .3s var(--ease), transform .3s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+  animation: themeTogglePop .5s var(--ease) both;
+}
+.theme-toggle:hover { transform: translateY(-2px); background: rgba(248,243,234,.82); }
+.theme-toggle:active { transform: translateY(0) scale(.94); }
+@keyframes themeTogglePop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+.theme-toggle-icon { grid-area: 1 / 1; font-size: 1rem; line-height: 1; transition: opacity .3s var(--ease), transform .4s var(--ease); }
+/* icon reflects the current theme: light shows the sun, dark shows the moon */
+:root[data-theme="light"] .theme-icon-moon { opacity: 0; transform: scale(.5) rotate(40deg); }
+:root[data-theme="light"] .theme-icon-sun  { opacity: 1; }
+:root[data-theme="dark"]  .theme-icon-sun  { opacity: 0; transform: scale(.5) rotate(-40deg); }
+:root[data-theme="dark"]  .theme-icon-moon { opacity: 1; color: var(--gold-light); }
+:root[data-theme="dark"]  .theme-toggle    { border-color: var(--gold-light); background: rgba(18,22,15,.5); box-shadow: 0 4px 18px rgba(0,0,0,.4); }
+:root[data-theme="dark"]  .theme-toggle:hover { background: rgba(30,38,28,.7); }
+
+/* --- Dark fixes for hardcoded light colors elsewhere --- */
+:root[data-theme="dark"] .nav.scrolled {
+  background: rgba(18,22,15,.82); border-bottom-color: rgba(175,191,170,.18);
+}
+:root[data-theme="dark"] .rsvp-form input,
+:root[data-theme="dark"] .rsvp-form select,
+:root[data-theme="dark"] .rsvp-form textarea {
+  background: rgba(255,255,255,.06); color: var(--ink); border-color: rgba(175,191,170,.3);
+}
+:root[data-theme="dark"] .film-poster { background: linear-gradient(135deg, #26302a, #171d18); }
+
+/* The card art is always the light ivory card, so text sitting ON it must keep the
+   original dark ink/forest/gold — NOT the dark-mode light overrides. Re-pin the
+   palette locally on the card subtree so every card text rule resolves to its
+   original colour. (Skip lite/reduced-motion, where the details render on the page's
+   dark background instead and should stay light.) */
+:root[data-theme="dark"] body:not(.lite) #cardStage {
+  --ink: #3f4a41;
+  --ink-soft: #7c7466;
+  --forest-deep: #3c4f43;
+  --forest: #576f61;
+  --olive: #85966e;
+  --sage: #afbfaa;
+  --cream: #f8f3ea;
+}
+
+/* reduced-motion: the JS scene already no-ops; hide the canvas so nothing lingers */
+@media (prefers-reduced-motion: reduce) { .bg-canvas, .fg-canvas, body::after { display: none; } }

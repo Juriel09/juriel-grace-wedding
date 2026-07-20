@@ -5,7 +5,8 @@ html { scroll-behavior: auto; } /* Lenis handles smoothing */
 html.intro { scrollbar-width: none; -ms-overflow-style: none; }
 html.intro::-webkit-scrollbar { width: 0; height: 0; display: none; }
 body {
-  background: var(--green-900);
+  background-color: var(--ivory);
+  background-image: var(--paper-grain);
   color: var(--ink);
   font-family: var(--sans);
   font-weight: 300;
@@ -13,6 +14,21 @@ body {
   overflow-x: hidden;
 }
 img, canvas, video { display: block; max-width: 100%; }
+
+/* Fixed WebGL ambience behind everything; never intercepts input. The body's
+   base colour paints first, the transparent-cleared canvas shows creatures over
+   it, and main content sits above via its own stacking context. */
+.bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; z-index: 0; pointer-events: none; display: block; filter: blur(3px); opacity: .82; }
+/* foreground creatures pass OVER the content (below the UI chrome: hint/countdown/nav) */
+.fg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; z-index: 12; pointer-events: none; display: block; }
+main { position: relative; z-index: 1; } /* content above the background, below the foreground creatures */
+/* faint vignette above the canvas, below content, so creatures settle back at the
+   edges and text keeps its contrast. Uses the theme base colour (--ivory). */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 42%, transparent 52%, var(--ivory) 100%);
+  opacity: .5;
+}
 a { color: inherit; text-decoration: none; }
 h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0; line-height: 1.1; }
 
@@ -46,40 +62,191 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0; line-height
   transition: transform .5s var(--ease), opacity .5s var(--ease), background .4s var(--ease), backdrop-filter .4s var(--ease);
 }
 body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
-.nav.scrolled { background: rgba(20,39,27,.92); backdrop-filter: blur(8px); }
-.nav-monogram { font-family: var(--serif); font-size: 1.4rem; color: var(--cream); letter-spacing: .1em; }
+.nav.scrolled { background: rgba(248,243,234,.9); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(175,191,170,.35); }
+.nav-monogram { font-family: var(--serif); font-size: 1.4rem; color: var(--forest-deep); letter-spacing: .1em; }
 .nav-links { display: flex; gap: var(--space-3); align-items: center; }
-.nav-links a { font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--cream); opacity: .85; }
-.nav-links a:hover { opacity: 1; color: var(--gold-light); }
+.nav-links a { font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--forest-deep); opacity: .85; }
+.nav-links a:hover { opacity: 1; color: var(--olive); }
 .nav-cta {
   border: 1px solid var(--gold); border-radius: 999px;
-  padding: .5rem 1.1rem; color: var(--gold-light) !important; opacity: 1 !important;
+  padding: .5rem 1.1rem; color: var(--gold-deep) !important; opacity: 1 !important;
 }
 
-/* LOADER */
+/* OPENING FILM — fullscreen intro video, fades away to reveal the card */
+.intro-film {
+  position: fixed; inset: 0; z-index: 300;
+  background: #1a1f1a; /* cinematic frame behind the portrait video */
+  overflow: hidden;
+  opacity: 1; transition: opacity 1.1s var(--ease), visibility 1.1s var(--ease);
+}
+.intro-film.done { opacity: 0; visibility: hidden; pointer-events: none; }
+.intro-film-video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain; /* full portrait scene on wide screens (letterboxed on the dark frame) */
+  display: block;
+}
+@media (orientation: portrait) { .intro-film-video { object-fit: cover; } } /* fills a phone */
+.intro-film-skip, .intro-film-sound {
+  position: absolute; z-index: 2; cursor: pointer;
+  font-family: var(--sans); letter-spacing: .16em; text-transform: uppercase; font-size: .68rem;
+  color: rgba(255,255,255,.82); background: rgba(20,26,20,.35); backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,.28); border-radius: 999px; padding: .55rem 1.1rem;
+  transition: opacity .4s var(--ease), background .3s var(--ease), color .3s var(--ease);
+}
+.intro-film-skip:hover, .intro-film-sound:hover { background: rgba(20,26,20,.6); color: #fff; }
+.intro-film-skip { right: 1.4rem; bottom: 1.4rem; }
+.intro-film-sound { left: 1.4rem; bottom: 1.4rem; }
+.intro-film-begin {
+  position: absolute; z-index: 2; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  cursor: pointer; font-family: var(--serif); font-size: 1.1rem; letter-spacing: .12em;
+  color: #fff; background: rgba(20,26,20,.4); backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,.4); border-radius: 999px; padding: .9rem 2.2rem;
+}
+.intro-film-begin:hover { background: rgba(20,26,20,.7); }
+
+/* LOADER — J&G wedding monogram; gates the opening film until it can play.
+   Sits ABOVE the intro film (z 400 > 300) so nothing shows until ready. */
 .loader {
-  position: fixed; inset: 0; z-index: 100; display: grid; place-content: center; justify-items: center;
-  background: var(--green-900); color: var(--cream); gap: var(--space-2);
+  position: fixed; inset: 0; z-index: 400; display: grid; place-content: center; justify-items: center;
+  background-color: var(--ivory); background-image: var(--paper-grain);
+  color: var(--forest-deep); gap: var(--space-2);
   transition: opacity .8s var(--ease), visibility .8s var(--ease);
 }
 .loader.hidden { opacity: 0; visibility: hidden; }
-.loader-seal { font-family: var(--serif); font-style: italic; font-size: 3rem; color: var(--gold-light); }
-.loader-text { letter-spacing: .3em; text-transform: uppercase; font-size: .72rem; opacity: .7; }
-.loader-pct { font-size: .8rem; color: var(--gold); }
-
-/* SCROLL HINT */
-.scroll-hint {
-  position: fixed; left: 50%; bottom: 2rem; transform: translateX(-50%); z-index: 30;
-  color: var(--cream); text-align: center; transition: opacity .5s var(--ease);
-  font-size: .7rem; letter-spacing: .3em; text-transform: uppercase;
+.loader-mono {
+  font-family: var(--serif); font-style: italic; font-weight: 500;
+  font-size: clamp(3.4rem, 11vw, 5.2rem); line-height: 1; letter-spacing: .06em;
+  background: var(--gold-foil); background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: foilShimmer 2.6s ease-in-out infinite;
 }
-.scroll-hint-arrow { display: block; margin-top: .4rem; font-size: 1.2rem; animation: bob 1.8s var(--ease) infinite; }
-@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+.loader-amp { font-size: .62em; margin: 0 .12em; }
+.loader-flourish {
+  width: 150px; height: 9px; margin-top: .4rem;
+  background:
+    radial-gradient(circle at 50% 50%, var(--gold) 0 1.5px, transparent 2.5px) center/9px 9px no-repeat,
+    linear-gradient(90deg, transparent, var(--gold-deep), transparent) center/100% 1px no-repeat;
+  animation: flourishBreathe 2.6s var(--ease) infinite;
+}
+.loader-text { letter-spacing: .3em; text-transform: uppercase; font-size: .72rem; opacity: .7; }
+@keyframes foilShimmer { 0% { background-position: 110% 0; } 100% { background-position: -110% 0; } }
+@keyframes flourishBreathe { 0%, 100% { transform: scaleX(.72); opacity: .55; } 50% { transform: scaleX(1); opacity: 1; } }
+
+/* INTRO BUTTERFLIES — DOM sprites that pop up over the opening/envelope screen
+   (the card stage is opaque, so the WebGL butterflies can't show there). Each
+   springs up from the bottom, flutters upward on a drifting path, and loops. The
+   whole layer fades out as the card opens (JS ties opacity to scroll). */
+.intro-butterflies { position: fixed; inset: 0; z-index: 20; pointer-events: none; overflow: hidden; transition: opacity .6s var(--ease); }
+.ib-fly {
+  position: absolute; top: 0; left: 0;
+  width: calc(var(--h) * 0.6667); height: var(--h);   /* butterfly art is 2:3 */
+  animation: ibDrift var(--dur) linear var(--delay) infinite;
+  will-change: transform, opacity;
+}
+.ib-wing { display: block; width: 100%; height: 100%; transform-origin: 50% 50%; animation: ibFlap var(--flap) ease-in-out infinite; }
+@keyframes ibDrift {
+  0%   { transform: translate(0,0) scale(.2) rotate(-6deg); opacity: 0; }
+  12%  { transform: translate(calc(var(--tx) * .12), calc(var(--ty) * .12)) scale(1) rotate(4deg); opacity: 1; }
+  55%  { transform: translate(calc(var(--tx) * .6), calc(var(--ty) * .6)) rotate(-4deg); opacity: 1; }
+  85%  { opacity: .9; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(1) rotate(3deg); opacity: 0; }
+}
+@keyframes ibFlap { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(.32); } }
+@media (prefers-reduced-motion: reduce) { .intro-butterflies { display: none; } }
+/* butterflies belong to the soft daylight look — hide them in dark mode */
+:root[data-theme="dark"] .intro-butterflies { display: none; }
+
+/* WEDDING COUNTDOWN — bottom of the opening screen; JS fades it as the card opens.
+   Fixed dark ink so it stays readable on the studio-gray envelope backdrop in either
+   theme (it is not inside the card's re-pinned subtree). */
+.countdown {
+  position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%); z-index: 25;
+  display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  pointer-events: none; text-align: center; transition: opacity .5s var(--ease);
+  opacity: 0;                                   /* hidden until the card's details show */
+  /* frosted glass panel so the numbers stay crisp over the busy forest */
+  padding: .8rem 1.5rem 1rem; border-radius: 18px;
+  background: rgba(255, 255, 255, .58);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  backdrop-filter: blur(16px) saturate(1.15);
+  border: 1px solid rgba(255, 255, 255, .55);
+  box-shadow: 0 10px 34px rgba(40, 40, 30, .22);
+}
+/* light mode: dark text on the frosted-white panel */
+.cd-label { font-family: var(--sans); text-transform: uppercase; letter-spacing: .34em; font-size: .58rem; color: var(--gold-deep); }
+.cd-row { display: flex; align-items: flex-start; gap: .5rem; }
+.cd-unit { display: flex; flex-direction: column; align-items: center; min-width: 2.7rem; }
+.cd-num { font-family: var(--serif); font-weight: 500; font-size: clamp(1.5rem, 4.5vw, 2.1rem); line-height: 1; color: #2c3a31; font-variant-numeric: tabular-nums; }
+.cd-cap { font-family: var(--sans); text-transform: uppercase; letter-spacing: .18em; font-size: .5rem; color: #5c5648; margin-top: .5em; }
+.cd-sep { font-family: var(--serif); font-size: clamp(1.2rem, 3.2vw, 1.7rem); line-height: 1; color: var(--gold-deep); margin-top: .06em; }
+/* dark mode: flip to a frosted-dark panel with light text */
+:root[data-theme="dark"] .countdown {
+  background: rgba(14, 18, 13, .52);
+  border-color: rgba(219, 198, 156, .3);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .5);
+}
+:root[data-theme="dark"] .cd-label { color: var(--gold-light); }
+:root[data-theme="dark"] .cd-num  { color: #f4ede1; }
+:root[data-theme="dark"] .cd-cap  { color: #cabfad; }
+:root[data-theme="dark"] .cd-sep  { color: var(--gold); }
+@media (max-width: 480px) { .cd-unit { min-width: 2.2rem; } .countdown { gap: .35rem; } }
+
+/* SCROLL HINT — an interactive "tap to open" control; clicking it opens the card
+   (same as tapping the envelope). Reacts to hover/press on desktop and touch. */
+.scroll-hint {
+  position: fixed; left: 50%; bottom: 6.2rem; z-index: 30; transform: translateX(-50%);
+  display: inline-flex; flex-direction: column; align-items: center; gap: .55rem;
+  margin: 0; padding: .8rem 1.6rem .9rem; border: 1px solid rgba(255, 255, 255, .55);
+  cursor: pointer;
+  /* frosted pill so the invitation-to-open stands out against the envelope */
+  background: rgba(255, 255, 255, .62);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15); backdrop-filter: blur(12px) saturate(1.15);
+  border-radius: 999px; box-shadow: 0 8px 26px rgba(40, 40, 30, .2);
+  color: var(--forest); font-family: var(--sans); font-weight: 600;
+  font-size: .72rem; letter-spacing: .3em; text-transform: uppercase; text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity .5s var(--ease), transform .35s var(--ease), color .35s var(--ease);
+}
+.scroll-hint:hover, .scroll-hint:focus-visible { color: var(--gold-deep); transform: translateX(-50%) translateY(-3px); }
+.scroll-hint:active { transform: translateX(-50%) translateY(-1px) scale(.96); }
+.scroll-hint:focus { outline: none; }
+
+/* Animated gesture guide: a fingertip taps, then swipes down — the two ways to
+   open the card (tap the envelope / scroll down). Understood without words. */
+.sh-gesture { position: relative; display: block; width: 1.9rem; height: 2.5rem; }
+.sh-finger, .sh-ripple {
+  position: absolute; left: 50%; top: 0;
+  width: .72rem; height: .72rem; border-radius: 50%;
+}
+.sh-finger { background: var(--gold-deep); box-shadow: 0 1px 4px rgba(0,0,0,.25); animation: shTap 2.8s var(--ease) infinite; }
+.sh-ripple { border: 1.5px solid var(--gold); animation: shRipple 2.8s var(--ease) infinite; }
+.scroll-hint:hover .sh-finger, .scroll-hint:hover .sh-ripple { animation-duration: 1.9s; }
+.sh-caption { font-size: .58rem; letter-spacing: .28em; opacity: .85; }
+@keyframes shTap {
+  0%   { transform: translate(-50%, .35rem) scale(1);   opacity: .95; }
+  9%   { transform: translate(-50%, .35rem) scale(.68);  opacity: 1; }   /* press */
+  20%  { transform: translate(-50%, .35rem) scale(1);   opacity: 1; }
+  52%  { transform: translate(-50%, 1.5rem) scale(1);   opacity: .95; }  /* swipe down */
+  66%  { transform: translate(-50%, 2rem)   scale(.9);  opacity: 0; }    /* release + fade */
+  67%  { transform: translate(-50%, .35rem) scale(1);   opacity: 0; }    /* reset (hidden) */
+  84%  { opacity: 0; }
+  100% { transform: translate(-50%, .35rem) scale(1);   opacity: .95; }
+}
+@keyframes shRipple {
+  0%, 6% { transform: translate(-50%, .35rem) scale(1);   opacity: 0; }
+  12%    { opacity: .7; }
+  34%    { transform: translate(-50%, .35rem) scale(2.9); opacity: 0; }
+  100%   { transform: translate(-50%, .35rem) scale(1);   opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sh-finger, .sh-ripple { animation: none; }
+  .sh-finger { transform: translate(-50%, .9rem); }
+}
 
 /* LIGHTBOX */
 .lightbox {
   position: fixed; inset: 0; z-index: 90; display: none; place-content: center;
-  background: rgba(10,18,13,.94); padding: var(--space-4);
+  background: rgba(24,32,27,.94); padding: var(--space-4);
 }
 .lightbox.open { display: grid; }
 .lightbox-body { max-width: 90vw; max-height: 85vh; }
