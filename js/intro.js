@@ -33,6 +33,8 @@
     window.W.filmGate = false;
     if (loader) loader.classList.add("hidden"); // never leave the visitor behind the gate
     try { video.pause(); } catch (e) {}
+    video.muted = true;              // silence the bird once the intro is gone
+    if (cancelGestureUnmute) cancelGestureUnmute(); // drop the pending "unmute on first gesture"
     film.classList.add("done");
     if (window.W.initIntroButterflies) window.W.initIntroButterflies(); // butterflies pop over the envelope
     document.documentElement.style.overflow = "";
@@ -55,8 +57,9 @@
 
   // sound is ON by default; browsers block unmuted autoplay, so if we had to
   // start muted, unmute the instant the visitor first interacts (tap/scroll/key).
-  let gestureArmed = false;
+  let gestureArmed = false, cancelGestureUnmute = null;
   function unmute() {
+    if (dismissed) return;          // never turn sound back on after the intro is gone
     video.muted = false;
     setSoundLabel();
     video.play().catch(() => {}); // resume if unmuting paused it
@@ -65,7 +68,8 @@
     if (gestureArmed || !video.muted) return;
     gestureArmed = true;
     const evs = ["pointerdown", "touchstart", "keydown", "wheel"];
-    const on = () => { evs.forEach((e) => window.removeEventListener(e, on)); unmute(); };
+    const on = () => { cancelGestureUnmute(); unmute(); };
+    cancelGestureUnmute = () => { evs.forEach((e) => window.removeEventListener(e, on)); cancelGestureUnmute = null; };
     evs.forEach((e) => window.addEventListener(e, on, { once: true, passive: true }));
   }
   function attemptSound() {
