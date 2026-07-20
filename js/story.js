@@ -13,14 +13,17 @@
   //  kiss:  the two lines touch here, then part (a meeting before you were a couple)
   //  merge: from here on the lines fuse into one — the start of you two
   //  photo: path to a round photo; empty = a placeholder disc for now
+  //  To preview real photos: drop a file at the photo path below (media/story/<year>.jpg
+  //  by default) and it appears in that milestone's disc — until then the J&G monogram
+  //  shows. Change the caption/year/photo freely; the timeline re-lays-out from this.
   const STORY = [
-    { year: 2002, who: "both",  kiss: true,  caption: "We first met",           photo: "" },
-    { year: 2008, who: "both",  kiss: true,  caption: "Our paths crossed again", photo: "" },
-    { year: 2015, who: "grace", merge: true, caption: "She said yes 💚", photo: "" },
-    { year: 2016, who: "both",               caption: "Our first date",          photo: "" },
-    { year: 2018, who: "both",               caption: "First trip together",     photo: "" },
-    { year: 2022, who: "both",               caption: "A favourite adventure",   photo: "" },
-    { year: 2025, who: "both",               caption: "The proposal 💍", photo: "" },
+    { year: 2002, who: "both",  kiss: true,  caption: "We first met",           photo: "media/story/2002.jpg" },
+    { year: 2008, who: "both",  kiss: true,  caption: "Our paths crossed again", photo: "media/story/2008.jpg" },
+    { year: 2015, who: "grace", merge: true, caption: "She said yes 💚", photo: "media/story/2015.jpg" },
+    { year: 2016, who: "both",               caption: "Our first date",          photo: "media/story/2016.jpg" },
+    { year: 2018, who: "both",               caption: "First trip together",     photo: "media/story/2018.jpg" },
+    { year: 2022, who: "both",               caption: "A favourite adventure",   photo: "media/story/2022.jpg" },
+    { year: 2025, who: "both",               caption: "The proposal 💍", photo: "media/story/2025.jpg" },
   ];
 
   const SVGNS = "http://www.w3.org/2000/svg";
@@ -37,6 +40,24 @@
     return "J & G";
   }
 
+  // Fill a disc: the monogram always sits behind, so a missing/broken photo simply
+  // falls back to it. A real photo (once dropped in) loads on top and covers it.
+  function fillDisc(disc, photo, who) {
+    disc.classList.add("is-empty");
+    const glyph = el("span", "story-disc-glyph");
+    glyph.textContent = initialsFor(who);
+    disc.appendChild(glyph);
+    if (photo) {
+      const img = el("img");
+      img.alt = ""; img.loading = "lazy";
+      img.onload = function () { disc.classList.remove("is-empty"); };
+      img.onerror = function () { this.remove(); }; // keep the monogram showing
+      img.src = photo;
+      disc.appendChild(img);
+    }
+    return disc;
+  }
+
   // one milestone: a round photo (or placeholder disc), a connector tick down/up to
   // the line, the year, and a one-line caption.
   function nodeEl(n) {
@@ -46,18 +67,7 @@
     wrap.style.top = n.anchorY + "px";   // sit on the line; CSS grows the card outward
     wrap.style.setProperty("--tick", Math.abs(n.laneY - n.anchorY) + "px");
 
-    const disc = el("div", "story-disc");
-    if (n.data.photo) {
-      const img = el("img");
-      img.src = n.data.photo; img.alt = ""; img.loading = "lazy";
-      img.onerror = function () { this.remove(); disc.classList.add("is-empty"); };
-      disc.appendChild(img);
-    } else {
-      disc.classList.add("is-empty");
-      const glyph = el("span", "story-disc-glyph");
-      glyph.textContent = initialsFor(n.side);
-      disc.appendChild(glyph);
-    }
+    const disc = fillDisc(el("div", "story-disc"), n.data.photo, n.side);
     const tick = el("span", "story-tick");
     const year = el("span", "story-year"); year.textContent = n.data.year;
     const cap = el("span", "story-caption"); cap.textContent = n.data.caption;
@@ -160,11 +170,7 @@
     const list = el("ol", "story-list");
     STORY.forEach((n) => {
       const li = el("li", "story-list-item");
-      const disc = el("div", "story-disc is-empty");
-      const glyph = el("span", "story-disc-glyph"); glyph.textContent = initialsFor(n.who || "both");
-      disc.appendChild(glyph);
-      if (n.photo) { const img = el("img"); img.src = n.photo; img.alt = ""; img.loading = "lazy";
-        img.onerror = function () { this.remove(); }; disc.classList.remove("is-empty"); disc.appendChild(img); }
+      const disc = fillDisc(el("div", "story-disc"), n.photo, n.who || "both");
       const txt = el("div", "story-list-text");
       const year = el("span", "story-year"); year.textContent = n.year;
       const cap = el("span", "story-caption"); cap.textContent = n.caption;

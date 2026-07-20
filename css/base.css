@@ -191,58 +191,6 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
 :root[data-theme="dark"] .cd-sep  { color: var(--gold); }
 @media (max-width: 480px) { .cd-unit { min-width: 2.2rem; } .countdown { gap: .35rem; } }
 
-/* SCROLL HINT — an interactive "tap to open" control; clicking it opens the card
-   (same as tapping the envelope). Reacts to hover/press on desktop and touch. */
-.scroll-hint {
-  position: fixed; left: 50%; bottom: 6.2rem; z-index: 30; transform: translateX(-50%);
-  display: inline-flex; flex-direction: column; align-items: center; gap: .55rem;
-  margin: 0; padding: .8rem 1.6rem .9rem; border: 1px solid rgba(255, 255, 255, .55);
-  cursor: pointer;
-  /* frosted pill so the invitation-to-open stands out against the envelope */
-  background: rgba(255, 255, 255, .62);
-  -webkit-backdrop-filter: blur(12px) saturate(1.15); backdrop-filter: blur(12px) saturate(1.15);
-  border-radius: 999px; box-shadow: 0 8px 26px rgba(40, 40, 30, .2);
-  color: var(--forest); font-family: var(--sans); font-weight: 600;
-  font-size: .72rem; letter-spacing: .3em; text-transform: uppercase; text-align: center;
-  -webkit-tap-highlight-color: transparent;
-  transition: opacity .5s var(--ease), transform .35s var(--ease), color .35s var(--ease);
-}
-.scroll-hint:hover, .scroll-hint:focus-visible { color: var(--gold-deep); transform: translateX(-50%) translateY(-3px); }
-.scroll-hint:active { transform: translateX(-50%) translateY(-1px) scale(.96); }
-.scroll-hint:focus { outline: none; }
-
-/* Animated gesture guide: a fingertip taps, then swipes down — the two ways to
-   open the card (tap the envelope / scroll down). Understood without words. */
-.sh-gesture { position: relative; display: block; width: 1.9rem; height: 2.5rem; }
-.sh-finger, .sh-ripple {
-  position: absolute; left: 50%; top: 0;
-  width: .72rem; height: .72rem; border-radius: 50%;
-}
-.sh-finger { background: var(--gold-deep); box-shadow: 0 1px 4px rgba(0,0,0,.25); animation: shTap 2.8s var(--ease) infinite; }
-.sh-ripple { border: 1.5px solid var(--gold); animation: shRipple 2.8s var(--ease) infinite; }
-.scroll-hint:hover .sh-finger, .scroll-hint:hover .sh-ripple { animation-duration: 1.9s; }
-.sh-caption { font-size: .58rem; letter-spacing: .28em; opacity: .85; }
-@keyframes shTap {
-  0%   { transform: translate(-50%, .35rem) scale(1);   opacity: .95; }
-  9%   { transform: translate(-50%, .35rem) scale(.68);  opacity: 1; }   /* press */
-  20%  { transform: translate(-50%, .35rem) scale(1);   opacity: 1; }
-  52%  { transform: translate(-50%, 1.5rem) scale(1);   opacity: .95; }  /* swipe down */
-  66%  { transform: translate(-50%, 2rem)   scale(.9);  opacity: 0; }    /* release + fade */
-  67%  { transform: translate(-50%, .35rem) scale(1);   opacity: 0; }    /* reset (hidden) */
-  84%  { opacity: 0; }
-  100% { transform: translate(-50%, .35rem) scale(1);   opacity: .95; }
-}
-@keyframes shRipple {
-  0%, 6% { transform: translate(-50%, .35rem) scale(1);   opacity: 0; }
-  12%    { opacity: .7; }
-  34%    { transform: translate(-50%, .35rem) scale(2.9); opacity: 0; }
-  100%   { transform: translate(-50%, .35rem) scale(1);   opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .sh-finger, .sh-ripple { animation: none; }
-  .sh-finger { transform: translate(-50%, .9rem); }
-}
-
 /* LIGHTBOX */
 .lightbox {
   position: fixed; inset: 0; z-index: 90; display: none; place-content: center;

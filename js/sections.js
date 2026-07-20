@@ -4,14 +4,19 @@
   window.W = window.W || {};
 
   function initSections() {
-    // dummy gallery (swap data-src + add real files to media/gallery/ later)
+    // Masonry gallery. Drop real files at media/gallery/photo-01.jpg … and they show at
+    // their natural height; missing ones fall back to a varied placeholder tile. Add or
+    // remove entries in `shots` to match how many photos the couple has.
     const grid = document.getElementById("galleryGrid");
     if (grid) {
-      const shots = ["01","02","03","04","05","06"];
-      grid.innerHTML = shots.map((n) =>
-        '<button class="gallery-item" data-full="media/gallery/photo-' + n + '.jpg">' +
-        '<img loading="lazy" src="media/gallery/photo-' + n + '.jpg" ' +
-        'onerror="this.style.opacity=.25" alt="Juriel and Grace, photo ' + n + '"></button>'
+      const shots = ["01","02","03","04","05","06","07","08","09"];
+      const ars = ["3/4","4/5","1/1","4/5","3/4","4/3","3/4","1/1","4/5"]; // uneven placeholder heights
+      grid.innerHTML = shots.map((n, i) =>
+        '<button class="gallery-item is-empty" style="--ar:' + ars[i % ars.length] + '" ' +
+        'data-full="media/gallery/photo-' + n + '.jpg">' +
+        '<img loading="lazy" src="media/gallery/photo-' + n + '.jpg" alt="Juriel and Grace, photo ' + n + '" ' +
+        'onload="this.closest(\'.gallery-item\').classList.remove(\'is-empty\')" ' +
+        'onerror="this.remove()"></button>'
       ).join("");
     }
 

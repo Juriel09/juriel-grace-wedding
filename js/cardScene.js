@@ -102,9 +102,6 @@
     window.addEventListener("resize", () => { self.sizeCanvas(); self.render(); });
     // tap/click the closed card to auto-scroll it open (in addition to scrolling)
     if (this.stage) this.stage.addEventListener("click", () => self.openByClick());
-    // the "scroll or tap to open" hint is a shortcut for the same envelope tap
-    const hint = document.getElementById("scrollHint");
-    if (hint) hint.addEventListener("click", () => self.openByClick());
     requestAnimationFrame(function loop() { self.tick(); requestAnimationFrame(loop); });
   };
 
@@ -232,12 +229,6 @@
     // scrolling begins, and offer a pointer cursor while a click will open the card
     if (this.intro) this.intro.style.opacity = String(G.mapRange(p, 0, 0.08, 1, 0, true));
     if (this.stage) this.stage.style.cursor = p < 0.85 ? "pointer" : "";
-    const hint = document.getElementById("scrollHint");
-    if (hint) {
-      const show = p <= 0.02;
-      hint.style.opacity = show ? "1" : "0";
-      hint.style.pointerEvents = show ? "auto" : "none"; // no clicks once it's faded
-    }
   };
 
   // reduced-motion: static open card + details shown immediately, no scrub
@@ -250,8 +241,6 @@
     if (this.canvas) this.canvas.style.opacity = "0";
     if (this.vignette) this.vignette.style.opacity = "0";
     if (this.intro) this.intro.style.display = "none";
-    const hint = document.getElementById("scrollHint");
-    if (hint) hint.style.display = "none"; // card is already open in lite — no hint
     this.doc.style.opacity = "1";
     if (this.still && this.still.complete) self.hideLoader();
     else if (this.still) this.still.addEventListener("load", () => self.hideLoader());
