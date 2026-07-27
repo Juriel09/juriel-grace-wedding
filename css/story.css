@@ -31,12 +31,11 @@
 /* the sliding timeline */
 .story-track { position: absolute; left: 0; top: 50%; will-change: transform; }
 .story-lines { position: absolute; inset: 0; overflow: visible; }
-/* one continuous red string: both lanes and the merged line share the red, so the
-   thread reads as a single unbroken strand from childhood to the proposal */
+/* the two lifelines each ride their own colour, fusing into gold at the merge */
 .story-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.story-line-j    { stroke: var(--red-string); stroke-width: 2.5; }
-.story-line-g    { stroke: var(--red-string); stroke-width: 2.5; }
-.story-line-gold { stroke: var(--red-string-deep); stroke-width: 3.5; }
+.story-line-j    { stroke: var(--forest); stroke-width: 2.5; }
+.story-line-g    { stroke: var(--mocha);  stroke-width: 2.5; }
+.story-line-gold { stroke: var(--gold);   stroke-width: 3.5; }
 
 /* a milestone: photo disc + tick to the line + year + caption. The wrapper sits on
    the line (top = the line point) and grows outward: upward for is-above, down for
@@ -50,33 +49,33 @@
 .story-node.is-above { transform: translate(-50%, -100%); }
 .story-node.in { opacity: 1; translate: 0 0; }
 
-.story-tick { width: 1px; height: var(--tick, 60px); background: linear-gradient(var(--red-string), transparent); }
-.story-node.is-below .story-tick { background: linear-gradient(transparent, var(--red-string)); }
+.story-tick { width: 1px; height: var(--tick, 60px); background: linear-gradient(var(--gold), transparent); }
+.story-node.is-below .story-tick { background: linear-gradient(transparent, var(--gold)); }
 
 .story-disc {
   position: relative;
   width: clamp(64px, min(22vw, 14vh), 104px); aspect-ratio: 1; border-radius: 999px; overflow: hidden;
-  border: 2px solid var(--red-string); background: var(--mint);
+  border: 2px solid var(--gold); background: var(--mint);
   display: grid; place-content: center; flex: none; cursor: pointer;
   box-shadow: 0 8px 26px rgba(60, 79, 67, .18);
   transition: transform .4s var(--ease), box-shadow .4s var(--ease);
 }
-.story-disc:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 30px rgba(143, 56, 47, .28); }
-.story-disc:focus-visible { outline: 2px solid var(--red-string-deep); outline-offset: 3px; }
+.story-disc:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 30px rgba(60, 79, 67, .3); }
+.story-disc:focus-visible { outline: 2px solid var(--gold-deep); outline-offset: 3px; }
 .story-disc img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .story-disc.is-empty { background: radial-gradient(circle at 32% 28%, var(--mint), var(--sage)); }
 .story-disc-glyph {
   font-family: var(--serif); font-style: italic; font-size: 1.1rem; letter-spacing: .04em;
   color: var(--forest-deep); opacity: .8;
 }
-.story-node.is-kiss .story-disc { border-color: var(--red-string-deep); }
-.story-node.is-merge .story-disc { border-width: 3px; box-shadow: 0 8px 30px rgba(143, 56, 47, .32); }
+.story-node.is-kiss .story-disc { border-color: var(--gold-light); }
+.story-node.is-merge .story-disc { border-width: 3px; box-shadow: 0 8px 30px rgba(154, 125, 76, .3); }
 
-/* childhood matched pair: two discs (his + hers) joined by a dashed red string */
+/* childhood matched pair: two discs (his + hers) joined by a dashed connector */
 .story-pair { display: block; }
 .story-pair-string {
   position: absolute; left: 50%; width: 0; transform: translateX(-50%);
-  border-left: 2px dashed var(--red-string); opacity: .7;
+  border-left: 2px dashed var(--gold); opacity: .7;
 }
 .story-pair-disc { position: absolute; left: 50%; transform: translate(-50%, -50%); }
 .story-pair-caption {
@@ -84,21 +83,21 @@
   margin-top: clamp(2.6rem, 8vh, 3.8rem); font-style: italic;
 }
 
-/* a quiet gap in the years (2020–21): a marker sitting on the red string */
+/* a quiet gap in the years: a marker sitting on the line */
 .story-gap { transform: translate(-50%, -50%); flex-direction: column; }
-.story-gap-dots { color: var(--red-string); letter-spacing: .3em; font-size: 1.3rem; opacity: .6; line-height: 1; }
+.story-gap-dots { color: var(--gold); letter-spacing: .3em; font-size: 1.3rem; opacity: .6; line-height: 1; }
 .story-gap-label {
   font-family: var(--sans); font-size: .62rem; letter-spacing: .2em; text-transform: uppercase;
   color: var(--ink-soft); opacity: .75; margin-top: .35rem; white-space: nowrap;
 }
 
-/* faint era captions floating over the track */
+/* era captions floating over the track — legible on both the light and dark ground */
 .story-era {
   position: absolute; z-index: 2; pointer-events: none;
   font-family: var(--sans); text-transform: uppercase; letter-spacing: .3em;
-  font-size: .64rem; color: var(--red-string-deep); opacity: .5; white-space: nowrap;
+  font-size: .64rem; color: var(--gold-deep); opacity: .82; white-space: nowrap;
 }
-.story-era.is-knot { transform: translateX(-50%); opacity: .68; }
+.story-era.is-knot { transform: translateX(-50%); opacity: .9; }
 
 .story-year {
   font-family: var(--sans); font-weight: 500; letter-spacing: .18em; font-size: .82rem;
@@ -135,12 +134,9 @@
 /* ---- dark theme ---- */
 /* .story background uses --ivory-deep, which already flips to night in dark theme —
    do NOT re-point it at --forest-deep (that token is a *light* heading colour in dark). */
-:root[data-theme="dark"] .story-line-j,
-:root[data-theme="dark"] .story-line-g { stroke: #d1685a; }
-:root[data-theme="dark"] .story-line-gold { stroke: #c0564a; }
-:root[data-theme="dark"] .story-disc { border-color: #d1685a; }
-:root[data-theme="dark"] .story-pair-string { border-color: #d1685a; }
-:root[data-theme="dark"] .story-era { color: #d98a7e; }
+:root[data-theme="dark"] .story-line-j { stroke: var(--sage); }
+:root[data-theme="dark"] .story-line-g { stroke: var(--nude); }
+:root[data-theme="dark"] .story-era { color: var(--gold-light); opacity: .9; }
 :root[data-theme="dark"] .story-disc { background: rgba(255, 255, 255, .06); box-shadow: 0 8px 26px rgba(0, 0, 0, .4); }
 :root[data-theme="dark"] .story-disc.is-empty { background: radial-gradient(circle at 32% 28%, #2b352d, #1c241e); }
 :root[data-theme="dark"] .story-disc-glyph { color: var(--mint); }

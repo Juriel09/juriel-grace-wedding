@@ -105,27 +105,23 @@
     requestAnimationFrame(function loop() { self.tick(); requestAnimationFrame(loop); });
   };
 
-  // glide the card fully open (only while it is still closed/opening). Ease-OUT so
-  // the card moves at full speed the instant it's tapped — no dead, motionless
-  // beat that reads as lag — then decelerates into a soft landing on the open card.
+  // glide the card fully open (only while it is still closed/opening). Ease-IN-OUT so
+  // the flap unfurls gently from rest, flows through the middle, and settles softly
+  // onto the open card — an elegant, unhurried open rather than a fast snap.
   CardScene.prototype.openByClick = function () {
     if (this.eased > 0.85) return;
     const target = this.scroll.offsetTop + this.scroll.offsetHeight - window.innerHeight;
-    // easeOutCubic — moves right away (no dead beat) but at a calm pace, easing
-    // into a soft landing on the open card
-    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+    // easeInOutSine — the smoothest of the eases: no abrupt start, no hard stop
+    const easeInOutSine = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
     if (window.__lenis) {
-      // hold the section-snap off while the card glides open, then hand back with
-      // the card marked "revealed & waiting" — so it stays put on the open card and
-      // only the user's next scroll slides the first section in.
       if (window.W.snapLock) window.W.snapLock(true);
       const done = () => {
         if (window.W.snapLock) window.W.snapLock(false);
         if (window.W.cardOpened) window.W.cardOpened();
       };
-      window.__lenis.scrollTo(target, { duration: 3.4, easing: easeOutCubic, onComplete: done });
+      window.__lenis.scrollTo(target, { duration: 5.0, easing: easeInOutSine, onComplete: done });
       clearTimeout(window.__cardOpenT);
-      window.__cardOpenT = setTimeout(done, 3800); // safety: always release the lock
+      window.__cardOpenT = setTimeout(done, 5400); // safety: always release the lock
     } else {
       window.scrollTo({ top: target, behavior: "smooth" });
     }
