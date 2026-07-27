@@ -1,20 +1,19 @@
-# Our Story — timeline photos
+# Our Story — timeline photos (generated)
 
-Drop a photo here named by its **year** and it appears automatically in that
-milestone's round disc on the "Our Story" timeline. Until a file exists, the
-milestone shows the **J & G** monogram instead — so the site always looks complete.
+These folders are **built, not edited by hand**. `tools/build-story.js` reads the
+couple's source photos, makes a square disc crop + full-size album images for each
+milestone, and writes them here as `media/story/<key>/`. It also generates
+`js/storyAlbums.js`, the map `story.js` reads. Missing files fall back to the
+**J & G** monogram, so the timeline always looks complete.
 
-Expected files (square-ish crops look best; they're shown in a circle):
+- Source tree (default): `C:\Users\jurie\Desktop\our_story`
+- Build: `npm run build:story` (options: `--src <dir> --disc 600 --full 1400 --quality 82`)
 
-| File                | Milestone                     |
-| ------------------- | ----------------------------- |
-| `media/story/2002.jpg` | We first met                  |
-| `media/story/2008.jpg` | Our paths crossed again       |
-| `media/story/2015.jpg` | She said yes 💚               |
-| `media/story/2016.jpg` | Our first date                |
-| `media/story/2018.jpg` | First trip together           |
-| `media/story/2022.jpg` | A favourite adventure         |
-| `media/story/2025.jpg` | The proposal 💍              |
+To change which photos appear, their order, or add a new one, edit the `MANIFEST`
+in `tools/build-story.js` (first file in a list becomes that milestone's disc) and
+re-run the build. The narrative text (years, captions, the red-string structure)
+lives in the `STORY` array at the top of `js/story.js`.
 
-To change a milestone's year, caption, or photo path, edit the `STORY` array at the
-top of `js/story.js`. `.png`/`.webp` also work — just match the `photo:` path there.
+Milestone keys: `bike`, `glasses` (childhood matched pairs, his+hers), `2002`,
+`2008` (met / Agham), and one per year `2015`–`2025`. Clicking a disc opens that
+milestone's album in the shared lightbox.

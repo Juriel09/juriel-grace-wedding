@@ -6,6 +6,8 @@
   "scripts": {
     "test": "node --test",
     "optimize:frames": "node tools/optimize-frames.js",
+    "build:gallery": "node tools/build-gallery.js",
+    "build:story": "node tools/build-story.js",
     "transcode:drone": "node tools/transcode-drone.js",
     "extract:card": "node tools/extract-card.js",
     "shoot": "node tools/shoot.js"

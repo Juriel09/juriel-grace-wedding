@@ -224,3 +224,31 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
   position: absolute; top: 1.2rem; right: 1.4rem; background: none; border: 0;
   color: var(--cream); font-size: 2rem; cursor: pointer;
 }
+/* Photo arrows + counter. Absolutely positioned so they stay out of the centering
+   grid, and only shown for `.has-nav` — the film player opens the same box. */
+.lightbox-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  display: none; place-content: center; width: 3rem; height: 3rem;
+  border-radius: 999px; border: 1px solid rgba(255,255,255,.3); cursor: pointer;
+  background: rgba(24,32,27,.45); color: var(--cream);
+  font-size: 2rem; line-height: 1; padding: 0 0 .16em;
+  transition: background .3s var(--ease), border-color .3s var(--ease), color .3s var(--ease);
+}
+.lightbox.has-nav .lightbox-nav { display: grid; }
+.lightbox-nav:hover { background: rgba(24,32,27,.9); border-color: var(--gold); color: var(--gold-light); }
+.lightbox-prev { left: 1.2rem; }
+.lightbox-next { right: 1.2rem; }
+.lightbox-count {
+  position: absolute; left: 0; right: 0; bottom: 1.1rem; margin: 0; display: none;
+  text-align: center; color: var(--cream); opacity: .7;
+  font-size: .7rem; letter-spacing: .3em; text-transform: uppercase;
+}
+.lightbox.has-nav .lightbox-count { display: block; }
+@media (max-width: 720px) {
+  /* leave room for the arrows at the edges and the counter underneath */
+  .lightbox.has-nav .lightbox-body,
+  .lightbox.has-nav .lightbox-body img { max-width: 76vw; max-height: 76vh; }
+  .lightbox-nav { width: 2.4rem; height: 2.4rem; font-size: 1.5rem; }
+  .lightbox-prev { left: .4rem; }
+  .lightbox-next { right: .4rem; }
+}

@@ -87,3 +87,28 @@ test("with no merge flag the lines never fuse to centre at nodes", () => {
   assert.equal(L.mergeIndex, 1);
   assert.equal(L.nodes[0].anchorY, L.topY);
 });
+
+test("pair nodes report a pair side and keep both lanes in place", () => {
+  const L = S.layout({
+    nodes: [{ pair: true, key: "bike" }, { year: 2002, who: "both", kiss: true }, { year: 2015, merge: true }],
+    vw: 1000, vh: 800, gap: 300, padX: 500,
+  });
+  assert.equal(L.nodes[0].side, "pair");
+  assert.equal(L.nodes[0].pair, true);
+  // both lines pass the pair's x in their own lane, not dragged to the centre
+  const j = S.linePoints(L, "juriel"), g = S.linePoints(L, "grace");
+  assert.ok(j.some((p) => p.x === L.nodes[0].x && p.y === L.topY));
+  assert.ok(g.some((p) => p.x === L.nodes[0].x && p.y === L.bottomY));
+});
+
+test("gap nodes are marked and don't shift the merge stagger", () => {
+  const L = S.layout({
+    nodes: [{ year: 2015, merge: true }, { year: 2019, who: "both" }, { gap: true, key: "g" }, { year: 2022, who: "both" }],
+    vw: 1000, vh: 800, gap: 300, padX: 500,
+  });
+  assert.equal(L.nodes[2].gap, true);
+  // 2015 above, 2019 below, gap consumes no parity, 2022 above again
+  assert.equal(L.nodes[0].above, true);
+  assert.equal(L.nodes[1].above, false);
+  assert.equal(L.nodes[3].above, true);
+});

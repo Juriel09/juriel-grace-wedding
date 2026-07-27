@@ -6,19 +6,46 @@
   function initSections() {
     // Masonry gallery. Drop real files at media/gallery/photo-01.jpg … and they show at
     // their natural height; missing ones fall back to a varied placeholder tile. Add or
-    // remove entries in `shots` to match how many photos the couple has.
+    // remove entries in `shots` to match how many photos the couple has (tools/build-gallery.js
+    // writes them, so keep this count in step with that script's SELECTED list).
     const grid = document.getElementById("galleryGrid");
+    const moreBtn = document.getElementById("galleryMore");
+    // The section opens as a tidy 9-tile preview; "see more" unfolds the rest, so the
+    // gallery never dumps 29 photos on a guest who is just passing through.
+    const PREVIEW = 9;
     if (grid) {
-      const shots = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+      const shots = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, "0"));
       // deliberately mixed tile shapes — this is what gives the mosaic its Pinterest
-      // stagger; the couple's photos fill whichever tile they land in
-      const ars = ["3/4","1/1","2/3","4/5","4/3","3/4","2/3","1/1","4/5","3/4","4/3","2/3"];
-      grid.innerHTML = shots.map((n, i) =>
-        '<button class="gallery-item" style="--ar:' + ars[i % ars.length] + '" ' +
-        'data-full="media/gallery/photo-' + n + '.jpg">' +
-        '<img loading="lazy" src="media/gallery/photo-' + n + '.jpg" alt="Juriel and Grace, photo ' + n + '" ' +
-        'onerror="this.remove()"></button>'
-      ).join("");
+      // stagger; the couple's photos fill whichever tile they land in. The source
+      // frames are landscape, so the cycle mixes landscape ratios (3/2, 4/3) with
+      // portrait ones instead of cropping every shot down to a tight portrait tile.
+      const ars = ["3/2","4/5","1/1","2/3","4/3","3/4","3/2","2/3","4/5","1/1","4/3","3/4","3/2","2/3","4/5","1/1"];
+      // Only the 9 preview tiles carry a real `src`. The rest hold their file in
+      // `data-src` and stay off the wire entirely until "see more" is pressed —
+      // a guest who never expands the mosaic downloads 9 photos, not 29.
+      grid.innerHTML = shots.map((n, i) => {
+        const more = i >= PREVIEW;
+        const src = "media/gallery/photo-" + n + ".jpg";
+        return '<button class="gallery-item' + (more ? " is-more" : "") + '" ' +
+          'style="--ar:' + ars[i % ars.length] + '" ' +
+          'data-index="' + i + '" data-full="' + src + '">' +
+          '<img loading="lazy" ' + (more ? 'data-src="' : 'src="') + src + '" ' +
+          'alt="Juriel and Grace, photo ' + n + '" onerror="this.remove()"></button>';
+      }).join("");
+
+      if (moreBtn) {
+        if (shots.length <= PREVIEW) moreBtn.hidden = true;
+        else moreBtn.addEventListener("click", () => {
+          // hand the deferred tiles their src; `loading="lazy"` still keeps the ones
+          // below the fold from fetching until they are scrolled towards.
+          grid.querySelectorAll(".gallery-item.is-more img[data-src]").forEach((img) => {
+            img.src = img.getAttribute("data-src");
+            img.removeAttribute("data-src");
+          });
+          grid.classList.add("show-all");
+          moreBtn.hidden = true;
+        }, { once: true });
+      }
     }
 
     // scroll reveal
@@ -27,19 +54,73 @@
     }, { threshold: 0.15 });
     document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
-    // lightbox
+    // lightbox — doubles as the film player, so the photo arrows only appear when a
+    // gallery tile opened it (`.has-nav`).
     const box = document.getElementById("lightbox");
     const body = document.getElementById("lightboxBody");
+    const counter = document.getElementById("lightboxCount");
     const openBox = (html) => { body.innerHTML = html; box.classList.add("open"); box.setAttribute("aria-hidden", "false"); };
-    const shut = () => { box.classList.remove("open"); body.innerHTML = ""; box.setAttribute("aria-hidden", "true"); };
+    const shut = () => {
+      box.classList.remove("open", "has-nav"); body.innerHTML = ""; box.setAttribute("aria-hidden", "true");
+      tour = []; at = -1;
+    };
     document.getElementById("lightboxClose").addEventListener("click", shut);
     box.addEventListener("click", (e) => { if (e.target === box) shut(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") shut(); });
+
+    // The arrows walk every photo in the gallery, not just the 9 in the preview — once
+    // a guest is looking at one frame there is no reason to stop them at the fold.
+    let tour = [];   // full-size srcs, in mosaic order
+    let at = -1;     // which one is on screen
+
+    const show = (i) => {
+      if (!tour.length) return;
+      at = (i + tour.length) % tour.length;                 // wrap at both ends
+      body.innerHTML = '<img src="' + tour[at] + '" alt="Juriel and Grace, photo ' + (at + 1) + '">';
+      if (counter) counter.textContent = (at + 1) + " / " + tour.length;
+      // warm the neighbours so a click on the arrow feels instant
+      [at + 1, at - 1].forEach((j) => {
+        const src = tour[(j + tour.length) % tour.length];
+        if (src) { const pre = new Image(); pre.src = src; }
+      });
+    };
+    const step = (d) => { if (box.classList.contains("has-nav")) show(at + d); };
+
+    document.getElementById("lightboxPrev").addEventListener("click", () => step(-1));
+    document.getElementById("lightboxNext").addEventListener("click", () => step(1));
+    document.addEventListener("keydown", (e) => {
+      if (!box.classList.contains("open")) return;
+      if (e.key === "Escape") shut();
+      else if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "ArrowRight") step(1);
+    });
+
+    // swipe, for the phones this site mostly gets viewed on
+    let touchX = null;
+    box.addEventListener("touchstart", (e) => { touchX = e.changedTouches[0].clientX; }, { passive: true });
+    box.addEventListener("touchend", (e) => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(dx) > 45) step(dx < 0 ? 1 : -1);
+    }, { passive: true });
 
     if (grid) grid.addEventListener("click", (e) => {
       const item = e.target.closest(".gallery-item"); if (!item) return;
-      openBox('<img src="' + item.getAttribute("data-full") + '" alt="">');
+      tour = Array.from(grid.querySelectorAll(".gallery-item")).map((el) => el.getAttribute("data-full"));
+      box.classList.add("has-nav");
+      openBox("");
+      show(Number(item.getAttribute("data-index")) || 0);
     });
+
+    // Shared opener so other sections (Our Story) can reuse this one lightbox and its
+    // arrow/swipe tour instead of standing up a second one.
+    window.W.openLightbox = (srcs, start) => {
+      if (!srcs || !srcs.length) return;
+      tour = srcs.slice();
+      box.classList.add("has-nav");
+      openBox("");
+      show(start || 0);
+    };
 
     const film = document.getElementById("filmPlay");
     if (film) film.addEventListener("click", () =>

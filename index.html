@@ -124,6 +124,7 @@
       <h2 class="section-title">Our Gallery</h2>
       <div class="flourish"></div>
       <div class="gallery-grid" id="galleryGrid"></div>
+      <button class="gallery-more" id="galleryMore">See more</button>
     </section>
 
     <section id="film" class="section section-film reveal">
@@ -175,7 +176,10 @@
 
   <div class="lightbox" id="lightbox" aria-hidden="true">
     <button class="lightbox-close" id="lightboxClose" aria-label="Close">×</button>
+    <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous photo">‹</button>
     <div class="lightbox-body" id="lightboxBody"></div>
+    <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next photo">›</button>
+    <p class="lightbox-count" id="lightboxCount" aria-live="polite"></p>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
@@ -187,6 +191,7 @@
   <script src="js/lib/preloader.js"></script>
   <script src="js/cardScene.js"></script>
   <script src="js/sections.js"></script>
+  <script src="js/storyAlbums.js"></script>
   <script src="js/story.js"></script>
   <script src="js/router.js"></script>
   <script src="js/theme.js"></script>

@@ -74,6 +74,17 @@
       const x = padX + i * gap;
       const side = n.who || "both";
       let anchorY, laneY, above;
+      // Childhood "matched pair": a disc on each lane at this x, joined by the red
+      // string. Rendering reads topY/bottomY; it consumes no merge-stagger parity.
+      if (n.pair) {
+        return { data: n, index: i, x: x, side: "pair", pair: true, kiss: false,
+                 anchorY: centerY, laneY: centerY, above: true };
+      }
+      // A quiet gap in the years (2020–21): no disc, just a marker on the line.
+      if (n.gap) {
+        return { data: n, index: i, x: x, side: "gap", gap: true, kiss: false,
+                 anchorY: centerY, laneY: centerY, above: true };
+      }
       if (i >= mergeIndex) {                 // merged: alternate above/below the gold line
         above = (mergedSeen % 2 === 0);
         anchorY = centerY;

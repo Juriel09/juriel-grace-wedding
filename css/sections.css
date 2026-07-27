@@ -38,6 +38,33 @@
 }
 :root[data-theme="dark"] .gallery-item:hover { box-shadow: 0 12px 28px rgba(0, 0, 0, .55); }
 
+/* The mosaic opens as a 9-tile preview; "see more" drops the rest in. `display:none`
+   (not visibility) so the hidden tiles take no space in the multicol flow. */
+.gallery-item.is-more { display: none; }
+.gallery-grid.show-all .gallery-item.is-more { display: block; animation: tileIn .6s var(--ease) both; }
+@keyframes tileIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .gallery-grid.show-all .gallery-item.is-more { animation: none; } }
+/* The 9-tile preview is still taller than one screen, so the button would sit below
+   the fold and never be seen. Sticky pins it near the bottom of the viewport for as
+   long as the gallery is on screen, floating over the mosaic on its own frosted pill. */
+.gallery-more {
+  /* the offset is measured from the sticky containing block, which sits ~24px above
+     the viewport floor here — hence the larger-than-it-looks value */
+  position: sticky; bottom: clamp(2.5rem, 7vh, 4rem); z-index: 3;
+  align-self: center; margin-top: var(--space-3); cursor: pointer;
+  padding: .75em 2.2em; border-radius: 999px; border: 1px solid var(--gold);
+  background: rgba(253, 251, 246, .82); backdrop-filter: blur(6px); color: var(--olive);
+  box-shadow: 0 6px 22px rgba(60, 79, 67, .18);
+  font-family: var(--sans); font-size: .75rem; letter-spacing: .28em; text-transform: uppercase;
+  transition: background .35s var(--ease), color .35s var(--ease), transform .35s var(--ease);
+}
+.gallery-more:hover { background: var(--gold-foil); color: var(--forest-deep); transform: translateY(-2px); }
+:root[data-theme="dark"] .gallery-more {
+  background: rgba(24, 32, 27, .78); color: var(--gold-light);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .5);
+}
+.gallery-more[hidden] { display: none; }
+
 .film-poster {
   position: relative; width: min(880px, 92%); aspect-ratio: 16/9; margin: var(--space-4) auto 0;
   border: 1px solid var(--gold); border-radius: 4px; cursor: pointer;
