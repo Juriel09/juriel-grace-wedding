@@ -61,6 +61,12 @@
     </nav>
   </header>
 
+  <!-- background music: a vinyl-record toggle, sits just above the theme button -->
+  <audio id="bgMusic" src="media/audio/bg-music.mp3" loop preload="auto"></audio>
+  <button class="music-toggle" id="musicToggle" type="button" aria-pressed="false" aria-label="Turn music on">
+    <span class="vinyl" aria-hidden="true"></span>
+  </button>
+
   <!-- persistent floating theme toggle — visible on every section -->
   <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
     <span class="theme-toggle-icon theme-icon-sun" aria-hidden="true">☀</span>
@@ -195,6 +201,7 @@
   <script src="js/story.js"></script>
   <script src="js/router.js"></script>
   <script src="js/theme.js"></script>
+  <script src="js/music.js"></script>
   <script src="js/three-scene.js"></script>
   <script src="js/main.js"></script>
   <script src="js/introButterflies.js"></script>

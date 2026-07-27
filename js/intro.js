@@ -20,7 +20,11 @@
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   // Reduced motion, or a shared deep link (/#gallery …) — the visitor asked for a
   // specific section, so don't make them sit through the opening film.
-  if (reduce || window.W.deepLink) { film.style.display = "none"; return; } // loader stays frame-driven
+  if (reduce || window.W.deepLink) {
+    film.style.display = "none";
+    window.dispatchEvent(new CustomEvent("jg:intro-done")); // let the music start right away
+    return; // loader stays frame-driven
+  }
 
   window.W.filmGate = true; // claim the loader (cardScene.hideLoader defers to us)
   let dismissed = false, started = false;
@@ -44,6 +48,7 @@
     if (window.__lenis) { window.__lenis.scrollTo(0, { immediate: true }); window.__lenis.start(); }
     film.addEventListener("transitionend", () => { film.style.display = "none"; }, { once: true });
     setTimeout(() => { film.style.display = "none"; }, 1400); // fallback if no transitionend
+    window.dispatchEvent(new CustomEvent("jg:intro-done")); // cue the background music
   }
 
   video.addEventListener("ended", dismiss);

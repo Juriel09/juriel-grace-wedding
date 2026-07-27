@@ -58,7 +58,9 @@
     // vh here is the height actually available to the timeline (below the headline),
     // so short/landscape screens get a proportionally shorter band rather than clipping
     const band = opts.band != null ? opts.band : clamp(Math.min(vh * 0.62, 380), 150, 420);
-    const gap = opts.gap != null ? opts.gap : clamp(vw * 0.6, 240, 440);
+    // spacing between milestones — snug enough that several read as one flowing
+    // timeline rather than one-per-screen islands, but wide enough that captions clear
+    const gap = opts.gap != null ? opts.gap : clamp(vw * 0.34, 190, 300);
     const padX = opts.padX != null ? opts.padX : vw / 2;
     const centerY = band / 2;
     const laneGap = band * 0.17;   // how far the two lanes sit from centre
