@@ -18,7 +18,15 @@
   flex: none; z-index: 3; padding: clamp(3.2rem, 9vh, 6.5rem) 1rem 0;
   text-align: center; pointer-events: none; transition: opacity .4s var(--ease);
 }
-.story-viewport { position: relative; flex: 1; min-height: 0; width: 100%; }
+/* `pan-y` keeps vertical scrolling with the browser and reserves the horizontal
+   gesture for the swipe handler in story.js; without it the browser claims the
+   sideways drag and the timeline never moves. */
+.story-viewport {
+  position: relative; flex: 1; min-height: 0; width: 100%;
+  touch-action: pan-y; cursor: grab;
+}
+.story-viewport.is-dragging { cursor: grabbing; user-select: none; }
+.story-viewport.is-dragging .story-disc { pointer-events: none; }
 .story-head .eyebrow {
   font-family: var(--sans); text-transform: uppercase; letter-spacing: .45em;
   font-size: .72rem; color: var(--olive); margin: 0 0 .5rem;

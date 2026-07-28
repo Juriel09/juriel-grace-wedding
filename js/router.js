@@ -34,6 +34,9 @@
   function jumpTo(id, immediate) {
     const t = el(id);
     if (!t) return;
+    // a deliberate jump past the card lifts the card scene's scroll gate, or it
+    // would haul the visitor back to the envelope
+    if (window.W.cardOpened) window.W.cardOpened();
     const y = t.getBoundingClientRect().top + window.scrollY;
     if (window.__lenis) window.__lenis.scrollTo(y, immediate ? { immediate: true } : { duration: 1.2 });
     else if (immediate) window.scrollTo(0, y);

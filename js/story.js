@@ -215,6 +215,64 @@
     this.apply(false);
   };
 
+  // Swipe/drag the timeline sideways.
+  //   The pan is 1:1 with page scroll (panX = -progress * pinScroll, and
+  //   progress = scrolledIntoScene / pinScroll), so a horizontal drag of N px is
+  //   simply N px of vertical scroll — dragging left walks the years forward.
+  //   Vertical scrolling is untouched: `touch-action: pan-y` hands the browser the
+  //   up/down gesture and keeps the sideways one for us, and Lenis only listens for
+  //   vertical gestures so the two never fight.
+  StoryScene.prototype.initSwipe = function () {
+    const self = this;
+    const el = this.viewport || this.stage;
+    if (!el || !window.PointerEvent) return;
+
+    const scrollBy = (dy) => {
+      const l = window.__lenis;
+      if (l) l.scrollTo(l.animatedScroll + dy, { immediate: true, force: true });
+      else window.scrollTo(0, window.pageYOffset + dy);
+    };
+
+    let dragging = false, lastX = 0, travelled = 0;
+    const DEAD = 6;   // px before a drag counts as a drag rather than a tap
+
+    el.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      dragging = true; lastX = e.clientX; travelled = 0;
+      el.classList.add("is-dragging");
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+
+    el.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      if (!dx) return;
+      lastX = e.clientX;
+      travelled += Math.abs(dx);
+      if (travelled > DEAD && e.cancelable) e.preventDefault();
+      scrollBy(-dx);                       // drag left → story moves forward
+    });
+
+    const release = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove("is-dragging");
+      try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+      // a drag must not also open the disc it happened to start on
+      self.dragged = travelled > DEAD;
+      if (self.dragged) setTimeout(() => { self.dragged = false; }, 0);
+    };
+    el.addEventListener("pointerup", release);
+    el.addEventListener("pointercancel", release);
+
+    // trackpad / horizontal wheel — a sideways two-finger swipe pans the years too
+    el.addEventListener("wheel", (e) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;   // vertical: leave it to Lenis
+      e.preventDefault();
+      scrollBy(e.deltaX);
+    }, { passive: false });
+  };
+
   // open a disc's album in the shared lightbox (built in sections.js)
   StoryScene.prototype.openDisc = function (disc) {
     const key = disc.getAttribute("data-key");
@@ -232,8 +290,11 @@
     window.__story = this;
     this.build();
 
+    this.initSwipe();
+
     // discs open their album — attached to the persistent track, so it survives rebuilds
     this.track.addEventListener("click", (e) => {
+      if (self.dragged) return;                  // that click was the end of a swipe
       const disc = e.target.closest(".story-disc"); if (disc) self.openDisc(disc);
     });
     this.track.addEventListener("keydown", (e) => {
@@ -243,6 +304,7 @@
 
     const skip = document.getElementById("storySkip");
     if (skip) skip.addEventListener("click", () => {
+      if (window.W.cardOpened) window.W.cardOpened();  // deliberate jump — lift the card gate
       const g = document.getElementById("gallery");
       if (window.__lenis && g) window.__lenis.scrollTo(g, { duration: 1.2 });
       else if (g) g.scrollIntoView({ behavior: "smooth" });

@@ -1,6 +1,13 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-html { scroll-behavior: auto; } /* Lenis handles smoothing */
+html {
+  scroll-behavior: auto; /* Lenis handles smoothing */
+  /* Reserve the scrollbar's gutter permanently. Without this, hiding the scrollbar
+     for the intro (below) widens the page by ~15px on Windows/Linux, and showing it
+     again narrows it — a layout jump right at the card→drone hand-off, which read as
+     a stutter in the drone section. With a stable gutter the width never changes. */
+  scrollbar-gutter: stable;
+}
 /* hide the native scrollbar during the intro (scroll still works) */
 html.intro { scrollbar-width: none; -ms-overflow-style: none; }
 html.intro::-webkit-scrollbar { width: 0; height: 0; display: none; }

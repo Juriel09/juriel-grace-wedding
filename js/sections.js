@@ -138,47 +138,69 @@
       vio.observe(document.getElementById("drone"));
     }
 
-    // Drone parallax — the drone video drifts a little slower than the page for depth.
     // (Section snapping and the mobile flick-to-next navigation were removed so
     // scrolling is fully natural on every device; the hooks below stay as no-ops so
-    // their callers in cardScene/router keep working.)
+    // their callers in cardScene/router keep working. `cardOpened` is a real hook —
+    // cardScene owns it, so it is deliberately NOT stubbed here.)
     window.W.snapLock = function () {};
-    window.W.cardOpened = function () {};
     window.W.snapSyncFromScroll = function () {};
 
+    // Drone parallax + nav state, on one rAF.
+    //   Both of these used to run off scroll events and read getBoundingClientRect()
+    //   every time — a forced synchronous layout per event, on top of Lenis's own
+    //   per-frame work. That is what made the drone section stutter. Offsets are now
+    //   measured once (and on resize) and the transform is written a single time per
+    //   frame, so scrolling never triggers a layout.
+    const nav = document.getElementById("nav");
     const droneSec = document.getElementById("drone");
     const droneVid = document.getElementById("droneVideo");
-    const parallax = () => {
-      if (!droneSec || !droneVid) return;
-      const top = droneSec.getBoundingClientRect().top;
-      droneVid.style.transform = "translate3d(0," + (top * -0.12) + "px,0) scale(1.25)";
-    };
-    if (window.__lenis) window.__lenis.on("scroll", parallax);
-    else window.addEventListener("scroll", parallax, { passive: true });
-    window.addEventListener("resize", parallax);
-    parallax();
-
-    // nav: hidden for the whole card/envelope scene, slides in only once the first
-    // non-card section takes over the viewport (card end-state stays nav-free).
-    const nav = document.getElementById("nav");
     const cardScroll = document.getElementById("cardScroll");
-    const afterCard = document.getElementById("drone"); // first section past the card
-    const onScroll = () => {
-      let past;
-      if (afterCard) past = afterCard.getBoundingClientRect().top <= window.innerHeight * 0.5;
-      else if (cardScroll) past = window.scrollY >= cardScroll.offsetHeight - window.innerHeight;
-      else past = window.scrollY > 80;
-      document.body.classList.toggle("nav-visible", past);
-      document.documentElement.classList.toggle("intro", !past); // hide scrollbar during intro
-      nav.classList.toggle("scrolled", past);
+
+    let handoffTop = 0;
+    const measure = () => {
+      // offsetTop is layout-relative, so it is stable regardless of scroll position
+      handoffTop = droneSec ? droneSec.offsetTop
+                 : cardScroll ? cardScroll.offsetHeight
+                 : 0;
     };
-    window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+    measure();
+    window.addEventListener("resize", measure);
+    window.addEventListener("load", measure);
+
+    let lastY = -1, navOn = null;
+    const frame = () => {
+      const y = window.pageYOffset;
+      if (y !== lastY) {
+        lastY = y;
+        const dist = handoffTop - y;            // drone section's distance from the top
+        if (droneVid) {
+          // snap to a tenth of a pixel: raw sub-pixel values make the video shimmer
+          const shift = Math.round(dist * -0.12 * 10) / 10;
+          droneVid.style.transform = "translate3d(0," + shift + "px,0) scale(1.25)";
+        }
+        // nav: hidden for the whole card/envelope scene, slides in once the first
+        // non-card section takes over. The two thresholds give it hysteresis — with a
+        // single one, a hair of scroll flipped the class back and forth, and since
+        // `.intro` hides the scrollbar that re-flowed the page on every flip.
+        const past = navOn ? dist <= window.innerHeight * 0.58
+                           : dist <= window.innerHeight * 0.5;
+        if (past !== navOn) {
+          navOn = past;
+          document.body.classList.toggle("nav-visible", past);
+          document.documentElement.classList.toggle("intro", !past);
+          if (nav) nav.classList.toggle("scrolled", past);
+        }
+      }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
     document.querySelectorAll("[data-jump]").forEach((a) => a.addEventListener("click", (e) => {
       const id = a.getAttribute("data-jump");
       const map = { intro: "#top", story: "#story", gallery: "#gallery", film: "#film",
                     entourage: "#entourage", rsvp: "#rsvp" };
       const t = document.querySelector(map[id] || "#top"); if (!t) return;
       e.preventDefault();
+      if (window.W.cardOpened) window.W.cardOpened(); // lift the card gate for a deliberate jump
       if (window.__lenis) window.__lenis.scrollTo(t, { duration: 1.4 });
       else t.scrollIntoView({ behavior: "smooth" });
     }));

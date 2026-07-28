@@ -81,10 +81,13 @@
     window.W.cardFrameAspect = this.v.fw / this.v.fh; // so the countdown can sit on the card's bottom edge
     if (this.still) this.still.src = this.v.still;   // swap in the matching still
     this.eased = 0; this.target = 0; this.lastIdx = -1;
+    this.opened = false;  // the card has finished opening at least once — gate is done
+    this.armed = false;   // we have actually been inside the scene (not a deep link)
   }
 
   CardScene.prototype.init = function () {
     const self = this;
+    window.__card = this;          // same debugging convention as window.__story
     this.doc.innerHTML = DOC_HTML;
     this.pre = new window.W.Preloader({
       count: this.v.count, path: this.v.path,
@@ -97,6 +100,11 @@
     });
     this.pre.start();
     setTimeout(() => self.hideLoader(), 15000); // safety
+
+    // Anything that jumps the page on purpose (nav links, deep links, "skip our
+    // story") lifts the gate — it exists to stop a flick overshooting the scrub, not
+    // to trap someone who asked to be somewhere else.
+    window.W.cardOpened = function () { self.opened = true; };
 
     this.sizeCanvas();
     window.addEventListener("resize", () => { self.sizeCanvas(); self.render(); });
@@ -166,10 +174,36 @@
     return G.clamp(-rect.top / total, 0, 1);
   };
 
+  // where the pinned scene lets go of the viewport
+  CardScene.prototype.sceneEnd = function () {
+    return this.scroll.offsetTop + this.scroll.offsetHeight - window.innerHeight;
+  };
+
+  // Scroll gate. The scrub is smoothed (`eased` chases `target`), so a hard wheel
+  // flick moves the *page* to the end of the scene long before the *card* has
+  // finished opening — the envelope then unpins and slides away still sealed, which
+  // is the "it doesn't lock in" problem. The gate holds the page at the end of the
+  // scene until the card has actually opened, then releases for good.
+  CardScene.prototype.gate = function () {
+    if (this.opened || document.body.classList.contains("lite")) return;
+    const end = this.sceneEnd();
+    const l = window.__lenis;
+    const y = l ? l.animatedScroll : window.pageYOffset;
+    if (y <= end + 1) { this.armed = true; return; }  // still inside the scene
+    if (!this.armed) { this.opened = true; return; }  // deep link / restored scroll — never gate
+    if (this.eased >= 0.995) { this.opened = true; return; }
+    // hold the line, and drop the momentum Lenis has already banked so the page
+    // does not lurch forward the instant the gate lifts
+    if (l) { l.targetScroll = end; l.animatedScroll = end; l.velocity = 0; }
+    window.scrollTo(0, end);
+  };
+
   CardScene.prototype.tick = function () {
+    this.gate();
     this.target = this.progress();
     this.eased += (this.target - this.eased) * 0.09;        // smoothing
     if (Math.abs(this.target - this.eased) < 0.0002) this.eased = this.target;
+    if (this.eased >= 0.995) this.opened = true;
     this.render();
   };
 
