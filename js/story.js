@@ -227,20 +227,28 @@
     const el = this.viewport || this.stage;
     if (!el || !window.PointerEvent) return;
 
-    const scrollBy = (dy) => {
-      const l = window.__lenis;
-      if (l) l.scrollTo(l.animatedScroll + dy, { immediate: true, force: true });
-      else window.scrollTo(0, window.pageYOffset + dy);
-    };
+    const at = () => (window.__lenis ? window.__lenis.animatedScroll : window.pageYOffset);
 
-    let dragging = false, lastX = 0, travelled = 0;
-    const DEAD = 6;   // px before a drag counts as a drag rather than a tap
+    // A sideways gesture belongs to the timeline, so it stays inside the timeline.
+    // The pinned range runs from where .story-scroll starts to pinScroll past it;
+    // clamping to that means a swipe at either end simply stops, instead of
+    // spilling over and carrying the page down into the gallery.
+    const panTo = (y) => {
+      const here = at();
+      const top = self.scroll.getBoundingClientRect().top + here;
+      const t = Math.max(top, Math.min(y, top + self.pinScroll));
+      if (t === here) return;
+      if (window.__lenis) window.__lenis.scrollTo(t, { immediate: true, force: true });
+      else window.scrollTo(0, t);
+    };
+    const panBy = (dy) => panTo(at() + dy);
+
+    let dragging = false, active = false, lastX = 0, travelled = 0;
+    const DEAD = 6;   // px of travel before a gesture is a drag rather than a tap
 
     el.addEventListener("pointerdown", (e) => {
       if (e.pointerType === "mouse" && e.button !== 0) return;
-      dragging = true; lastX = e.clientX; travelled = 0;
-      el.classList.add("is-dragging");
-      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      dragging = true; active = false; lastX = e.clientX; travelled = 0;
     });
 
     el.addEventListener("pointermove", (e) => {
@@ -249,18 +257,30 @@
       if (!dx) return;
       lastX = e.clientX;
       travelled += Math.abs(dx);
-      if (travelled > DEAD && e.cancelable) e.preventDefault();
-      scrollBy(-dx);                       // drag left → story moves forward
+      if (!active) {
+        if (travelled <= DEAD) return;
+        // Only now is this a drag. Capturing the pointer (and disabling the discs)
+        // on pointerdown made every tap behave like one: capture re-targets the
+        // click to the capture element, so it never reached the disc underneath.
+        active = true;
+        el.classList.add("is-dragging");
+        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      }
+      if (e.cancelable) e.preventDefault();
+      panBy(-dx);                          // drag left → story walks forward
     });
 
     const release = (e) => {
       if (!dragging) return;
       dragging = false;
-      el.classList.remove("is-dragging");
-      try { el.releasePointerCapture(e.pointerId); } catch (_) {}
-      // a drag must not also open the disc it happened to start on
-      self.dragged = travelled > DEAD;
-      if (self.dragged) setTimeout(() => { self.dragged = false; }, 0);
+      if (active) {
+        active = false;
+        el.classList.remove("is-dragging");
+        try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+        // the click that ends a drag must not also open a disc
+        self.dragged = true;
+        setTimeout(() => { self.dragged = false; }, 0);
+      }
     };
     el.addEventListener("pointerup", release);
     el.addEventListener("pointercancel", release);
@@ -269,7 +289,7 @@
     el.addEventListener("wheel", (e) => {
       if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;   // vertical: leave it to Lenis
       e.preventDefault();
-      scrollBy(e.deltaX);
+      panBy(e.deltaX);
     }, { passive: false });
   };
 
