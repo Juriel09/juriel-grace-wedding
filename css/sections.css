@@ -65,13 +65,208 @@
 }
 .gallery-more[hidden] { display: none; }
 
-.film-poster {
-  position: relative; width: min(880px, 92%); aspect-ratio: 16/9; margin: var(--space-4) auto 0;
-  border: 1px solid var(--gold); border-radius: 4px; cursor: pointer;
-  background: linear-gradient(135deg, var(--forest), var(--forest-deep)); color: var(--gold-light);
-  display: grid; place-content: center;
+/* ---- The Film: two tabs (The Proposal / Prenup), one full-bleed stage ----
+   The whole control is a self-contained dark chip with literal colours. Theme tokens
+   are avoided on purpose here: --forest-deep and friends flip to *light* values in the
+   night palette, which is exactly what made the labels disappear. A dark chip reads
+   deliberately on ivory and at night alike. */
+.film-tabs {
+  align-self: center; display: inline-flex; gap: .25rem; padding: .3rem;
+  margin-top: var(--space-3); border-radius: 999px;
+  border: 1px solid var(--gold); background: rgba(23, 29, 24, .92);
+  box-shadow: 0 8px 26px rgba(23, 29, 24, .25);
 }
-.film-play { font-size: 2rem; width: 4rem; height: 4rem; border: 1px solid var(--gold); border-radius: 999px; display: grid; place-content: center; }
+.film-tab {
+  cursor: pointer; padding: .75em 1.9em; border: 0; border-radius: 999px;
+  background: transparent; color: #ece7d9;
+  font-family: var(--sans); font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
+  white-space: nowrap;
+  transition: background .3s var(--ease), color .3s var(--ease);
+}
+.film-tab:hover { background: rgba(219, 198, 156, .18); color: #fff; }
+.film-tab.is-active { background: var(--gold-foil); color: #23291f; }
+.film-tab:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+
+/* prev / next over the film itself. Deliberately small — the tabs are the primary
+   control; these are a quiet nudge. sections.js hides whichever one has nowhere to go,
+   so at either end there is only ever one arrow on screen. */
+.film-arrow {
+  position: absolute; top: 50%; translate: 0 -50%; z-index: 2; cursor: pointer;
+  width: 1.9rem; height: 1.9rem; display: grid; place-content: center; padding: 0 0 .12em;
+  border: 1px solid rgba(219, 198, 156, .45); border-radius: 999px;
+  background: rgba(23, 29, 24, .38); backdrop-filter: blur(4px);
+  color: var(--gold-light); font-size: 1rem; line-height: 1; opacity: .8;
+  transition: background .3s var(--ease), color .3s var(--ease), opacity .3s var(--ease);
+}
+.film-arrow:hover { background: rgba(23, 29, 24, .75); border-color: var(--gold-light); color: #fff; opacity: 1; }
+.film-arrow:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 3px; opacity: 1; }
+.film-arrow[hidden] { display: none; }   /* nothing to step to in that direction */
+.film-arrow-prev { left: clamp(.5rem, 1.6vw, 1.1rem); }
+.film-arrow-next { right: clamp(.5rem, 1.6vw, 1.1rem); }
+/* which film you are on, for when the tabs have scrolled off the top. Kept at the top
+   of the stage: the bottom belongs to the video's own control bar. */
+.film-now {
+  position: absolute; left: 50%; translate: -50% 0; top: 1rem; z-index: 2; margin: 0;
+  padding: .45em 1.2em; border-radius: 999px; pointer-events: none;
+  background: rgba(23, 29, 24, .55); backdrop-filter: blur(6px); color: var(--gold-light);
+  font-family: var(--sans); font-size: .62rem; letter-spacing: .22em; text-transform: uppercase;
+}
+
+/* Break out of the section's max-width and side padding so the film runs edge to edge
+   on phones and desktops alike. `calc(50% - 50vw)` re-centres the 100vw block inside
+   whatever column the section happens to be. */
+/* Letterbox colours are deliberately literal, not tokens: a film sits in the dark in
+   both themes, and --forest/--forest-deep flip to *light* values in the night palette. */
+/* The stage owns the height, not the footage. Both films letterbox into the same fixed
+   box, so switching tabs never makes the page jump — whatever the two clips' aspect
+   ratios turn out to be. 56.25vw is 16:9 of the full width, floored so a phone still
+   gets a watchable band and capped so it always fits on screen. */
+.film-stage {
+  position: relative; width: 100vw; margin: var(--space-4) 0 0 calc(50% - 50vw);
+  height: clamp(240px, 56.25vw, 80vh);
+  background: #171d18;
+}
+.film-panel { position: absolute; inset: 0; }
+.film-panel[hidden] { display: none; }
+.film-panel video {
+  display: block; width: 100%; height: 100%;
+  object-fit: contain; background: #171d18;
+}
+/* placeholder shown until the couple's file is dropped in (or if it fails to load) */
+.film-missing {
+  display: grid; place-content: center; gap: .8rem; width: 100%; height: 100%;
+  color: var(--gold-light); font-family: var(--sans); font-size: .74rem;
+  letter-spacing: .24em; text-transform: uppercase; text-align: center; padding: 0 1.5rem;
+  background: linear-gradient(135deg, #26302a, #171d18);
+}
+.film-play { font-size: 2rem; width: 4rem; height: 4rem; margin: 0 auto; border: 1px solid var(--gold); border-radius: 999px; display: grid; place-content: center; }
+
+/* ---- The Place & Attire ----
+   Two halves of one question: where to be, and what to wear. Each half is labelled by
+   the question it answers rather than numbered — they happen at once, not in sequence. */
+.details-cols {
+  display: grid; grid-template-columns: 1.05fr .95fr; gap: var(--space-5);
+  margin-top: var(--space-4); width: 100%; text-align: left; align-items: start;
+}
+/* Both halves sit on a frosted paper panel. The painted pine backdrop is a fixed canvas
+   behind every section, and small type — the swatch names especially — disappears into
+   it. The blur-over-ivory material is already the site's own (the toggles, the story
+   cue, the film badge all use it), so the panels read as part of the set. */
+.detail {
+  padding: var(--space-4); border-radius: 6px;
+  border: 1px solid rgba(191, 163, 114, .38);
+  background: rgba(248, 243, 234, .78); backdrop-filter: blur(10px);
+  box-shadow: 0 10px 34px rgba(60, 79, 67, .10);
+}
+.detail-label {
+  font-family: var(--sans); text-transform: uppercase; letter-spacing: .42em;
+  font-size: .66rem; color: var(--olive); margin: 0 0 var(--space-2);
+}
+.detail-venue, .detail-code {
+  font-family: var(--serif); font-weight: 500; font-style: italic;
+  font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1.05;
+  color: var(--forest-deep); margin: 0 0 .5rem;
+}
+
+/* The map is a foreign object in a hand-painted world, so it sits behind glass: muted
+   by default, waking to full colour when you reach for it. */
+/* capped so the map stays a reference, not the main event, once the columns stack */
+.detail-map {
+  position: relative; aspect-ratio: 4/3; max-height: 400px; margin-bottom: var(--space-3);
+  border: 1px solid var(--gold); border-radius: 4px; overflow: hidden;
+  background: var(--mint); box-shadow: 0 10px 30px rgba(60, 79, 67, .16);
+}
+.detail-map iframe {
+  display: block; width: 100%; height: 100%; border: 0;
+  filter: saturate(.65) contrast(.95) sepia(.14);
+  transition: filter .6s var(--ease);
+}
+.detail-map:hover iframe, .detail-map:focus-within iframe { filter: none; }
+
+.detail-address, .detail-when {
+  font-family: var(--serif); font-size: 1.08rem; color: var(--ink); margin: 0 0 .3rem; line-height: 1.5;
+}
+.detail-when { color: var(--ink-soft); }
+/* one primary way to navigate, one quiet alternative */
+.detail-actions {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: var(--space-2); margin-top: var(--space-3);
+}
+.detail-alt {
+  font-family: var(--sans); font-size: .68rem; letter-spacing: .1em;
+  color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid transparent;
+  transition: color .3s var(--ease), border-color .3s var(--ease);
+}
+.detail-alt:hover { color: var(--gold-deep); border-bottom-color: var(--gold); }
+.detail-alt:focus-visible { outline: 2px solid var(--gold-deep); outline-offset: 3px; }
+
+.detail-directions {
+  display: inline-block;
+  padding: .7em 1.6em; border: 1px solid var(--gold); border-radius: 999px;
+  color: var(--gold-deep); font-family: var(--sans);
+  font-size: .7rem; letter-spacing: .22em; text-transform: uppercase; text-decoration: none;
+  transition: background .35s var(--ease), color .35s var(--ease), transform .35s var(--ease);
+}
+.detail-directions:hover { background: var(--gold-foil); color: #23291f; transform: translateY(-2px); }
+.detail-directions:focus-visible { outline: 2px solid var(--gold-deep); outline-offset: 3px; }
+
+.detail-note {
+  font-family: var(--serif); font-size: 1.08rem; line-height: 1.6; color: var(--ink);
+  max-width: 38ch; margin: 0 0 var(--space-4); text-wrap: balance;
+}
+
+/* Signature: the swatches hang from a hairline gold rail like fabric samples, picking
+   up the string that carries Our Story. Chip colours are literal hex on purpose — a
+   fabric colour is a fact about the day and must not flip with the theme. */
+/* Never wraps: the rail is a single line across the top, so a chip on a second row
+   would hang from nothing. The five share the width evenly and the names wrap instead. */
+.swatches {
+  position: relative; list-style: none; padding: var(--space-3) 0 0; margin: 0;
+  display: flex; flex-wrap: nowrap; gap: clamp(.35rem, 1.2vw, .8rem);
+}
+.swatches::before {                       /* the rail */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--gold), transparent);
+}
+.swatch { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .55rem; }
+.swatch-chip {
+  position: relative; width: clamp(38px, 7vw, 52px); height: clamp(52px, 9.5vw, 72px);
+  border-radius: 3px 3px 26px 26px;       /* squared at the rail, soft where it falls */
+  background: var(--c); box-shadow: 0 0 0 1px rgba(191, 163, 114, .5), 0 6px 16px rgba(60, 79, 67, .18);
+  transition: transform .4s var(--ease), box-shadow .4s var(--ease);
+}
+.swatch-chip::before {                    /* the thread up to the rail */
+  content: ""; position: absolute; left: 50%; top: calc(-1 * var(--space-3)); width: 1px;
+  height: var(--space-3); background: var(--gold);
+}
+.swatch:hover .swatch-chip { transform: translateY(3px); box-shadow: 0 0 0 1px var(--gold), 0 10px 22px rgba(60, 79, 67, .28); }
+.swatch-name {
+  font-family: var(--sans); font-size: .58rem; letter-spacing: .08em; line-height: 1.35;
+  text-transform: uppercase; color: var(--ink); text-align: center;
+}
+
+/* Stacked: the two panels run the full width of the screen rather than sitting inside
+   the section's side padding — on a phone that padding plus the card's own left barely
+   half the width for content. Centred, too: it matches the site's narrow-screen rhythm
+   and keeps "Get directions" out of the bottom-left corner, where the fixed music and
+   theme toggles float over the page. */
+@media (max-width: 900px) {
+  .details-cols {
+    grid-template-columns: 1fr; gap: var(--space-4); text-align: center;
+    width: 100vw; margin-left: calc(50% - 50vw);
+  }
+  .detail {
+    padding: var(--space-3) var(--space-2);
+    border-radius: 0; border-left: 0; border-right: 0;
+  }
+  .detail-note { max-width: 46ch; margin-left: auto; margin-right: auto; }
+  .swatches { justify-content: center; }
+  .detail-actions { justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-map iframe, .swatch-chip, .detail-directions { transition: none; }
+  .swatch:hover .swatch-chip { transform: none; }
+}
 
 .entourage-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-top: var(--space-4); }
 .entourage-cols h3 { color: var(--olive); font-size: 1.2rem; margin-bottom: .4em; }
@@ -101,7 +296,6 @@
 .drone-title { font-family: var(--serif); font-weight: 500; font-size: clamp(2.8rem, 9vw, 6rem); line-height: 1; color: #fff; margin: 0; text-shadow: 0 4px 34px rgba(0,0,0,.55); }
 .drone-title .amp { font-style: italic; }
 .drone-rule { display: block; width: 90px; height: 1px; margin: 1.4rem auto; background: linear-gradient(90deg, transparent, var(--gold-light), transparent); }
-.drone-sub { font-family: var(--serif); font-size: clamp(1.05rem, 2.6vw, 1.5rem); letter-spacing: .14em; color: var(--cream); margin: 0; text-shadow: 0 2px 20px rgba(0,0,0,.55); }
 
 .footer { position: relative; height: 60vh; display: grid; place-content: center; text-align: center; overflow: hidden; background: var(--forest-deep); }
 .footer-overlay { position: relative; z-index: 1; color: var(--cream); }

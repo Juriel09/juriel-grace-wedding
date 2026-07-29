@@ -1,12 +1,15 @@
-/* "Our Story" — a pinned timeline that pans sideways through the years.
-   .story-scroll is a tall wrapper; .story-stage pins to it; .story-track (as wide as
-   the whole timeline) slides left as you scroll. Height of the wrapper is set by JS
-   so the pan is 1:1 with scrolling. */
+/* "Our Story" — a one-screen timeline you swipe sideways through the years.
+   .story-scroll is exactly one viewport tall (height set by story.js), .story-stage
+   fills it, and .story-track (as wide as the whole timeline) slides left with your
+   finger. Scrolling is deliberately NOT wired to the pan: scroll straight down and the
+   page carries on past Our Story. */
 .story { position: relative; background: var(--ivory-deep); }
 .story::before { /* faint paper grain, matching the rest of the site */
   content: ""; position: absolute; inset: 0; background: var(--paper-grain); opacity: .5; pointer-events: none;
 }
-.story-scroll { position: relative; }              /* height set inline by story.js */
+/* one viewport, always — owned by CSS rather than JS so the section can never
+   collapse if a measurement lands before the viewport has a size */
+.story-scroll { position: relative; height: 100vh; }
 .story-stage {
   position: sticky; top: 0; height: 100vh; overflow: hidden;
   display: flex; flex-direction: column;
@@ -118,16 +121,23 @@
 /* above the line the text reads above the disc, so flip the vertical margins */
 .story-node.is-above .story-year { margin: .15rem 0 .55rem; }
 
-/* Skip pill — bottom-right of the pinned stage */
-.story-skip {
-  position: absolute; right: 1.15rem; bottom: 1.4rem; z-index: 4; cursor: pointer;
-  padding: .6em 1.25em; border: 1px solid var(--gold); border-radius: 999px;
-  background: rgba(248, 243, 234, .6); backdrop-filter: blur(6px);
-  color: var(--gold-deep); font-family: var(--sans); letter-spacing: .12em;
-  text-transform: uppercase; font-size: .68rem;
-  transition: background .3s var(--ease), transform .3s var(--ease);
+/* Swipe cue — bottom-left. Since scrolling no longer moves the years, this is the
+   only thing telling anyone the timeline is draggable; it retires the moment they
+   swipe (.has-panned, set by story.js). */
+/* centred, because bottom-left belongs to the music + theme toggles */
+.story-hint {
+  position: absolute; left: 50%; translate: -50% 0; bottom: 1.55rem; z-index: 4; margin: 0;
+  pointer-events: none; color: var(--gold-deep);
+  font-family: var(--sans); letter-spacing: .2em; text-transform: uppercase; font-size: .66rem;
+  opacity: .85; transition: opacity .5s var(--ease), transform .5s var(--ease);
+  animation: story-hint-nudge 2.6s var(--ease) infinite;
 }
-.story-skip:hover { background: rgba(248, 243, 234, .9); transform: translateY(-1px); }
+.story.has-panned .story-hint { opacity: 0; transform: translateX(-8px); animation: none; }
+@keyframes story-hint-nudge {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(-7px); }
+}
+@media (prefers-reduced-motion: reduce) { .story-hint { animation: none; } }
 
 /* ---- reduced-motion / very small: a plain vertical list, no pin ---- */
 .story--lite .story-stage { position: static; height: auto; display: block; overflow: visible; padding: var(--space-6) var(--space-3); }
@@ -148,12 +158,11 @@
 :root[data-theme="dark"] .story-disc { background: rgba(255, 255, 255, .06); box-shadow: 0 8px 26px rgba(0, 0, 0, .4); }
 :root[data-theme="dark"] .story-disc.is-empty { background: radial-gradient(circle at 32% 28%, #2b352d, #1c241e); }
 :root[data-theme="dark"] .story-disc-glyph { color: var(--mint); }
-:root[data-theme="dark"] .story-skip { background: rgba(18, 22, 15, .5); border-color: var(--gold-light); color: var(--gold-light); }
-:root[data-theme="dark"] .story-skip:hover { background: rgba(30, 38, 28, .7); }
+:root[data-theme="dark"] .story-hint { color: var(--gold-light); }
 
 @media (max-width: 720px) {
   .story-caption { font-size: 1rem; }
-  .story-skip { right: .8rem; bottom: 1rem; }
+  .story-hint { bottom: 1.15rem; font-size: .6rem; letter-spacing: .16em; }
 }
 /* short viewports (landscape phones): tighten the headline and labels so the
    milestones still fit in the height left over below the title */

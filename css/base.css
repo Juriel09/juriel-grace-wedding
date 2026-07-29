@@ -78,13 +78,19 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
   border: 1px solid var(--gold); border-radius: 999px;
   padding: .5rem 1.1rem; color: var(--gold-deep) !important; opacity: 1 !important;
 }
-/* Phones: the bar carries a monogram + 4 links, so tighten it down rather than let
+/* "Place & Attire" is the longest label in the bar; on phones it shortens to "Place"
+   so the row still fits without scrolling. */
+.nav-short { display: none; }
+
+/* Phones: the bar carries a monogram + 5 links, so tighten it down rather than let
    a link wrap onto two lines (which collided with the monogram). */
 @media (max-width: 720px) {
   .nav { padding: var(--space-2); }
   .nav-monogram { font-size: 1.15rem; }
   .nav-links { gap: var(--space-2); }
   .nav-links a { font-size: .66rem; letter-spacing: .1em; }
+  .nav-long { display: none; }
+  .nav-short { display: inline; }
   .nav-cta { padding: .42rem .8rem; }
 }
 @media (max-width: 480px) {
