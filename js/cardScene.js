@@ -83,6 +83,7 @@
     this.eased = 0; this.target = 0; this.lastIdx = -1;
     this.opened = false;  // the card has finished opening at least once — gate is done
     this.armed = false;   // we have actually been inside the scene (not a deep link)
+    this.firstDrawn = false; // the closed envelope has been painted; the loader may lift
   }
 
   CardScene.prototype.init = function () {
@@ -91,7 +92,8 @@
     this.doc.innerHTML = DOC_HTML;
     this.pre = new window.W.Preloader({
       count: this.v.count, path: this.v.path,
-      onFirst: () => { self.sizeCanvas(); self.draw(0); },
+      // frame 0 is the closed envelope — once it is painted the stage is worth seeing
+      onFirst: () => { self.sizeCanvas(); self.draw(0); self.firstDrawn = true; },
       onProgress: (p) => {
         const el = document.getElementById("loaderPct");
         if (el) el.textContent = Math.round(p * 100) + "%";
@@ -99,7 +101,9 @@
       onDone: () => self.hideLoader(),
     });
     this.pre.start();
-    setTimeout(() => self.hideLoader(), 15000); // safety
+    // Last resort only. hideLoader() normally refuses to lift before the envelope is
+    // painted, so this forces it rather than leaving anyone stuck behind the loader.
+    setTimeout(() => self.hideLoader(true), 15000);
 
     // Anything that jumps the page on purpose (nav links, deep links, "skip our
     // story") lifts the gate — it exists to stop a flick overshooting the scrub, not
@@ -135,8 +139,13 @@
     }
   };
 
-  CardScene.prototype.hideLoader = function () {
+  // The loader is a promise that something is being prepared, so it must never lift
+  // onto an empty stage. Unless forced (the 15s safety, or the reduced-motion path
+  // where a still image stands in for the canvas), it waits for the envelope's first
+  // frame to be drawn.
+  CardScene.prototype.hideLoader = function (force) {
     if (window.W.filmGate) return; // the opening film owns the loader until it starts
+    if (!this.firstDrawn && !force) return;
     const l = document.getElementById("loader"); if (l) l.classList.add("hidden");
   };
 
@@ -272,9 +281,11 @@
     if (this.vignette) this.vignette.style.opacity = "0";
     if (this.intro) this.intro.style.display = "none";
     this.doc.style.opacity = "1";
-    if (this.still && this.still.complete) self.hideLoader();
-    else if (this.still) this.still.addEventListener("load", () => self.hideLoader());
-    setTimeout(() => self.hideLoader(), 6000);
+    // here the still stands in for the canvas, so it — not a drawn frame — is what the
+    // loader waits on; hence the forced lift once it has landed.
+    if (this.still && this.still.complete) self.hideLoader(true);
+    else if (this.still) this.still.addEventListener("load", () => self.hideLoader(true));
+    setTimeout(() => self.hideLoader(true), 6000);
   };
 
   window.W.CardScene = CardScene;

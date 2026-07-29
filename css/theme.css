@@ -13,6 +13,14 @@
   /* gold stays as-is; it pops on dark */
 }
 
+/* The monogram is fixed artwork — deep forest, olive and mocha on transparent. The
+   deep-forest J all but vanishes against the night ground, so the mark is lifted rather
+   than recoloured, keeping the three inks in their true relationship. Brightness is
+   multiplicative, so it is kept low: push it much past this and the olive G blows out
+   to acid green while the J is still catching up. */
+:root[data-theme="dark"] .nav-monogram img,
+:root[data-theme="dark"] .loader-mono img { filter: brightness(1.5) saturate(.85); }
+
 /* body background already uses --ivory + --paper-grain, so it flips automatically.
    Smooth the change. */
 body { transition: background-color .6s var(--ease), color .6s var(--ease); }
@@ -86,7 +94,26 @@ body { transition: background-color .6s var(--ease), color .6s var(--ease); }
 :root[data-theme="dark"] .rsvp-form textarea {
   background: rgba(255,255,255,.06); color: var(--ink); border-color: rgba(175,191,170,.3);
 }
-:root[data-theme="dark"] .film-poster { background: linear-gradient(135deg, #26302a, #171d18); }
+/* (The Film needs no dark overrides: its tabs, arrows and letterbox are all built
+   from literal dark values so they read the same in both palettes.) */
+
+/* The Place & Attire at night: the map is dimmed further so a bright daylight tile
+   doesn't glare out of the dark page — it still wakes to full colour on hover. The
+   swatch colours themselves never change; they describe real cloth. */
+:root[data-theme="dark"] .detail {
+  background: rgba(18, 22, 15, .58); border-color: rgba(219, 198, 156, .32);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .38);
+}
+:root[data-theme="dark"] .detail-map {
+  background: #1c241e; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+}
+:root[data-theme="dark"] .detail-map iframe { filter: saturate(.6) brightness(.72) contrast(.95); }
+:root[data-theme="dark"] .detail-map:hover iframe,
+:root[data-theme="dark"] .detail-map:focus-within iframe { filter: none; }
+:root[data-theme="dark"] .detail-directions { color: var(--gold-light); border-color: var(--gold-light); }
+:root[data-theme="dark"] .detail-directions:hover { color: #23291f; }
+:root[data-theme="dark"] .detail-alt:hover { color: var(--gold-light); border-bottom-color: var(--gold-light); }
+:root[data-theme="dark"] .swatch-chip { box-shadow: 0 0 0 1px rgba(219, 198, 156, .55), 0 6px 16px rgba(0, 0, 0, .45); }
 
 /* The card art is always the light ivory card, so text sitting ON it must keep the
    original dark ink/forest/gold — NOT the dark-mode light overrides. Re-pin the

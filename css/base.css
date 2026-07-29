@@ -70,7 +70,11 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0; line-height
 }
 body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
 .nav.scrolled { background: rgba(248,243,234,.9); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(175,191,170,.35); }
-.nav-monogram { font-family: var(--serif); font-size: 1.4rem; color: var(--forest-deep); letter-spacing: .1em; flex: none; white-space: nowrap; }
+/* The couple's real monogram, in place of the "J & G" this used to set in type.
+   media/art/monogram.png is trimmed to the ink, so height here is the mark's real
+   height (it is portrait, roughly 3:4). */
+.nav-monogram { flex: none; display: block; line-height: 0; }
+.nav-monogram img { display: block; height: 2.2rem; width: auto; }
 .nav-links { display: flex; gap: var(--space-3); align-items: center; }
 .nav-links a { font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--forest-deep); opacity: .85; white-space: nowrap; }
 .nav-links a:hover { opacity: 1; color: var(--olive); }
@@ -78,18 +82,24 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
   border: 1px solid var(--gold); border-radius: 999px;
   padding: .5rem 1.1rem; color: var(--gold-deep) !important; opacity: 1 !important;
 }
-/* Phones: the bar carries a monogram + 4 links, so tighten it down rather than let
+/* "Place & Attire" is the longest label in the bar; on phones it shortens to "Place"
+   so the row still fits without scrolling. */
+.nav-short { display: none; }
+
+/* Phones: the bar carries a monogram + 5 links, so tighten it down rather than let
    a link wrap onto two lines (which collided with the monogram). */
 @media (max-width: 720px) {
   .nav { padding: var(--space-2); }
-  .nav-monogram { font-size: 1.15rem; }
+  .nav-monogram img { height: 1.9rem; }
   .nav-links { gap: var(--space-2); }
   .nav-links a { font-size: .66rem; letter-spacing: .1em; }
+  .nav-long { display: none; }
+  .nav-short { display: inline; }
   .nav-cta { padding: .42rem .8rem; }
 }
 @media (max-width: 480px) {
   .nav { padding: .6rem .7rem; gap: .5rem; }
-  .nav-monogram { font-size: 1rem; letter-spacing: .03em; }
+  .nav-monogram img { height: 1.7rem; }
   /* if five links still can't fit, let the row scroll sideways instead of colliding */
   .nav-links {
     gap: .6rem; min-width: 0; overflow-x: auto;
@@ -141,14 +151,9 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
   transition: opacity .8s var(--ease), visibility .8s var(--ease);
 }
 .loader.hidden { opacity: 0; visibility: hidden; }
-.loader-mono {
-  font-family: var(--serif); font-style: italic; font-weight: 500;
-  font-size: clamp(3.4rem, 11vw, 5.2rem); line-height: 1; letter-spacing: .06em;
-  background: var(--gold-foil); background-size: 220% 100%;
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: foilShimmer 2.6s ease-in-out infinite;
-}
-.loader-amp { font-size: .62em; margin: 0 .12em; }
+/* the couple's own mark, breathing gently in time with the flourish below it */
+.loader-mono { line-height: 0; animation: monoBreathe 2.6s var(--ease) infinite; }
+.loader-mono img { display: block; height: clamp(5.5rem, 19vw, 8.5rem); width: auto; }
 .loader-flourish {
   width: 150px; height: 9px; margin-top: .4rem;
   background:
@@ -157,8 +162,11 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
   animation: flourishBreathe 2.6s var(--ease) infinite;
 }
 .loader-text { letter-spacing: .3em; text-transform: uppercase; font-size: .72rem; opacity: .7; }
-@keyframes foilShimmer { 0% { background-position: 110% 0; } 100% { background-position: -110% 0; } }
+@keyframes monoBreathe { 0%, 100% { opacity: .84; transform: scale(.985); } 50% { opacity: 1; transform: scale(1); } }
 @keyframes flourishBreathe { 0%, 100% { transform: scaleX(.72); opacity: .55; } 50% { transform: scaleX(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .loader-mono, .loader-flourish { animation: none; opacity: 1; }
+}
 
 /* INTRO BUTTERFLIES — DOM sprites that pop up over the opening/envelope screen
    (the card stage is opaque, so the WebGL butterflies can't show there). Each

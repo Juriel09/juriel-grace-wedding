@@ -45,17 +45,20 @@
   </div>
 
   <div id="loader" class="loader">
-    <div class="loader-mono" aria-hidden="true"><span>J</span><span class="loader-amp">&amp;</span><span>G</span></div>
+    <div class="loader-mono" aria-hidden="true"><img src="media/art/monogram.png" alt="" /></div>
     <div class="loader-flourish" aria-hidden="true"></div>
     <div class="loader-text">preparing your invitation</div>
   </div>
 
   <header class="nav" id="nav">
-    <a class="nav-monogram" href="#top" data-jump="intro">J&nbsp;&amp;&nbsp;G</a>
+    <a class="nav-monogram" href="#top" data-jump="intro" aria-label="Juriel &amp; Grace — back to the top">
+      <img src="media/art/monogram.png" alt="" />
+    </a>
     <nav class="nav-links">
       <a href="#story" data-jump="story">Our Story</a>
       <a href="#gallery" data-jump="gallery">Gallery</a>
       <a href="#film" data-jump="film">Film</a>
+      <a href="#details" data-jump="details"><span class="nav-long">Place &amp; Attire</span><span class="nav-short">Place</span></a>
       <a href="#entourage" data-jump="entourage">Entourage</a>
       <a href="#rsvp" class="nav-cta" data-jump="rsvp">RSVP</a>
     </nav>
@@ -106,7 +109,6 @@
         <p class="drone-eyebrow">we're getting married</p>
         <h2 class="drone-title"><span>Juriel</span> <span class="amp foil">&amp;</span> <span>Grace</span></h2>
         <span class="drone-rule" aria-hidden="true"></span>
-        <p class="drone-sub">November 11, 2026 · The Forest Barn, Alfonso, Cavite</p>
       </div>
     </section>
 
@@ -120,7 +122,7 @@
           <div class="story-viewport">
             <div class="story-track" id="storyTrack"></div>
           </div>
-          <button class="story-skip" id="storySkip" type="button">Skip our story &rsaquo;</button>
+          <p class="story-hint" id="storyHint">&lsaquo;&nbsp; Drag or swipe left</p>
         </div>
       </div>
     </section>
@@ -134,12 +136,81 @@
     </section>
 
     <section id="film" class="section section-film reveal">
-      <p class="eyebrow">our prenup</p>
+      <p class="eyebrow">our films</p>
       <h2 class="section-title">The Film</h2>
       <div class="flourish"></div>
-      <button class="film-poster" id="filmPlay" aria-label="Play prenup film">
-        <span class="film-play">▶</span>
-      </button>
+
+      <div class="film-tabs" role="tablist" aria-label="Our films">
+        <button class="film-tab is-active" type="button" role="tab" id="filmTabProposal"
+                aria-controls="filmPanelProposal" aria-selected="true" data-film="proposal">The Proposal</button>
+        <button class="film-tab" type="button" role="tab" id="filmTabPrenup"
+                aria-controls="filmPanelPrenup" aria-selected="false" tabindex="-1" data-film="prenup">Prenup</button>
+      </div>
+
+      <!-- full-bleed on every screen: the panels break out of the section's max-width -->
+      <div class="film-stage">
+        <div class="film-panel is-active" id="filmPanelProposal" role="tabpanel"
+             aria-labelledby="filmTabProposal" data-src="media/video/proposal.mp4"
+             data-poster="media/video/proposal-poster.jpg"></div>
+        <div class="film-panel" id="filmPanelPrenup" role="tabpanel" aria-labelledby="filmTabPrenup" hidden
+             data-src="media/video/prenup.mp4" data-poster="media/video/prenup-poster.jpg"></div>
+        <button class="film-arrow film-arrow-prev" id="filmPrev" type="button" aria-label="Previous film" hidden>&lsaquo;</button>
+        <button class="film-arrow film-arrow-next" id="filmNext" type="button" aria-label="Next film">&rsaquo;</button>
+        <p class="film-now" id="filmNow" aria-live="polite">The Proposal</p>
+      </div>
+    </section>
+
+    <!-- The Place & Attire.
+         PLACEHOLDERS to replace with the couple's real details, marked [like this]:
+         the ceremony time and the dress code. The street address came from the venue's
+         own Maps listing — worth confirming. The dress code
+         and the swatch names are a starting point — the five colours are the site's own
+         palette, so changing one here should change it in css/tokens.css too. -->
+    <section id="details" class="section section-details reveal">
+      <p class="eyebrow">the day itself</p>
+      <h2 class="section-title">The Place &amp; Attire</h2>
+      <div class="flourish"></div>
+
+      <div class="details-cols">
+        <article class="detail detail-place">
+          <p class="detail-label">where</p>
+          <div class="detail-map">
+            <iframe src="https://www.google.com/maps?q=The%20Forest%20Barn%2C%20Alfonso%2C%20Cavite&amp;output=embed"
+                    title="Map to The Forest Barn, Alfonso, Cavite"
+                    loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+          <h3 class="detail-venue">The Forest Barn</h3>
+          <p class="detail-address">Kaysuyo Road &middot; Alfonso, Cavite</p>
+          <p class="detail-when">November 11, 2026 &middot; 3:00 PM</p>
+          <!-- Google Maps is the primary action; Waze sits beside it for the guests who
+               drive with it. The waze.com/ul link opens the app when it's installed and
+               falls back to Waze's own web map when it isn't. -->
+          <div class="detail-actions">
+            <a class="detail-directions"
+               href="https://www.google.com/maps/dir/?api=1&amp;destination=The%20Forest%20Barn%2C%20Alfonso%2C%20Cavite"
+               target="_blank" rel="noopener">Get directions &rsaquo;</a>
+            <a class="detail-alt"
+               href="https://waze.com/ul?q=The%20Forest%20Barn%2C%20Alfonso%2C%20Cavite&amp;navigate=yes"
+               target="_blank" rel="noopener">or open in Waze</a>
+          </div>
+        </article>
+
+        <article class="detail detail-attire">
+          <p class="detail-label">what to wear</p>
+          <h3 class="detail-code">[Garden Formal]</h3>
+          <p class="detail-note">
+            We're marrying among the trees &mdash; dress beautifully, and wear shoes you
+            can walk the grounds in.
+          </p>
+          <ul class="swatches">
+            <li class="swatch"><span class="swatch-chip" style="--c:#3c4f43"></span><span class="swatch-name">Deep Forest</span></li>
+            <li class="swatch"><span class="swatch-chip" style="--c:#85966e"></span><span class="swatch-name">Olive</span></li>
+            <li class="swatch"><span class="swatch-chip" style="--c:#afbfaa"></span><span class="swatch-name">Soft Sage</span></li>
+            <li class="swatch"><span class="swatch-chip" style="--c:#b7ada2"></span><span class="swatch-name">Soft Mocha</span></li>
+            <li class="swatch"><span class="swatch-chip" style="--c:#d9c6b2"></span><span class="swatch-name">Muted Nude</span></li>
+          </ul>
+        </article>
+      </div>
     </section>
 
     <section id="entourage" class="section section-entourage reveal">

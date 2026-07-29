@@ -9,7 +9,8 @@
   "use strict";
   window.W = window.W || {};
 
-  const IDS = ["drone", "story", "gallery", "film", "entourage", "rsvp"];
+  // document order — currentId() walks this backwards to find the section under the probe
+  const IDS = ["drone", "story", "gallery", "film", "details", "entourage", "rsvp"];
   const clean = (h) => String(h || "").replace(/^#/, "").trim().toLowerCase();
   const el = (id) => document.getElementById(id);
 

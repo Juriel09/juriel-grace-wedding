@@ -122,11 +122,77 @@
       show(start || 0);
     };
 
-    const film = document.getElementById("filmPlay");
-    if (film) film.addEventListener("click", () =>
-      // Replace src with the couple's real film (file or YouTube/Vimeo embed).
-      openBox('<video src="media/video/prenup.mp4" controls autoplay playsinline style="max-width:90vw;max-height:85vh"></video>')
-    );
+    // The Film — two tabs over one full-bleed stage: The Proposal, then the prenup.
+    //   Each panel names its own file in data-src; the <video> is only created when the
+    //   tab is first opened, so the second film costs nothing until it is asked for.
+    //   Switching tabs pauses the one you are leaving — two soundtracks at once is the
+    //   one thing this section must never do.
+    const filmTabs = Array.prototype.slice.call(document.querySelectorAll(".film-tab"));
+    if (filmTabs.length) {
+      const mountFilm = (panel) => {
+        if (panel.dataset.mounted) return;
+        panel.dataset.mounted = "1";
+        const v = document.createElement("video");
+        v.src = panel.getAttribute("data-src");
+        v.poster = panel.getAttribute("data-poster") || "";
+        v.controls = true; v.playsInline = true; v.preload = "metadata";
+        // no file yet (or a bad path): fall back to a placeholder rather than a
+        // broken black box, so the section still reads as finished
+        v.addEventListener("error", () => {
+          v.remove();
+          const ph = document.createElement("div");
+          ph.className = "film-missing";
+          ph.innerHTML = '<span class="film-play">▶</span><span>film coming soon</span>';
+          panel.appendChild(ph);
+        });
+        panel.appendChild(v);
+      };
+
+      const now = document.getElementById("filmNow");
+      const prev = document.getElementById("filmPrev");
+      const next = document.getElementById("filmNext");
+      const showFilm = (tab) => {
+        filmTabs.forEach((t) => {
+          const on = t === tab;
+          const panel = document.getElementById(t.getAttribute("aria-controls"));
+          t.classList.toggle("is-active", on);
+          t.setAttribute("aria-selected", String(on));
+          t.tabIndex = on ? 0 : -1;
+          if (!panel) return;
+          panel.hidden = !on;
+          panel.classList.toggle("is-active", on);
+          if (on) mountFilm(panel);
+          else { const v = panel.querySelector("video"); if (v) v.pause(); }
+        });
+        if (now) now.textContent = tab.textContent.trim();
+        // an arrow with nowhere to go is not shown at all, rather than shown and dead
+        const i = filmTabs.indexOf(tab);
+        if (prev) prev.hidden = i <= 0;
+        if (next) next.hidden = i >= filmTabs.length - 1;
+      };
+      // step to the neighbouring film; the ends are hard stops, not a carousel
+      const stepFilm = (dir) => {
+        const i = filmTabs.findIndex((t) => t.classList.contains("is-active"));
+        const t = filmTabs[i + dir];
+        if (t) showFilm(t);
+      };
+
+      filmTabs.forEach((t, i) => {
+        t.addEventListener("click", () => showFilm(t));
+        // left/right keys move between tabs, stopping at the ends like the arrows do
+        t.addEventListener("keydown", (e) => {
+          if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+          e.preventDefault();
+          const to = filmTabs[i + (e.key === "ArrowRight" ? 1 : -1)];
+          if (to) { showFilm(to); to.focus(); }
+        });
+      });
+
+      if (prev) prev.addEventListener("click", () => stepFilm(-1));
+      if (next) next.addEventListener("click", () => stepFilm(1));
+
+      showFilm(filmTabs[0]);   // The Proposal opens first
+    }
 
     // drone-shot section video: lazy-load + play only when visible (perf)
     const dv = document.getElementById("droneVideo");
@@ -197,7 +263,7 @@
     document.querySelectorAll("[data-jump]").forEach((a) => a.addEventListener("click", (e) => {
       const id = a.getAttribute("data-jump");
       const map = { intro: "#top", story: "#story", gallery: "#gallery", film: "#film",
-                    entourage: "#entourage", rsvp: "#rsvp" };
+                    details: "#details", entourage: "#entourage", rsvp: "#rsvp" };
       const t = document.querySelector(map[id] || "#top"); if (!t) return;
       e.preventDefault();
       if (window.W.cardOpened) window.W.cardOpened(); // lift the card gate for a deliberate jump
