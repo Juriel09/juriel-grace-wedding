@@ -11,16 +11,23 @@
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
 .reveal.in { opacity: 1; transform: none; }
 
-/* Pinterest-style masonry: CSS columns flow the tiles into staggered columns, and
-   every tile carries a deliberate aspect ratio (--ar, cycled in sections.js) so the
+/* Pinterest-style masonry. sections.js deals each tile into the shortest column and
+   leaves it there, so revealing more photos only grows the bottom — CSS multicol would
+   re-balance and fling the tiles a guest is already looking at across the page.
+   Every tile carries a deliberate aspect ratio (--ar, cycled in sections.js) so the
    mosaic always reads as uneven — whatever dimensions the couple's photos happen to
-   have. Photos fill their tile; the lightbox shows the whole frame uncropped. */
+   have. Photos fill their tile; the lightbox shows the whole frame uncropped.
+   --col-min is the narrowest a column may get before one is dropped; sections.js reads
+   it to decide the column count, so the breakpoints stay here in the CSS. */
 .section-gallery { max-width: 1320px; }
-/* NB: no `auto` side margins here — in the flex-column .section that makes the
-   multicol box shrink-to-fit and collapse to a single column. */
-.gallery-grid { columns: 210px; column-gap: .75rem; margin-top: var(--space-4); width: 100%; }
+.gallery-grid {
+  --col-min: 210px;
+  display: flex; align-items: flex-start; gap: .75rem;
+  margin-top: var(--space-4); width: 100%;
+}
+.gallery-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: .75rem; }
 .gallery-item {
-  display: block; width: 100%; margin: 0 0 .75rem; break-inside: avoid;
+  display: block; width: 100%; margin: 0;
   position: relative; overflow: hidden; border-radius: 6px; cursor: pointer;
   aspect-ratio: var(--ar, 4/5);
   background: linear-gradient(135deg, var(--mint), var(--sage));
@@ -38,12 +45,12 @@
 }
 :root[data-theme="dark"] .gallery-item:hover { box-shadow: 0 12px 28px rgba(0, 0, 0, .55); }
 
-/* The mosaic opens as a 9-tile preview; "see more" drops the rest in. `display:none`
-   (not visibility) so the hidden tiles take no space in the multicol flow. */
-.gallery-item.is-more { display: none; }
-.gallery-grid.show-all .gallery-item.is-more { display: block; animation: tileIn .6s var(--ease) both; }
+/* The mosaic opens as a 9-tile preview; each press of "see more" deals a few more rows
+   into the columns. Tiles that have not been revealed are simply not in the DOM yet,
+   so there is nothing to hide — `.is-in` just fades in the ones that arrive. */
+.gallery-item.is-in { animation: tileIn .6s var(--ease) both; }
 @keyframes tileIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .gallery-grid.show-all .gallery-item.is-more { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .gallery-item.is-in { animation: none; } }
 /* The 9-tile preview is still taller than one screen, so the button would sit below
    the fold and never be seen. Sticky pins it near the bottom of the viewport for as
    long as the gallery is on screen, floating over the mosaic on its own frosted pill. */
@@ -59,6 +66,15 @@
   transition: background .35s var(--ease), color .35s var(--ease), transform .35s var(--ease);
 }
 .gallery-more:hover { background: var(--gold-foil); color: var(--forest-deep); transform: translateY(-2px); }
+/* while a batch is landing: the pill pulses and the caret nods downward, pointing at
+   where the new photos are arriving */
+.gallery-more.is-busy { animation: morePulse .32s var(--ease); cursor: default; }
+.gallery-more.is-busy::after { content: " ↓"; animation: moreNudge .4s var(--ease) infinite; display: inline-block; }
+@keyframes morePulse { 0%, 100% { transform: none; } 50% { transform: scale(.96); } }
+@keyframes moreNudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .gallery-more.is-busy, .gallery-more.is-busy::after { animation: none; }
+}
 :root[data-theme="dark"] .gallery-more {
   background: rgba(24, 32, 27, .78); color: var(--gold-light);
   box-shadow: 0 6px 22px rgba(0, 0, 0, .5);
@@ -306,8 +322,8 @@
   .entourage-cols { grid-template-columns: 1fr 1fr; }
   /* narrower gutters so phones still get a two-column mosaic, not one stacked strip */
   .section-gallery { padding-left: 1rem; padding-right: 1rem; }
-  .gallery-grid { columns: 150px; column-gap: .5rem; }
-  .gallery-item { margin-bottom: .5rem; }
+  .gallery-grid { --col-min: 150px; gap: .5rem; }
+  .gallery-col { gap: .5rem; }
 }
 @media (max-width: 480px) {
   .entourage-cols { grid-template-columns: 1fr }

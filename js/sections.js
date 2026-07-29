@@ -13,38 +13,138 @@
     // The section opens as a tidy 9-tile preview; "see more" unfolds the rest, so the
     // gallery never dumps 29 photos on a guest who is just passing through.
     const PREVIEW = 9;
+    // every photo in mosaic order — the lightbox tour, and the index each tile carries.
+    // Held out here because the tiles are distributed across columns, so DOM order is
+    // column-by-column and no longer the order a guest reads them in.
+    let galleryOrder = [];
     if (grid) {
-      const shots = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, "0"));
+      // Mixed, not filename-ordered: shot 01..31 came off the camera in sequence, so
+      // running them in order groups every photo from the same setup together. The
+      // shuffle is seeded, so the mosaic is a mix but the SAME mix on every visit —
+      // a gallery that re-orders itself each reload reads as a glitch, and the preview
+      // nine would be different every time anyone shared it.
+      const mix = (arr) => {
+        const a = arr.slice();
+        let seed = 11112026;                 // the wedding date, for a repeatable order
+        const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(rnd() * (i + 1));
+          const t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+      };
+      const shots = mix(Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, "0")));
       // deliberately mixed tile shapes — this is what gives the mosaic its Pinterest
       // stagger; the couple's photos fill whichever tile they land in. The source
       // frames are landscape, so the cycle mixes landscape ratios (3/2, 4/3) with
       // portrait ones instead of cropping every shot down to a tight portrait tile.
       const ars = ["3/2","4/5","1/1","2/3","4/3","3/4","3/2","2/3","4/5","1/1","4/3","3/4","3/2","2/3","4/5","1/1"];
-      // Only the 9 preview tiles carry a real `src`. The rest hold their file in
-      // `data-src` and stay off the wire entirely until "see more" is pressed —
-      // a guest who never expands the mosaic downloads 9 photos, not 29.
-      grid.innerHTML = shots.map((n, i) => {
-        const more = i >= PREVIEW;
+
+      // Real masonry, not a CSS multicol flow. Multicol balances its columns, so every
+      // batch of new photos re-flowed the whole mosaic and threw already-visible tiles
+      // up to ~2800px across the page. Here each tile is dealt to the shortest column
+      // and then left alone, so revealing more only ever grows the bottom.
+      const tiles = shots.map((n, i) => {
         const src = "media/gallery/photo-" + n + ".jpg";
-        return '<button class="gallery-item' + (more ? " is-more" : "") + '" ' +
-          'style="--ar:' + ars[i % ars.length] + '" ' +
-          'data-index="' + i + '" data-full="' + src + '">' +
-          '<img loading="lazy" ' + (more ? 'data-src="' : 'src="') + src + '" ' +
-          'alt="Juriel and Grace, photo ' + n + '" onerror="this.remove()"></button>';
-      }).join("");
+        const ar = ars[i % ars.length];
+        const el = document.createElement("button");
+        el.className = "gallery-item";
+        el.style.setProperty("--ar", ar);
+        el.setAttribute("data-index", String(i));
+        el.setAttribute("data-full", src);
+        const img = document.createElement("img");
+        img.loading = "lazy";
+        img.alt = "Juriel and Grace, photo " + n;
+        img.onerror = function () { this.remove(); };
+        // Only the preview tiles are put on the wire. The rest stay unfetched until
+        // "see more" reaches them: a guest who never expands downloads 9 photos, not 31.
+        if (i < PREVIEW) img.src = src;
+        el.appendChild(img);
+        const parts = ar.split("/");
+        // tile height as a multiple of the column width — known from the aspect ratio,
+        // so columns can be balanced without waiting for a single image to load
+        return { el: el, img: img, src: src, h: Number(parts[1]) / Number(parts[0]), shown: i < PREVIEW };
+      });
+      galleryOrder = tiles.map((t) => t.src);
+
+      let cols = [];
+      const columnCount = () => {
+        const cs = getComputedStyle(grid);
+        const min = parseFloat(cs.getPropertyValue("--col-min")) || 210;
+        const gap = parseFloat(cs.columnGap) || 12;
+        return Math.max(1, Math.floor((grid.clientWidth + gap) / (min + gap)));
+      };
+      const place = (t) => {
+        let best = 0;
+        for (let i = 1; i < cols.length; i++) if (cols[i].h < cols[best].h) best = i;
+        cols[best].el.appendChild(t.el);
+        cols[best].h += t.h;
+      };
+      // full re-deal — only on a width change, where a reflow is expected anyway
+      const layout = () => {
+        const n = columnCount();
+        grid.innerHTML = "";
+        cols = [];
+        for (let i = 0; i < n; i++) {
+          const c = document.createElement("div");
+          c.className = "gallery-col";
+          grid.appendChild(c);
+          cols.push({ el: c, h: 0 });
+        }
+        tiles.forEach((t) => { if (t.shown) place(t); });
+      };
+      layout();
+
+      let gt, lastW = grid.clientWidth;
+      window.addEventListener("resize", () => {
+        if (grid.clientWidth === lastW) return;    // height-only changes (mobile URL bar)
+        lastW = grid.clientWidth;
+        clearTimeout(gt); gt = setTimeout(layout, 200);
+      });
 
       if (moreBtn) {
-        if (shots.length <= PREVIEW) moreBtn.hidden = true;
-        else moreBtn.addEventListener("click", () => {
-          // hand the deferred tiles their src; `loading="lazy"` still keeps the ones
-          // below the fold from fetching until they are scrolled towards.
-          grid.querySelectorAll(".gallery-item.is-more img[data-src]").forEach((img) => {
-            img.src = img.getAttribute("data-src");
-            img.removeAttribute("data-src");
+        if (tiles.length <= PREVIEW) moreBtn.hidden = true;
+        else {
+          // "See more" adds a few rows at a time rather than dropping all 22 remaining
+          // photos at once — on a phone that was a wall of images and a very long way
+          // back to the button.
+          const ROWS_PER_PRESS = 3;
+          const label = moreBtn.textContent;
+          const left = () => tiles.filter((t) => !t.shown).length;
+          // The count is the standing indicator: it tells a guest more exists and, once
+          // they press, that the number went down — the press is visibly doing something
+          // even for the tiles that land below the fold.
+          const setLabel = () => { moreBtn.textContent = label + " (" + left() + ")"; };
+          setLabel();
+
+          let busy = false;
+          moreBtn.addEventListener("click", () => {
+            if (busy) return;
+            busy = true;
+            // a beat on the button first, so the arrival is something you watch happen
+            // rather than a batch that has already appeared by the time you look up
+            moreBtn.textContent = "Adding photos…";
+            moreBtn.classList.add("is-busy");
+            setTimeout(() => {
+              let budget = columnCount() * ROWS_PER_PRESS, k = 0;
+              for (let i = 0; i < tiles.length && budget > 0; i++) {
+                const t = tiles[i];
+                if (t.shown) continue;
+                if (!t.img.getAttribute("src")) t.img.src = t.src;
+                // stagger the arrival so the batch reads as photos dropping in one after
+                // another, not a block that blinks into place
+                t.el.style.animationDelay = (k++ * 70) + "ms";
+                t.el.classList.add("is-in");
+                t.shown = true;
+                place(t);
+                budget--;
+              }
+              moreBtn.classList.remove("is-busy");
+              busy = false;
+              if (!left()) moreBtn.hidden = true; else setLabel();
+            }, 320);
           });
-          grid.classList.add("show-all");
-          moreBtn.hidden = true;
-        }, { once: true });
+        }
       }
     }
 
@@ -106,7 +206,10 @@
 
     if (grid) grid.addEventListener("click", (e) => {
       const item = e.target.closest(".gallery-item"); if (!item) return;
-      tour = Array.from(grid.querySelectorAll(".gallery-item")).map((el) => el.getAttribute("data-full"));
+      // from galleryOrder, not the DOM: tiles live inside their column, so document
+      // order runs down column one then column two, which is not the order anyone
+      // reading the mosaic would expect the arrows to follow.
+      tour = galleryOrder.slice();
       box.classList.add("has-nav");
       openBox("");
       show(Number(item.getAttribute("data-index")) || 0);
