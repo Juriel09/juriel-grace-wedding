@@ -151,14 +151,9 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
   transition: opacity .8s var(--ease), visibility .8s var(--ease);
 }
 .loader.hidden { opacity: 0; visibility: hidden; }
-.loader-mono {
-  font-family: var(--serif); font-style: italic; font-weight: 500;
-  font-size: clamp(3.4rem, 11vw, 5.2rem); line-height: 1; letter-spacing: .06em;
-  background: var(--gold-foil); background-size: 220% 100%;
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: foilShimmer 2.6s ease-in-out infinite;
-}
-.loader-amp { font-size: .62em; margin: 0 .12em; }
+/* the couple's own mark, breathing gently in time with the flourish below it */
+.loader-mono { line-height: 0; animation: monoBreathe 2.6s var(--ease) infinite; }
+.loader-mono img { display: block; height: clamp(5.5rem, 19vw, 8.5rem); width: auto; }
 .loader-flourish {
   width: 150px; height: 9px; margin-top: .4rem;
   background:
@@ -167,8 +162,11 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
   animation: flourishBreathe 2.6s var(--ease) infinite;
 }
 .loader-text { letter-spacing: .3em; text-transform: uppercase; font-size: .72rem; opacity: .7; }
-@keyframes foilShimmer { 0% { background-position: 110% 0; } 100% { background-position: -110% 0; } }
+@keyframes monoBreathe { 0%, 100% { opacity: .84; transform: scale(.985); } 50% { opacity: 1; transform: scale(1); } }
 @keyframes flourishBreathe { 0%, 100% { transform: scaleX(.72); opacity: .55; } 50% { transform: scaleX(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .loader-mono, .loader-flourish { animation: none; opacity: 1; }
+}
 
 /* INTRO BUTTERFLIES — DOM sprites that pop up over the opening/envelope screen
    (the card stage is opaque, so the WebGL butterflies can't show there). Each
