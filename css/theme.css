@@ -13,6 +13,11 @@
   /* gold stays as-is; it pops on dark */
 }
 
+/* The monogram is fixed artwork — deep forest, olive and mocha on transparent. The
+   deep-forest J all but vanishes against the night ground, so at night the mark is
+   lifted rather than recoloured, keeping the three inks in their true relationship. */
+:root[data-theme="dark"] .nav-monogram img { filter: brightness(1.85) saturate(.9); }
+
 /* body background already uses --ivory + --paper-grain, so it flips automatically.
    Smooth the change. */
 body { transition: background-color .6s var(--ease), color .6s var(--ease); }
