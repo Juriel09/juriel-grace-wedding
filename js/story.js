@@ -156,6 +156,7 @@
     // `pan` is the timeline's own 0..1 position — it belongs to the swipe, not to the
     // page. `eased` chases it each frame; `span` is how far the track can travel.
     this.eased = 0; this.pan = 0; this.span = 0; this.built = false;
+    this.dragging = false;  // a finger is on the track: follow it 1:1, don't ease
   }
 
   StoryScene.prototype.build = function () {
@@ -215,60 +216,82 @@
   };
 
   StoryScene.prototype.tick = function () {
-    this.eased += (this.pan - this.eased) * 0.12;
-    if (Math.abs(this.pan - this.eased) < 0.0003) this.eased = this.pan;
+    // While a finger is down the track must sit exactly under it — easing here would
+    // make it trail and then catch up, which reads as shake. The lerp is only for the
+    // settle after release (and for wheel input, which arrives in discrete jumps).
+    if (this.dragging) this.eased = this.pan;
+    else {
+      this.eased += (this.pan - this.eased) * 0.12;
+      if (Math.abs(this.pan - this.eased) < 0.0003) this.eased = this.pan;
+    }
     this.apply(false);
   };
 
   // Swipe/drag the timeline sideways — the only way the years move.
   //   A horizontal drag of N px pans the track N px (1:1 with the finger), clamped to
   //   the ends so the first and last milestone are where the timeline stops.
-  //   Vertical scrolling is untouched and never reaches the story: `touch-action:
-  //   pan-y` hands the browser the up/down gesture and keeps the sideways one for us,
-  //   so scrolling straight through simply skips Our Story.
+  //
+  //   Every gesture is committed to one axis before it may do anything. Without that,
+  //   scrolling past the section panned it: a thumb travelling 300px down also wanders
+  //   ~25px sideways, which the old code happily read as a drag, so the years twitched
+  //   the whole way past. A gesture that starts vertical is now released outright and
+  //   scrolls the page as normal; only a gesture that starts horizontal pans, and while
+  //   it does the page is held still so the section cannot drift under the finger.
   StoryScene.prototype.initSwipe = function () {
     const self = this;
     const el = this.viewport || this.stage;
     if (!el || !window.PointerEvent) return;
 
-    let dragging = false, active = false, lastX = 0, travelled = 0;
-    const DEAD = 6;   // px of travel before a gesture is a drag rather than a tap
+    let tracking = false, active = false, decided = false;
+    let startX = 0, startY = 0, lastX = 0;
+    const DEAD = 6;   // px of travel before a gesture is anything but a tap
 
     el.addEventListener("pointerdown", (e) => {
       if (e.pointerType === "mouse" && e.button !== 0) return;
-      dragging = true; active = false; lastX = e.clientX; travelled = 0;
+      tracking = true; active = false; decided = false;
+      startX = lastX = e.clientX; startY = e.clientY;
     });
 
     el.addEventListener("pointermove", (e) => {
-      if (!dragging) return;
-      const dx = e.clientX - lastX;
-      if (!dx) return;
-      lastX = e.clientX;
-      travelled += Math.abs(dx);
-      if (!active) {
-        if (travelled <= DEAD) return;
+      if (!tracking) return;
+
+      if (!decided) {
+        const totX = Math.abs(e.clientX - startX), totY = Math.abs(e.clientY - startY);
+        if (totX <= DEAD && totY <= DEAD) return;      // too small to call yet
+        decided = true;
+        if (totY >= totX) { tracking = false; return; } // a scroll — hands off entirely
         // Only now is this a drag. Capturing the pointer (and disabling the discs)
         // on pointerdown made every tap behave like one: capture re-targets the
         // click to the capture element, so it never reached the disc underneath.
         active = true;
+        self.dragging = true;
         el.classList.add("is-dragging");
         try { el.setPointerCapture(e.pointerId); } catch (_) {}
+        // hold the page still: a swipe that drifts diagonally must not also scroll
+        if (window.__lenis) window.__lenis.stop();
+        lastX = e.clientX;                              // pan starts past the dead zone
+        return;
       }
+
+      if (!active) return;
+      const dx = e.clientX - lastX;
+      if (!dx) return;
+      lastX = e.clientX;
       if (e.cancelable) e.preventDefault();
       self.panBy(dx);                      // drag left → story walks forward
     });
 
     const release = (e) => {
-      if (!dragging) return;
-      dragging = false;
-      if (active) {
-        active = false;
-        el.classList.remove("is-dragging");
-        try { el.releasePointerCapture(e.pointerId); } catch (_) {}
-        // the click that ends a drag must not also open a disc
-        self.dragged = true;
-        setTimeout(() => { self.dragged = false; }, 0);
-      }
+      tracking = false; decided = false;
+      if (!active) return;
+      active = false;
+      self.dragging = false;
+      el.classList.remove("is-dragging");
+      try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+      if (window.__lenis) window.__lenis.start();
+      // the click that ends a drag must not also open a disc
+      self.dragged = true;
+      setTimeout(() => { self.dragged = false; }, 0);
     };
     el.addEventListener("pointerup", release);
     el.addEventListener("pointercancel", release);

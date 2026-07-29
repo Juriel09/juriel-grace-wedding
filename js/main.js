@@ -8,13 +8,16 @@
     scene.initLite();
   } else {
     if (typeof window.Lenis !== "undefined") {
-      // normal, smooth scroll pace for opening the card; a small touch bump helps
-      // phones. Getting to the next section is handled by the section snap, not by
-      // over-sensitive scrolling. syncTouch lets Lenis own touch scrolling too, so
-      // the section snap (which drives scroll via lenis.scrollTo) works on mobile.
+      // Smooth the WHEEL only. Touch is left to the browser: `syncTouch` was turned on
+      // so the old section snap could drive mobile scrolling through lenis.scrollTo,
+      // but that snap is gone (W.snapLock and W.snapSyncFromScroll are empty stubs in
+      // sections.js), and all it did afterwards was re-implement touch scrolling in JS
+      // — amplified 1.5x, which made a phone feel twitchy and overshoot whole sections.
+      // A phone's native momentum scrolling is better than any approximation of it.
+      // lenis.scrollTo still works for nav jumps and deep links either way.
       const lenis = new window.Lenis({
         lerp: 0.1, smoothWheel: true, wheelMultiplier: 1.15,
-        syncTouch: true, touchMultiplier: 1.5,
+        syncTouch: false, touchMultiplier: 1,
       });
       (function raf(t) { lenis.raf(t); requestAnimationFrame(raf); })(0);
       window.__lenis = lenis;
