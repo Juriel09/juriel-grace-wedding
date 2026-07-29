@@ -81,7 +81,7 @@
 }
 .gallery-more[hidden] { display: none; }
 
-/* ---- The Film: two tabs (The Proposal / Prenup), one full-bleed stage ----
+/* ---- The Film: two tabs (The Proposal / Wedding Teaser), one full-bleed stage ----
    The whole control is a self-contained dark chip with literal colours. Theme tokens
    are avoided on purpose here: --forest-deep and friends flip to *light* values in the
    night palette, which is exactly what made the labels disappear. A dark chip reads
@@ -101,6 +101,12 @@
 }
 .film-tab:hover { background: rgba(219, 198, 156, .18); color: #fff; }
 .film-tab.is-active { background: var(--gold-foil); color: #23291f; }
+/* "Wedding Teaser" is a long label to sit beside "The Proposal"; on a narrow phone the
+   pair runs the pill off the screen, so tighten the type rather than let it wrap. */
+@media (max-width: 420px) {
+  .film-tabs { max-width: 100%; }
+  .film-tab { padding: .7em 1em; font-size: .62rem; letter-spacing: .1em; }
+}
 .film-tab:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
 
 /* prev / next over the film itself. Deliberately small — the tabs are the primary

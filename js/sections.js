@@ -225,7 +225,7 @@
       show(start || 0);
     };
 
-    // The Film — two tabs over one full-bleed stage: The Proposal, then the prenup.
+    // The Film — two tabs over one full-bleed stage: The Proposal, then the teaser.
     //   Each panel names its own file in data-src; the <video> is only created when the
     //   tab is first opened, so the second film costs nothing until it is asked for.
     //   Switching tabs pauses the one you are leaving — two soundtracks at once is the
