@@ -147,11 +147,24 @@
     for (i = 0; i < files.length; i++) {
       if (String(files[i].type || "").indexOf("image/") === 0) list.push(files[i]);
     }
-    if (list.length < files.length && hooks.toast) hooks.toast("photos only, please");
-    if (!list.length) return;
-    if (list.length > MAX_BATCH) {
-      list = list.slice(0, MAX_BATCH);
-      if (hooks.toast) hooks.toast("sending the first " + MAX_BATCH + " — add the rest after");
+    var droppedVideo = list.length < files.length;
+    if (!list.length) {
+      // nothing left to send, but a guest who picked only videos still needs
+      // to hear that — the batch-cap message never applies here
+      if (droppedVideo && hooks.toast) hooks.toast("photos only, please");
+      return;
+    }
+    var overCap = list.length > MAX_BATCH;
+    if (overCap) list = list.slice(0, MAX_BATCH);
+    // both messages can be true at once (12 photos + 3 videos picked together);
+    // share.js's toast() has no queue, so a second call silently clobbers the
+    // first — say both facts in one toast rather than lose one of them
+    if (droppedVideo && overCap && hooks.toast) {
+      hooks.toast("photos only, please — sending the first " + MAX_BATCH + " — add the rest after");
+    } else if (droppedVideo && hooks.toast) {
+      hooks.toast("photos only, please");
+    } else if (overCap && hooks.toast) {
+      hooks.toast("sending the first " + MAX_BATCH + " — add the rest after");
     }
     list.forEach(function (f) {
       var item = { id: ++uid, file: f, attempt: 0, preview: URL.createObjectURL(f) };
