@@ -124,16 +124,17 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
   display: block;
 }
 @media (orientation: portrait) { .intro-film-video { object-fit: cover; } } /* fills a phone */
-.intro-film-skip, .intro-film-sound {
+.intro-film-skip {
   position: absolute; z-index: 2; cursor: pointer;
   font-family: var(--sans); letter-spacing: .16em; text-transform: uppercase; font-size: .68rem;
   color: rgba(255,255,255,.82); background: rgba(20,26,20,.35); backdrop-filter: blur(4px);
-  border: 1px solid rgba(255,255,255,.28); border-radius: 999px; padding: .55rem 1.1rem;
+  border: 1px solid rgba(255,255,255,.28); border-radius: 999px; padding: 0 1.1rem;
   transition: opacity .4s var(--ease), background .3s var(--ease), color .3s var(--ease);
 }
-.intro-film-skip:hover, .intro-film-sound:hover { background: rgba(20,26,20,.6); color: #fff; }
-.intro-film-skip { right: 1.4rem; bottom: 1.4rem; }
-.intro-film-sound { left: 1.4rem; bottom: 1.4rem; }
+.intro-film-skip:hover { background: rgba(20,26,20,.6); color: #fff; }
+/* same bottom and same height as the floating vinyl (bottom 1.15rem, 2.6rem tall,
+   on the left) — the two sit on one line across the film's foot */
+.intro-film-skip { right: 1.15rem; bottom: 1.15rem; height: 2.6rem; display: inline-flex; align-items: center; }
 .intro-film-begin {
   position: absolute; z-index: 2; left: 50%; top: 50%; transform: translate(-50%,-50%);
   cursor: pointer; font-family: var(--serif); font-size: 1.1rem; letter-spacing: .12em;

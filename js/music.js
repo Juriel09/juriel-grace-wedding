@@ -1,16 +1,18 @@
-/* Background music — a little vinyl toggle by the theme button. On by default and
-   persisted to localStorage. Browsers block unmuted autoplay, so playback starts
-   the moment the opening film is dismissed (usually already a user gesture) or, as
-   a fallback, on the visitor's first interaction — and never while the intro's own
-   audio is still playing, so the two never overlap. */
+/* Background music — a little vinyl toggle by the theme button, and the ONE sound
+   on the page: the song plays from the opening film onward (the film itself is
+   always muted — its own audio is unused), and the same vinyl floats above the
+   film and toggles the song there like everywhere else. ALWAYS on by default —
+   every visit opens with the vinyl spinning; stopping it lasts for the visit only.
+   Browsers block unmuted autoplay, so playback starts on the visitor's first
+   interaction (tap, scroll, key — the skip button counts).
+   One more thing: tapping the vinyl 11 times in a row — the couple's 11.11 — swaps
+   in the previous background song; 11 more swaps back. */
 (function () {
   "use strict";
   window.W = window.W || {};
-  var KEY = "jg-music";
+  var TRACK_MAIN = "media/audio/bless-the-broken-road.mp3";
+  var TRACK_PREV = "media/audio/bg-music.mp3";      // the old song lives on as the code
   var audio, btn, wantOn = false, started = false, armed = false;
-
-  function lsGet() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
-  function lsSet(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
 
   // reflect the toggle's *intent*: the vinyl spins whenever music is enabled
   function reflect(on) {
@@ -20,19 +22,12 @@
     btn.setAttribute("aria-label", on ? "Turn music off" : "Turn music on");
   }
 
-  // is the opening film still on screen (and thus its bird audio possibly playing)?
-  function introActive() {
-    var f = document.getElementById("introFilm");
-    if (!f || f.classList.contains("done")) return false;
-    return getComputedStyle(f).display !== "none";
-  }
-
   function reallyPlay() {
     if (!audio || !wantOn) return;
     audio.play().then(function () { started = true; disarm(); reflect(true); }).catch(armGesture);
   }
 
-  // start on the first interaction, but hold off until the intro is gone
+  // autoplay fallback: start the song on the very first interaction, film or no film
   var GESTURES = ["pointerdown", "touchstart", "keydown", "wheel"], gestureOn = null;
   function disarm() {
     if (gestureOn) GESTURES.forEach(function (e) { window.removeEventListener(e, gestureOn); });
@@ -41,7 +36,6 @@
   function armGesture() {
     if (armed) return; armed = true;
     gestureOn = function () {
-      if (introActive()) return;                 // let the intro's own audio finish first
       disarm();                                  // one-shot — never linger to hijack later clicks
       reallyPlay();
     };
@@ -50,20 +44,55 @@
 
   function start() {
     if (started || !wantOn) return;
-    if (introActive()) {
-      window.addEventListener("jg:intro-done", reallyPlay, { once: true }); // preferred trigger
-      armGesture();                                                          // fallback
-    } else {
-      reallyPlay();
-    }
+    reallyPlay();
+  }
+
+  // ---- the 11-tap code: consecutive means less than a beat apart ----
+  var taps = 0, tapTimer = null;
+  function countTap() {
+    taps++;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(function () { taps = 0; }, 1000);
+    if (taps < 11) return false;
+    taps = 0;
+    if (!audio) return false;
+    var onPrev = audio.src.indexOf("bg-music") !== -1;
+    audio.src = onPrev ? TRACK_MAIN : TRACK_PREV;
+    wantOn = true; started = false;
+    reallyPlay();
+    return true;             // the 11th tap changes the record instead of toggling
   }
 
   function toggle() {
+    if (countTap()) return;
+    ducked = false;                 // a deliberate tap overrides any film ducking
     wantOn = !wantOn;
-    lsSet(wantOn ? "on" : "off");
     reflect(wantOn);
     if (wantOn) { started = false; reallyPlay(); }   // a click is a gesture, so this plays
     else if (audio) { audio.pause(); started = false; }
+  }
+
+  // ---- ducking: a playing film owns the stage ----
+  // sections.js calls duck() when a film video starts and unduck() when none is
+  // playing anymore. The song only resumes if it was actually on before the film —
+  // a vinyl that was already stopped stays stopped.
+  var ducked = false, resumeAfter = false;
+  function duck() {
+    if (ducked) return;
+    ducked = true;
+    resumeAfter = wantOn;
+    wantOn = false; started = false;
+    if (audio) audio.pause();
+    reflect(false);
+  }
+  function unduck() {
+    if (!ducked) return;
+    ducked = false;
+    if (!resumeAfter) return;       // it was silent before the film — stay silent
+    wantOn = true;
+    reflect(true);
+    started = false;
+    reallyPlay();
   }
 
   function init() {
@@ -71,11 +100,11 @@
     btn = document.getElementById("musicToggle");
     if (!btn) return;
     if (audio) audio.volume = 0.5;
-    wantOn = lsGet() !== "off";     // default ON
+    wantOn = true;                  // every visit opens with the music on
     btn.addEventListener("click", toggle);
     reflect(wantOn);
     if (wantOn) start();
   }
 
-  window.W.Music = { init: init, toggle: toggle };
+  window.W.Music = { init: init, toggle: toggle, duck: duck, unduck: unduck };
 })();

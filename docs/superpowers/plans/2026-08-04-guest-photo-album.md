@@ -14,7 +14,7 @@
 
 - **Photos only.** No video, ever. Enforced twice: `accept="image/*"` on the input, and a server-side check that `mime` starts with `image/`.
 - **ES5 syntax in `google-apps-script/*.gs`.** `var`, `function`, no arrow functions, no `const`/`let`, no template literals. Apps Script's runtime accepts modern syntax but the existing `rsvp.gs` is written in ES5 and consistency matters more than novelty.
-- **Browser JS follows the existing house style:** `(function () { "use strict"; ... })()` IIFE, attaching to `window.W`, `var` not `const`, no ES modules, no bundler.
+- **Browser JS follows the existing house style:** `(function () { "use strict"; ... })()` IIFE, attaching to `window.W`, no ES modules, no bundler. Match the neighbours on syntax level, which differs by directory: `js/lib/*.js` are modern (`const`, arrows — see `js/lib/storyGeometry.js`), while the page modules `js/*.js` are ES5-flavoured (`var`, `function` — see `js/rsvp.js`). Where a task's plan text contains the code, that code's syntax is authoritative.
 - **All POSTs use `Content-Type: text/plain;charset=utf-8`.** This is the only content type an Apps Script web app can accept without triggering a CORS preflight it cannot answer. `js/rsvp.js:169` already relies on this. Do not "fix" it to `application/json`.
 - **Brand tokens come from `css/tokens.css`** — `--ivory`, `--ivory-deep`, `--forest`, `--forest-deep`, `--gold`, `--gold-light`, `--gold-deep`, `--gold-foil`, `--ink`, `--ink-soft`, `--paper-grain`, `--serif`, `--sans`. Never hard-code a hex that a token already names.
 - **Dark theme must work.** The site defaults to dark (`index.html:9`). `share.html` must run the same anti-FOUC theme script and carry dark styling.

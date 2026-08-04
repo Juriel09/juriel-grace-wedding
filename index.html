@@ -37,9 +37,8 @@
            poster="media/video/intro-poster.jpg">
       <source src="media/video/intro.mp4" type="video/mp4" />
     </video>
-    <button id="introSound" class="intro-film-sound" type="button" aria-label="Turn on sound">
-      <span class="intro-sound-on" hidden>♪ sound on</span><span class="intro-sound-off">♪ sound off</span>
-    </button>
+    <!-- no separate sound button: the vinyl toggle floats over the film and owns
+         all audio, here and for the rest of the page -->
     <button id="introSkip" class="intro-film-skip" type="button">Skip intro &nbsp;›</button>
     <button id="introBegin" class="intro-film-begin" type="button" hidden>▶ &nbsp;Begin</button>
   </div>
@@ -57,15 +56,19 @@
     <nav class="nav-links">
       <a href="#story" data-jump="story">Our Story</a>
       <a href="#gallery" data-jump="gallery">Gallery</a>
-      <a href="#film" data-jump="film">Film</a>
+      <a href="#film" data-jump="film">Proposal</a>
+      <a href="#teaser" data-jump="teaser">Teaser</a>
       <a href="#details" data-jump="details"><span class="nav-long">Place &amp; Attire</span><span class="nav-short">Place</span></a>
       <a href="#entourage" data-jump="entourage">Entourage</a>
       <a href="#rsvp" class="nav-cta" data-jump="rsvp">RSVP</a>
     </nav>
   </header>
 
-  <!-- background music: a vinyl-record toggle, sits just above the theme button -->
-  <audio id="bgMusic" src="media/audio/bg-music.mp3" loop preload="auto"></audio>
+  <!-- background music: a vinyl-record toggle at the bottom-left corner, under the
+       theme button. The one soundtrack for the whole page, intro film included.
+       (Tapping the vinyl 11 times in a row — the couple's 11.11 — spins up the
+       previous song, media/audio/bg-music.mp3. Another 11 spins back.) -->
+  <audio id="bgMusic" src="media/audio/bless-the-broken-road.mp3" loop preload="auto"></audio>
   <button class="music-toggle" id="musicToggle" type="button" aria-pressed="false" aria-label="Turn music on">
     <span class="vinyl" aria-hidden="true"></span>
   </button>
@@ -136,27 +139,25 @@
     </section>
 
     <section id="film" class="section section-film reveal">
-      <p class="eyebrow">our films</p>
-      <h2 class="section-title">The Film</h2>
+      <p class="eyebrow">how he asked</p>
+      <h2 class="section-title">The Proposal</h2>
       <div class="flourish"></div>
 
-      <div class="film-tabs" role="tablist" aria-label="Our films">
-        <button class="film-tab is-active" type="button" role="tab" id="filmTabProposal"
-                aria-controls="filmPanelProposal" aria-selected="true" data-film="proposal">The Proposal</button>
-        <button class="film-tab" type="button" role="tab" id="filmTabPrenup"
-                aria-controls="filmPanelPrenup" aria-selected="false" tabindex="-1" data-film="prenup">Wedding Teaser</button>
-      </div>
-
-      <!-- full-bleed on every screen: the panels break out of the section's max-width -->
+      <!-- full-bleed on every screen: the stage breaks out of the section's max-width -->
       <div class="film-stage">
-        <div class="film-panel is-active" id="filmPanelProposal" role="tabpanel"
-             aria-labelledby="filmTabProposal" data-src="media/video/proposal.mp4"
+        <div class="film-panel" id="filmPanelProposal" data-src="media/video/proposal.mp4"
              data-poster="media/video/proposal-poster.jpg"></div>
-        <div class="film-panel" id="filmPanelPrenup" role="tabpanel" aria-labelledby="filmTabPrenup" hidden
-             data-src="media/video/prenup.mp4" data-poster="media/video/prenup-poster.jpg"></div>
-        <button class="film-arrow film-arrow-prev" id="filmPrev" type="button" aria-label="Previous film" hidden>&lsaquo;</button>
-        <button class="film-arrow film-arrow-next" id="filmNext" type="button" aria-label="Next film">&rsaquo;</button>
-        <p class="film-now" id="filmNow" aria-live="polite">The Proposal</p>
+      </div>
+    </section>
+
+    <section id="teaser" class="section section-film reveal">
+      <p class="eyebrow">a glimpse of the day</p>
+      <h2 class="section-title">Wedding Teaser</h2>
+      <div class="flourish"></div>
+
+      <div class="film-stage">
+        <div class="film-panel" id="filmPanelPrenup" data-src="media/video/prenup.mp4"
+             data-poster="media/video/prenup-poster.jpg"></div>
       </div>
     </section>
 
@@ -175,9 +176,8 @@
         <article class="detail detail-place">
           <p class="detail-label">where</p>
           <div class="detail-map">
-            <iframe src="https://www.google.com/maps?q=The%20Forest%20Barn%2C%20Alfonso%2C%20Cavite&amp;output=embed"
-                    title="Map to The Forest Barn, Alfonso, Cavite"
-                    loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <img src="media/venue/forest-barn.jpg" alt="The Forest Barn, Alfonso, Cavite"
+                 loading="lazy">
           </div>
           <h3 class="detail-venue">The Forest Barn</h3>
           <p class="detail-address">Kaysuyo Road &middot; Alfonso, Cavite</p>
@@ -217,10 +217,72 @@
       <p class="eyebrow">with us</p>
       <h2 class="section-title">Entourage &amp; Sponsors</h2>
       <div class="flourish"></div>
-      <div class="entourage-cols">
-        <div><h3>Principal Sponsors</h3><p>Mr. &amp; Mrs. Reyes · Mr. &amp; Mrs. Santos · Mr. &amp; Mrs. Cruz</p></div>
-        <div><h3>Best Man &amp; Maid of Honor</h3><p>Daniel Lim · Sofia Marquez</p></div>
-        <div><h3>Groomsmen &amp; Bridesmaids</h3><p>Names · Names · Names · Names</p></div>
+      <!-- Laid out like the printed programme: sponsors first, then the party as it
+           stands at the ceremony — groom's side and bride's side across the aisle.
+           PLACEHOLDER names are marked "Name Surname"; replace freely. -->
+      <div class="party">
+        <div class="party-block">
+          <h3 class="party-role">Principal Sponsors</h3>
+          <!-- individuals, not couples: ninongs read down the left, ninangs down the right -->
+          <ul class="party-names party-pairs">
+            <li>Mr. Name Surname</li>
+            <li>Mrs. Name Surname</li>
+            <li>Mr. Name Surname</li>
+            <li>Mrs. Name Surname</li>
+            <li>Mr. Name Surname</li>
+            <li>Ms. Name Surname</li>
+          </ul>
+        </div>
+
+        <div class="party-aisle">
+          <div class="party-side">
+            <p class="party-side-label">groom's side</p>
+            <h3 class="party-role">Best Man</h3>
+            <ul class="party-names"><li>Daniel Lim</li></ul>
+            <h3 class="party-role">Groomsmen</h3>
+            <ul class="party-names">
+              <li>Name Surname</li>
+              <li>Name Surname</li>
+              <li>Name Surname</li>
+            </ul>
+          </div>
+          <div class="party-side">
+            <p class="party-side-label">bride's side</p>
+            <h3 class="party-role">Maid of Honor</h3>
+            <ul class="party-names"><li>Sofia Marquez</li></ul>
+            <h3 class="party-role">Bridesmaids</h3>
+            <ul class="party-names">
+              <li>Name Surname</li>
+              <li>Name Surname</li>
+              <li>Name Surname</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="party-trio">
+          <div>
+            <h3 class="party-role">Candle</h3>
+            <ul class="party-names"><li>Name Surname</li><li>Name Surname</li></ul>
+          </div>
+          <div>
+            <h3 class="party-role">Veil</h3>
+            <ul class="party-names"><li>Name Surname</li><li>Name Surname</li></ul>
+          </div>
+          <div>
+            <h3 class="party-role">Cord</h3>
+            <ul class="party-names"><li>Name Surname</li><li>Name Surname</li></ul>
+          </div>
+        </div>
+
+        <div class="party-block">
+          <h3 class="party-role">Bearers &amp; Flower Girls</h3>
+          <ul class="party-names party-pairs">
+            <li>Ring &mdash; Name Surname</li>
+            <li>Coins &mdash; Name Surname</li>
+            <li>Bible &mdash; Name Surname</li>
+            <li>Flowers &mdash; Name Surname</li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -230,15 +292,41 @@
       <div class="flourish"></div>
       <p class="rsvp-note">We would be honored by your presence. Please respond by October 1, 2026.</p>
       <div class="rsvp-embed" id="rsvpEmbed">
-        <!-- Replace with the couple's chosen form embed (Formspree / Google Form iframe). Demo below. -->
-        <form class="rsvp-form" onsubmit="return false">
-          <label>Full name <input type="text" name="name" placeholder="Your name" /></label>
-          <label>Will you attend?
-            <select name="attending"><option>Joyfully accepts</option><option>Regretfully declines</option></select>
+        <!-- Backed by a Google Sheet via Apps Script — see google-apps-script/rsvp.gs.
+             The endpoint URL is pasted into js/rsvp.js; until then this is a demo. -->
+        <form class="rsvp-form rsvp-card" id="rsvpForm">
+          <label class="rsvp-name">Full name
+            <input type="text" name="name" placeholder="Start typing your name&hellip;" autocomplete="off" />
+            <ul class="rsvp-matches" id="rsvpMatches" role="listbox" hidden></ul>
           </label>
-          <label>Number of guests <input type="number" name="guests" min="0" value="1" /></label>
-          <label>A note for the couple <textarea name="note" rows="3"></textarea></label>
-          <button class="btn-gold" type="submit">Send RSVP</button>
+
+          <fieldset class="rsvp-choice">
+            <legend>Will you attend?</legend>
+            <label class="rsvp-pill">
+              <input type="radio" name="attending" value="Joyfully accepts" checked />
+              <span>Joyfully accepts</span>
+            </label>
+            <label class="rsvp-pill">
+              <input type="radio" name="attending" value="Regretfully declines" />
+              <span>Regretfully declines</span>
+            </label>
+          </fieldset>
+
+          <div class="rsvp-seats" id="rsvpSeats">
+            <p class="rsvp-seats-label" id="rsvpSeatsLabel">Number of guests</p>
+            <div class="rsvp-stepper">
+              <button type="button" class="rsvp-step" id="seatMinus" aria-label="One guest fewer">&minus;</button>
+              <input type="number" name="guests" min="1" value="1" readonly
+                     aria-labelledby="rsvpSeatsLabel" />
+              <button type="button" class="rsvp-step" id="seatPlus" aria-label="One guest more">+</button>
+            </div>
+            <p class="rsvp-seats-hint" id="rsvpSeatsHint"></p>
+          </div>
+
+          <label>A note for the couple <textarea name="note" rows="3"
+                 placeholder="A song request, a memory, a blessing&hellip;"></textarea></label>
+          <button class="btn-forest" type="submit">Send RSVP</button>
+          <p class="rsvp-status" id="rsvpStatus" role="status"></p>
         </form>
       </div>
     </section>
@@ -277,6 +365,7 @@
   <script src="js/main.js"></script>
   <script src="js/introButterflies.js"></script>
   <script src="js/countdown.js"></script>
+  <script src="js/rsvp.js"></script>
   <script src="js/intro.js"></script>
 </body>
 </html>

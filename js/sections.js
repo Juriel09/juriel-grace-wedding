@@ -34,6 +34,9 @@
         return a;
       };
       const shots = mix(Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, "0")));
+      // photo-25 opens the gallery — the couple's chosen lead; the rest keep the seeded mix
+      shots.splice(shots.indexOf("25"), 1);
+      shots.unshift("25");
       // deliberately mixed tile shapes — this is what gives the mosaic its Pinterest
       // stagger; the couple's photos fill whichever tile they land in. The source
       // frames are landscape, so the cycle mixes landscape ratios (3/2, 4/3) with
@@ -225,13 +228,13 @@
       show(start || 0);
     };
 
-    // The Film — two tabs over one full-bleed stage: The Proposal, then the teaser.
-    //   Each panel names its own file in data-src; the <video> is only created when the
-    //   tab is first opened, so the second film costs nothing until it is asked for.
-    //   Switching tabs pauses the one you are leaving — two soundtracks at once is the
-    //   one thing this section must never do.
-    const filmTabs = Array.prototype.slice.call(document.querySelectorAll(".film-tab"));
-    if (filmTabs.length) {
+    // The films — The Proposal and the Wedding Teaser, each in its own full-bleed
+    //   section. Each panel names its own file in data-src; the <video> is only created
+    //   when its section first scrolls near, so neither film costs anything until it is
+    //   looked at. Playing one pauses the other — two soundtracks at once is the one
+    //   thing these sections must never do.
+    const filmPanels = Array.prototype.slice.call(document.querySelectorAll(".film-panel"));
+    if (filmPanels.length) {
       const mountFilm = (panel) => {
         if (panel.dataset.mounted) return;
         panel.dataset.mounted = "1";
@@ -248,53 +251,35 @@
           ph.innerHTML = '<span class="film-play">▶</span><span>film coming soon</span>';
           panel.appendChild(ph);
         });
+        v.addEventListener("play", () => {
+          filmPanels.forEach((p) => {
+            const o = p.querySelector("video");
+            if (o && o !== v) o.pause();
+          });
+          // the film takes the stage: the background song steps aside
+          if (window.W.Music) window.W.Music.duck();
+        });
+        // when no film is left playing, the song comes back — but only if it was
+        // on before (music.js remembers). Checked across panels because pausing
+        // one film to start the other must not resume the song in between.
+        const unduckIfIdle = () => {
+          const playing = filmPanels.some((p) => {
+            const o = p.querySelector("video");
+            return o && !o.paused && !o.ended;
+          });
+          if (!playing && window.W.Music) window.W.Music.unduck();
+        };
+        v.addEventListener("pause", unduckIfIdle);
+        v.addEventListener("ended", unduckIfIdle);
         panel.appendChild(v);
       };
 
-      const now = document.getElementById("filmNow");
-      const prev = document.getElementById("filmPrev");
-      const next = document.getElementById("filmNext");
-      const showFilm = (tab) => {
-        filmTabs.forEach((t) => {
-          const on = t === tab;
-          const panel = document.getElementById(t.getAttribute("aria-controls"));
-          t.classList.toggle("is-active", on);
-          t.setAttribute("aria-selected", String(on));
-          t.tabIndex = on ? 0 : -1;
-          if (!panel) return;
-          panel.hidden = !on;
-          panel.classList.toggle("is-active", on);
-          if (on) mountFilm(panel);
-          else { const v = panel.querySelector("video"); if (v) v.pause(); }
-        });
-        if (now) now.textContent = tab.textContent.trim();
-        // an arrow with nowhere to go is not shown at all, rather than shown and dead
-        const i = filmTabs.indexOf(tab);
-        if (prev) prev.hidden = i <= 0;
-        if (next) next.hidden = i >= filmTabs.length - 1;
-      };
-      // step to the neighbouring film; the ends are hard stops, not a carousel
-      const stepFilm = (dir) => {
-        const i = filmTabs.findIndex((t) => t.classList.contains("is-active"));
-        const t = filmTabs[i + dir];
-        if (t) showFilm(t);
-      };
-
-      filmTabs.forEach((t, i) => {
-        t.addEventListener("click", () => showFilm(t));
-        // left/right keys move between tabs, stopping at the ends like the arrows do
-        t.addEventListener("keydown", (e) => {
-          if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-          e.preventDefault();
-          const to = filmTabs[i + (e.key === "ArrowRight" ? 1 : -1)];
-          if (to) { showFilm(to); to.focus(); }
-        });
-      });
-
-      if (prev) prev.addEventListener("click", () => stepFilm(-1));
-      if (next) next.addEventListener("click", () => stepFilm(1));
-
-      showFilm(filmTabs[0]);   // The Proposal opens first
+      const fio = new IntersectionObserver((es) => es.forEach((e) => {
+        if (!e.isIntersecting) return;
+        mountFilm(e.target);
+        fio.unobserve(e.target);
+      }), { rootMargin: "200px 0px" });
+      filmPanels.forEach((p) => fio.observe(p));
     }
 
     // drone-shot section video: lazy-load + play only when visible (perf)
@@ -366,7 +351,7 @@
     document.querySelectorAll("[data-jump]").forEach((a) => a.addEventListener("click", (e) => {
       const id = a.getAttribute("data-jump");
       const map = { intro: "#top", story: "#story", gallery: "#gallery", film: "#film",
-                    details: "#details", entourage: "#entourage", rsvp: "#rsvp" };
+                    teaser: "#teaser", details: "#details", entourage: "#entourage", rsvp: "#rsvp" };
       const t = document.querySelector(map[id] || "#top"); if (!t) return;
       e.preventDefault();
       if (window.W.cardOpened) window.W.cardOpened(); // lift the card gate for a deliberate jump

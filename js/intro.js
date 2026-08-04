@@ -1,9 +1,11 @@
 /* Opening film. The J&G loader (z 400) covers everything until the intro video
-   can actually play through — only then does the loader lift and the film start
-   (muted autoplay, browser-safe). While the film gates, cardScene's frame-driven
-   hideLoader is suppressed via window.W.filmGate. Skip dismisses early; a sound
-   toggle un-mutes; if autoplay is blocked a "Begin" button appears. If the video
-   stalls too long we skip straight to the site. Reduced-motion skips the film. */
+   can actually play through — only then does the loader lift and the film start.
+   The film is ALWAYS silent — its own audio is unused; the background song
+   (music.js) is the page's one soundtrack, and the floating vinyl rides above the
+   film to control it. While the film gates, cardScene's frame-driven hideLoader is
+   suppressed via window.W.filmGate. Skip dismisses early; if autoplay is blocked a
+   "Begin" button appears. If the video stalls too long we skip straight to the
+   site. Reduced-motion skips the film. */
 (function () {
   "use strict";
   window.W = window.W || {};
@@ -12,10 +14,8 @@
   if (!film) return;
   const video = document.getElementById("introFilmVideo");
   const skipBtn = document.getElementById("introSkip");
-  const soundBtn = document.getElementById("introSound");
   const beginBtn = document.getElementById("introBegin");
-  const onLabel = soundBtn ? soundBtn.querySelector(".intro-sound-on") : null;
-  const offLabel = soundBtn ? soundBtn.querySelector(".intro-sound-off") : null;
+  const musicBtn = document.getElementById("musicToggle");
 
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   // Reduced motion, or a shared deep link (/#gallery …) — the visitor asked for a
@@ -29,6 +29,10 @@
   window.W.filmGate = true; // claim the loader (cardScene.hideLoader defers to us)
   let dismissed = false, started = false;
 
+  // the vinyl floats above the film (see .music-toggle.over-intro) so the one
+  // sound control never disappears
+  if (musicBtn) musicBtn.classList.add("over-intro");
+
   // keep the page from scrolling behind the film
   document.documentElement.style.overflow = "hidden";
   if (window.__lenis) window.__lenis.stop();
@@ -39,8 +43,7 @@
     window.W.filmGate = false;
     if (loader) loader.classList.add("hidden"); // never leave the visitor behind the gate
     try { video.pause(); } catch (e) {}
-    video.muted = true;              // silence the bird once the intro is gone
-    if (cancelGestureUnmute) cancelGestureUnmute(); // drop the pending "unmute on first gesture"
+    if (musicBtn) musicBtn.classList.remove("over-intro");
     film.classList.add("done");
     if (window.W.initIntroButterflies) window.W.initIntroButterflies(); // butterflies pop over the envelope
     document.documentElement.style.overflow = "";
@@ -56,44 +59,11 @@
 
   skipBtn.addEventListener("click", dismiss);
 
-  // keep the toggle label + aria in sync with the real muted state
-  function setSoundLabel() {
-    if (onLabel && offLabel) { onLabel.hidden = video.muted; offLabel.hidden = !video.muted; }
-    soundBtn.setAttribute("aria-label", video.muted ? "Turn on sound" : "Turn off sound");
-  }
+  // hand the film's audio to the vinyl: while the film is up, tapping the vinyl
+  // mutes/unmutes this video instead of the background song
+  if (window.W.Music && window.W.Music.bindIntroVideo) window.W.Music.bindIntroVideo(video);
 
-  // sound is ON by default; browsers block unmuted autoplay, so if we had to
-  // start muted, unmute the instant the visitor first interacts (tap/scroll/key).
-  let gestureArmed = false, cancelGestureUnmute = null;
-  function unmute() {
-    if (dismissed) return;          // never turn sound back on after the intro is gone
-    video.muted = false;
-    setSoundLabel();
-    video.play().catch(() => {}); // resume if unmuting paused it
-  }
-  function armGestureUnmute() {
-    if (gestureArmed || !video.muted) return;
-    gestureArmed = true;
-    const evs = ["pointerdown", "touchstart", "keydown", "wheel"];
-    const on = () => { cancelGestureUnmute(); unmute(); };
-    cancelGestureUnmute = () => { evs.forEach((e) => window.removeEventListener(e, on)); cancelGestureUnmute = null; };
-    evs.forEach((e) => window.addEventListener(e, on, { once: true, passive: true }));
-  }
-  function attemptSound() {
-    // NB: do NOT optimistically unmute here — on strict browsers unmuting an
-    // autoplaying video pauses it, which would break the autoplay. Keep the
-    // reliable muted autoplay and turn sound on at the first visitor gesture.
-    setSoundLabel();
-    armGestureUnmute();
-  }
-
-  soundBtn.addEventListener("click", () => {
-    video.muted = !video.muted;
-    setSoundLabel();
-    if (!video.muted) video.play().catch(() => {});
-  });
-
-  // once playback truly starts, lift the gate, try for sound, arm the end safety.
+  // once playback truly starts, lift the gate and arm the end safety.
   // "playing" is the source of truth — it fires whether the attribute autoplay,
   // our play() calls, or the visitor's tap started it.
   function onStarted() {
@@ -102,7 +72,6 @@
     beginBtn.hidden = true;
     if (loader) loader.classList.add("hidden");
     window.W.filmGate = false; // frames may hide the (already hidden) loader freely
-    attemptSound();
     const ms = ((isFinite(video.duration) && video.duration) || 10) * 1000 + 4000;
     setTimeout(dismiss, ms); // safety if "ended" never fires
   }
@@ -117,13 +86,8 @@
   const beginPlay = () => {
     if (started || dismissed) return;
     beginBtn.hidden = true;
-    video.muted = false; // started by a real tap, so audio is allowed
-    if (onLabel && offLabel) { onLabel.hidden = false; offLabel.hidden = true; }
-    video.play().catch(() => {
-      video.muted = true;
-      if (onLabel && offLabel) { onLabel.hidden = true; offLabel.hidden = false; }
-      video.play().catch(dismiss);
-    });
+    // the film stays muted — the tap that pressed Begin also lets the song start
+    video.play().catch(dismiss);
   };
   beginBtn.addEventListener("click", beginPlay);
   video.addEventListener("click", () => { if (!beginBtn.hidden) beginPlay(); });

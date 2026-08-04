@@ -81,75 +81,22 @@
 }
 .gallery-more[hidden] { display: none; }
 
-/* ---- The Film: two tabs (The Proposal / Wedding Teaser), one full-bleed stage ----
-   The whole control is a self-contained dark chip with literal colours. Theme tokens
-   are avoided on purpose here: --forest-deep and friends flip to *light* values in the
-   night palette, which is exactly what made the labels disappear. A dark chip reads
-   deliberately on ivory and at night alike. */
-.film-tabs {
-  align-self: center; display: inline-flex; gap: .25rem; padding: .3rem;
-  margin-top: var(--space-3); border-radius: 999px;
-  border: 1px solid var(--gold); background: rgba(23, 29, 24, .92);
-  box-shadow: 0 8px 26px rgba(23, 29, 24, .25);
-}
-.film-tab {
-  cursor: pointer; padding: .75em 1.9em; border: 0; border-radius: 999px;
-  background: transparent; color: #ece7d9;
-  font-family: var(--sans); font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
-  white-space: nowrap;
-  transition: background .3s var(--ease), color .3s var(--ease);
-}
-.film-tab:hover { background: rgba(219, 198, 156, .18); color: #fff; }
-.film-tab.is-active { background: var(--gold-foil); color: #23291f; }
-/* "Wedding Teaser" is a long label to sit beside "The Proposal"; on a narrow phone the
-   pair runs the pill off the screen, so tighten the type rather than let it wrap. */
-@media (max-width: 420px) {
-  .film-tabs { max-width: 100%; }
-  .film-tab { padding: .7em 1em; font-size: .62rem; letter-spacing: .1em; }
-}
-.film-tab:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
-
-/* prev / next over the film itself. Deliberately small — the tabs are the primary
-   control; these are a quiet nudge. sections.js hides whichever one has nowhere to go,
-   so at either end there is only ever one arrow on screen. */
-.film-arrow {
-  position: absolute; top: 50%; translate: 0 -50%; z-index: 2; cursor: pointer;
-  width: 1.9rem; height: 1.9rem; display: grid; place-content: center; padding: 0 0 .12em;
-  border: 1px solid rgba(219, 198, 156, .45); border-radius: 999px;
-  background: rgba(23, 29, 24, .38); backdrop-filter: blur(4px);
-  color: var(--gold-light); font-size: 1rem; line-height: 1; opacity: .8;
-  transition: background .3s var(--ease), color .3s var(--ease), opacity .3s var(--ease);
-}
-.film-arrow:hover { background: rgba(23, 29, 24, .75); border-color: var(--gold-light); color: #fff; opacity: 1; }
-.film-arrow:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 3px; opacity: 1; }
-.film-arrow[hidden] { display: none; }   /* nothing to step to in that direction */
-.film-arrow-prev { left: clamp(.5rem, 1.6vw, 1.1rem); }
-.film-arrow-next { right: clamp(.5rem, 1.6vw, 1.1rem); }
-/* which film you are on, for when the tabs have scrolled off the top. Kept at the top
-   of the stage: the bottom belongs to the video's own control bar. */
-.film-now {
-  position: absolute; left: 50%; translate: -50% 0; top: 1rem; z-index: 2; margin: 0;
-  padding: .45em 1.2em; border-radius: 999px; pointer-events: none;
-  background: rgba(23, 29, 24, .55); backdrop-filter: blur(6px); color: var(--gold-light);
-  font-family: var(--sans); font-size: .62rem; letter-spacing: .22em; text-transform: uppercase;
-}
-
+/* ---- The films: The Proposal and the Wedding Teaser, one full-bleed stage each ---- */
 /* Break out of the section's max-width and side padding so the film runs edge to edge
    on phones and desktops alike. `calc(50% - 50vw)` re-centres the 100vw block inside
    whatever column the section happens to be. */
 /* Letterbox colours are deliberately literal, not tokens: a film sits in the dark in
    both themes, and --forest/--forest-deep flip to *light* values in the night palette. */
 /* The stage owns the height, not the footage. Both films letterbox into the same fixed
-   box, so switching tabs never makes the page jump — whatever the two clips' aspect
-   ratios turn out to be. 56.25vw is 16:9 of the full width, floored so a phone still
-   gets a watchable band and capped so it always fits on screen. */
+   box, so the page reads the same whatever the two clips' aspect ratios turn out to be.
+   56.25vw is 16:9 of the full width, floored so a phone still gets a watchable band and
+   capped so it always fits on screen. */
 .film-stage {
   position: relative; width: 100vw; margin: var(--space-4) 0 0 calc(50% - 50vw);
   height: clamp(240px, 56.25vw, 80vh);
   background: #171d18;
 }
 .film-panel { position: absolute; inset: 0; }
-.film-panel[hidden] { display: none; }
 .film-panel video {
   display: block; width: 100%; height: 100%;
   object-fit: contain; background: #171d18;
@@ -190,20 +137,16 @@
   color: var(--forest-deep); margin: 0 0 .5rem;
 }
 
-/* The map is a foreign object in a hand-painted world, so it sits behind glass: muted
-   by default, waking to full colour when you reach for it. */
-/* capped so the map stays a reference, not the main event, once the columns stack */
+/* A painted portrait of the venue; the Get Directions link below carries the map duty. */
+/* capped so the picture stays a reference, not the main event, once the columns stack */
 .detail-map {
   position: relative; aspect-ratio: 4/3; max-height: 400px; margin-bottom: var(--space-3);
   border: 1px solid var(--gold); border-radius: 4px; overflow: hidden;
   background: var(--mint); box-shadow: 0 10px 30px rgba(60, 79, 67, .16);
 }
-.detail-map iframe {
-  display: block; width: 100%; height: 100%; border: 0;
-  filter: saturate(.65) contrast(.95) sepia(.14);
-  transition: filter .6s var(--ease);
+.detail-map img {
+  display: block; width: 100%; height: 100%; object-fit: cover;
 }
-.detail-map:hover iframe, .detail-map:focus-within iframe { filter: none; }
 
 .detail-address, .detail-when {
   font-family: var(--serif); font-size: 1.08rem; color: var(--ink); margin: 0 0 .3rem; line-height: 1.5;
@@ -290,23 +233,175 @@
   .swatch:hover .swatch-chip { transform: none; }
 }
 
-.entourage-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-top: var(--space-4); }
-.entourage-cols h3 { color: var(--olive); font-size: 1.2rem; margin-bottom: .4em; }
-.entourage-cols p { font-family: var(--serif); color: var(--ink); line-height: 1.6; }
+/* ---- Entourage: the printed programme ----
+   One paper panel, groups stacked in ceremony order and separated by hairline rules.
+   The aisle block mirrors how the party stands: groom's side left, bride's side right,
+   a gold rule for the aisle itself. */
+.party {
+  width: 100%; max-width: 860px; margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-3); border-radius: 6px;
+  border: 1px solid rgba(191, 163, 114, .38);
+  background: rgba(248, 243, 234, .78); backdrop-filter: blur(10px);
+  box-shadow: 0 10px 34px rgba(60, 79, 67, .10);
+}
+.party-block, .party-aisle, .party-trio {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid rgba(191, 163, 114, .35);
+}
+.party > :first-child { padding-top: 0; }
+.party > :last-child { border-bottom: 0; padding-bottom: 0; }
+.party-role {
+  font-family: var(--sans); font-size: .66rem; letter-spacing: .42em;
+  text-transform: uppercase; color: var(--olive); margin: 0 0 .7em;
+}
+.party-names { list-style: none; margin: 0; padding: 0; }
+.party-names li {
+  font-family: var(--serif); font-size: 1.12rem; line-height: 1.7; color: var(--ink);
+}
+/* sponsors and bearers read two-up so six pairs don't become a tower */
+.party-pairs { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-4); }
+
+.party-aisle {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);
+  position: relative;
+}
+/* the aisle itself */
+.party-aisle::after {
+  content: ""; position: absolute; left: 50%; top: var(--space-3); bottom: var(--space-3);
+  width: 1px; background: linear-gradient(180deg, transparent, var(--gold), transparent);
+}
+.party-side .party-role { margin-top: 1.1em; }
+.party-side .party-role:first-of-type { margin-top: 0; }
+.party-side-label {
+  font-family: var(--serif); font-style: italic; font-size: .95rem;
+  color: var(--gold-deep); margin: 0 0 1em;
+}
+.party-trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+
+@media (max-width: 640px) {
+  .party { padding-left: var(--space-3); padding-right: var(--space-3); }
+  .party-role { letter-spacing: .26em; }
+  .party-pairs { grid-template-columns: 1fr; }
+  .party-trio { grid-template-columns: 1fr; }
+  .party-trio > div + div { margin-top: var(--space-2); }
+  /* the two sides keep facing each other — that's the point — just tighter */
+  .party-aisle { gap: var(--space-2); }
+  .party-names li { font-size: 1rem; }
+}
 
 .rsvp-note { font-family: var(--serif); font-size: 1.2rem; color: var(--ink); max-width: 540px; margin: 0 auto var(--space-4); }
-.rsvp-form { display: grid; gap: var(--space-2); max-width: 460px; margin: 0 auto; text-align: left; }
+.rsvp-form { display: grid; gap: var(--space-3); max-width: 500px; margin: 0 auto; text-align: left; }
+/* text inputs have an intrinsic width (~20ch) and grid items won't shrink below it —
+   without these two rules the fields punch through the card's edge on phones */
+.rsvp-form label { min-width: 0; }
+.rsvp-form input, .rsvp-form select, .rsvp-form textarea { width: 100%; min-width: 0; }
+/* the form is a reply card — same frosted paper as the programme and detail panels */
+.rsvp-card {
+  padding: var(--space-4); border-radius: 6px;
+  border: 1px solid rgba(191, 163, 114, .38);
+  background: rgba(248, 243, 234, .78); backdrop-filter: blur(10px);
+  box-shadow: 0 10px 34px rgba(60, 79, 67, .10);
+}
+
+/* attend / decline as two tappable answers, not a dropdown */
+.rsvp-choice { border: 0; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.rsvp-choice legend {
+  padding: 0; margin-bottom: .55em;
+  font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; color: var(--olive);
+}
+.rsvp-pill { position: relative; display: block; cursor: pointer; }
+.rsvp-pill input { position: absolute; opacity: 0; pointer-events: none; }
+.rsvp-pill span {
+  display: block; padding: .8em 1.1em; border-radius: 999px;
+  border: 1px solid var(--sage); background: rgba(255, 255, 255, .55);
+  font-family: var(--serif); font-size: 1.05rem; color: var(--ink); text-align: center;
+  text-transform: none; letter-spacing: 0;   /* undo the label chrome it sits inside */
+  transition: background .3s var(--ease), border-color .3s var(--ease), color .3s var(--ease);
+}
+.rsvp-pill input:checked + span {
+  background: #3c4f43; border-color: var(--gold); color: #f4ede1;
+}
+.rsvp-pill input:focus-visible + span { outline: 2px solid var(--olive); outline-offset: 2px; }
+@media (min-width: 480px) {
+  .rsvp-choice { grid-template-columns: 1fr 1fr; }
+  .rsvp-choice legend { grid-column: 1 / -1; }
+}
+
+/* seat count as a stepper; the whole row steps aside when the answer is "declines" */
+.rsvp-seats { display: grid; gap: .3em; transition: opacity .3s var(--ease); }
+.rsvp-seats.is-moot { display: none; }
+.rsvp-seats-label { margin: 0; font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; color: var(--olive); }
+.rsvp-stepper { display: grid; grid-template-columns: 3rem 1fr 3rem; align-items: stretch; }
+.rsvp-stepper input[type="number"] {
+  text-align: center; border-radius: 0; border-left: 0; border-right: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.rsvp-stepper input::-webkit-outer-spin-button,
+.rsvp-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.rsvp-step {
+  cursor: pointer; border: 1px solid var(--sage); background: rgba(255, 255, 255, .55);
+  color: var(--forest-deep); font-size: 1.2rem; line-height: 1;
+  transition: background .3s var(--ease);
+}
+.rsvp-step:first-of-type { border-radius: 3px 0 0 3px; }
+.rsvp-step:last-of-type { border-radius: 0 3px 3px 0; }
+.rsvp-step:hover { background: rgba(191, 163, 114, .22); }
+.rsvp-step:focus-visible { outline: 2px solid var(--olive); outline-offset: 1px; }
+.rsvp-seats-hint {
+  margin: .2rem 0 0; min-height: 1.2em;
+  font-family: var(--serif); font-style: italic; font-size: .92rem; color: var(--gold-deep);
+}
 .rsvp-form label { display: grid; gap: .3em; font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; color: var(--olive); }
 .rsvp-form input, .rsvp-form select, .rsvp-form textarea {
   font-family: var(--sans); font-size: 1rem; padding: .7em .8em; border: 1px solid var(--sage);
   background: rgba(255,255,255,.55); color: var(--ink); border-radius: 3px;
 }
 .rsvp-form input:focus, .rsvp-form select:focus, .rsvp-form textarea:focus { outline: 2px solid var(--olive); outline-offset: 1px; }
-.btn-gold {
-  margin-top: var(--space-1); justify-self: start; cursor: pointer;
-  padding: .8em 1.8em; border: 0; border-radius: 999px; color: var(--forest-deep);
-  font-family: var(--sans); letter-spacing: .15em; text-transform: uppercase; font-size: .8rem;
-  background: var(--gold-foil);
+/* deep forest, deliberately literal: the same quiet green on ivory and at night —
+   the invitation's formal reply, not a shiny CTA */
+.btn-forest {
+  margin-top: var(--space-1); justify-self: stretch; cursor: pointer;
+  padding: .95em 1.8em; border: 1px solid rgba(191, 163, 114, .45); border-radius: 999px;
+  color: #f4ede1; font-family: var(--sans); letter-spacing: .2em; text-transform: uppercase; font-size: .8rem;
+  background: #3c4f43;
+  transition: background .3s var(--ease), transform .3s var(--ease);
+}
+.btn-forest:hover { background: #47594d; transform: translateY(-1px); }
+.btn-forest:focus-visible { outline: 2px solid var(--olive); outline-offset: 2px; }
+.btn-forest:disabled { opacity: .6; cursor: default; transform: none; }
+
+/* type-ahead guest search: an ivory sheet floating under the name field. Literal
+   colours like the detail panels — it must stay readable in the night palette too. */
+.rsvp-name { position: relative; }
+.rsvp-matches {
+  position: absolute; left: 0; right: 0; top: 100%; z-index: 5;
+  margin: .35rem 0 0; padding: .3rem; list-style: none;
+  border: 1px solid var(--gold); border-radius: 6px;
+  background: rgba(248, 243, 234, .97); backdrop-filter: blur(10px);
+  box-shadow: 0 14px 34px rgba(60, 79, 67, .2);
+  max-height: 250px; overflow: auto; text-align: left;
+}
+.rsvp-matches li {
+  padding: .55em .8em; border-radius: 4px; cursor: pointer;
+  font-family: var(--serif); font-size: 1rem; letter-spacing: 0;
+  text-transform: none; color: #2c332b;
+}
+.rsvp-matches li:hover, .rsvp-matches li.is-active { background: rgba(191, 163, 114, .22); }
+
+.rsvp-status {
+  min-height: 1.2em; margin: .1rem 0 0;
+  font-family: var(--sans); font-size: .7rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--olive);
+}
+.rsvp-thanks { font-family: var(--serif); font-size: 1.35rem; color: var(--forest-deep); text-align: center; margin: var(--space-3) 0; }
+
+/* narrow phones: thin the section gutters and the card padding so the fields get
+   usable width instead of three stacked 40px walls of whitespace, and drop the
+   desktop-scale vertical padding to phone scale. (Must come after the .rsvp-card
+   base rule — same specificity, so source order decides.) */
+@media (max-width: 640px) {
+  .rsvp-note { margin-bottom: var(--space-3); }
+  .rsvp-card { padding: var(--space-3); }
 }
 
 /* full-screen drone shot — footage as backdrop; stays dark so the film moment lands */
@@ -319,18 +414,37 @@
 .drone-title .amp { font-style: italic; }
 .drone-rule { display: block; width: 90px; height: 1px; margin: 1.4rem auto; background: linear-gradient(90deg, transparent, var(--gold-light), transparent); }
 
-.footer { position: relative; height: 60vh; display: grid; place-content: center; text-align: center; overflow: hidden; background: var(--forest-deep); }
+/* literal deep forest, not the token: --forest-deep flips light in the night palette,
+   which left the gold names sitting on a pale ground — the footer is dark in both */
+.footer { position: relative; height: 60vh; display: grid; place-content: center; text-align: center; overflow: hidden; background: #3c4f43; }
 .footer-overlay { position: relative; z-index: 1; color: var(--cream); }
 .footer-names { font-family: var(--serif); font-size: clamp(2rem,6vw,3.6rem); }
 .footer-date { letter-spacing: .3em; text-transform: uppercase; font-size: .8rem; opacity: .85; color: var(--mint); }
 
 @media (max-width: 720px) {
-  .entourage-cols { grid-template-columns: 1fr 1fr; }
   /* narrower gutters so phones still get a two-column mosaic, not one stacked strip */
   .section-gallery { padding-left: 1rem; padding-right: 1rem; }
   .gallery-grid { --col-min: 150px; gap: .5rem; }
   .gallery-col { gap: .5rem; }
 }
-@media (max-width: 480px) {
-  .entourage-cols { grid-template-columns: 1fr }
+
+/* ---- Phone: tighten the section frame ----
+   The desktop rhythm — a 6rem band top and bottom, inside a 100vh floor — is what
+   makes a section read as its own "stop" on a wide screen. On a phone the same
+   numbers turn into screenfuls of empty paper: the 100vh floor stretches a short
+   section (the films especially) and then centres its content in the middle of the
+   void. These five carry the real content, so on a phone they drop the floor and
+   take a phone-scale frame. Last block in the file on purpose — these are
+   single-class selectors overriding other single-class rules, so source order is
+   what decides. */
+@media (max-width: 720px) {
+  .section-film, .section-details, .section-entourage, .section-rsvp {
+    min-height: 0;
+    padding: var(--space-4) var(--space-2);
+  }
+  .section-film .film-stage { margin-top: var(--space-3); }
+  /* the gallery keeps its own narrower gutters and its 100vh floor (the sticky
+     "see more" pill needs the height), but the top and bottom bands come down
+     to match everything else */
+  .section-gallery { padding-top: var(--space-4); padding-bottom: var(--space-4); }
 }

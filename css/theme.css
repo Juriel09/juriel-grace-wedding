@@ -25,9 +25,9 @@
    Smooth the change. */
 body { transition: background-color .6s var(--ease), color .6s var(--ease); }
 
-/* --- Persistent floating theme toggle (bottom-left, above all content) --- */
+/* --- Persistent floating theme toggle (bottom-left, sits just above the vinyl) --- */
 .theme-toggle {
-  position: fixed; left: 1.15rem; bottom: 1.15rem; z-index: 45;
+  position: fixed; left: 1.15rem; bottom: 4.35rem; z-index: 45;
   display: inline-grid; place-content: center; width: 2.6rem; height: 2.6rem;
   border: 1px solid var(--gold); border-radius: 999px;
   background: rgba(248,243,234,.55); backdrop-filter: blur(6px);
@@ -49,9 +49,10 @@ body { transition: background-color .6s var(--ease), color .6s var(--ease); }
 :root[data-theme="dark"]  .theme-toggle    { border-color: var(--gold-light); background: rgba(18,22,15,.5); box-shadow: 0 4px 18px rgba(0,0,0,.4); }
 :root[data-theme="dark"]  .theme-toggle:hover { background: rgba(30,38,28,.7); }
 
-/* --- Music toggle: a little vinyl record, sits just above the theme toggle --- */
+/* --- Music toggle: a little vinyl record, anchors the bottom-left corner (the
+   theme toggle sits above it) — level with the film's Skip button during the intro --- */
 .music-toggle {
-  position: fixed; left: 1.15rem; bottom: 4.35rem; z-index: 45;
+  position: fixed; left: 1.15rem; bottom: 1.15rem; z-index: 45;
   width: 2.6rem; height: 2.6rem; padding: 0; border-radius: 999px; overflow: hidden;
   border: 1px solid var(--gold); background: rgba(248,243,234,.55); backdrop-filter: blur(6px);
   box-shadow: 0 4px 18px rgba(0,0,0,.14); cursor: pointer;
@@ -62,6 +63,9 @@ body { transition: background-color .6s var(--ease), color .6s var(--ease); }
 }
 .music-toggle:hover { transform: translateY(-2px); background: rgba(248,243,234,.82); }
 .music-toggle:active { transform: translateY(0) scale(.94); }
+/* while the opening film is up (z 300) the same vinyl floats above it as the film's
+   sound control — still under the loader (z 400) */
+.music-toggle.over-intro { z-index: 350; }
 
 .music-toggle .vinyl {
   position: relative; width: 2rem; height: 2rem; border-radius: 999px; display: block;
@@ -107,13 +111,33 @@ body { transition: background-color .6s var(--ease), color .6s var(--ease); }
 :root[data-theme="dark"] .detail-map {
   background: #1c241e; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
 }
-:root[data-theme="dark"] .detail-map iframe { filter: saturate(.6) brightness(.72) contrast(.95); }
-:root[data-theme="dark"] .detail-map:hover iframe,
-:root[data-theme="dark"] .detail-map:focus-within iframe { filter: none; }
+:root[data-theme="dark"] .detail-map img { filter: saturate(.75) brightness(.78); transition: filter .6s var(--ease); }
+:root[data-theme="dark"] .detail-map:hover img { filter: none; }
 :root[data-theme="dark"] .detail-directions { color: var(--gold-light); border-color: var(--gold-light); }
 :root[data-theme="dark"] .detail-directions:hover { color: #23291f; }
 :root[data-theme="dark"] .detail-alt:hover { color: var(--gold-light); border-bottom-color: var(--gold-light); }
 :root[data-theme="dark"] .swatch-chip { box-shadow: 0 0 0 1px rgba(219, 198, 156, .55), 0 6px 16px rgba(0, 0, 0, .45); }
+
+/* the programme panel and the RSVP reply card follow the .detail pattern at night:
+   the paper goes dark so the light-flipped ink tokens stay legible */
+:root[data-theme="dark"] .party,
+:root[data-theme="dark"] .rsvp-card {
+  background: rgba(18, 22, 15, .58); border-color: rgba(219, 198, 156, .32);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .38);
+}
+:root[data-theme="dark"] .party-side-label,
+:root[data-theme="dark"] .rsvp-seats-hint { color: var(--gold-light); }
+:root[data-theme="dark"] .rsvp-pill span {
+  background: rgba(255, 255, 255, .06); border-color: rgba(175, 191, 170, .3); color: var(--ink);
+}
+/* must restate the checked look: the dark span rule above outranks the base :checked rule */
+:root[data-theme="dark"] .rsvp-pill input:checked + span {
+  background: #3c4f43; border-color: var(--gold); color: #f4ede1;
+}
+:root[data-theme="dark"] .rsvp-step {
+  background: rgba(255, 255, 255, .06); border-color: rgba(175, 191, 170, .3); color: var(--mint);
+}
+:root[data-theme="dark"] .rsvp-step:hover { background: rgba(219, 198, 156, .2); }
 
 /* The card art is always the light ivory card, so text sitting ON it must keep the
    original dark ink/forest/gold — NOT the dark-mode light overrides. Re-pin the
