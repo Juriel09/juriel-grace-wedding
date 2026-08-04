@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<script>
+  /* set the theme before first paint (anti-FOUC) — same contract as index.html */
+  (function () {
+    try {
+      var mode = localStorage.getItem("jg-theme") || "dark";
+      document.documentElement.setAttribute("data-theme", mode);
+    } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+  })();
+</script>
+<title>Guest Album — Juriel &amp; Grace</title>
+<meta name="description" content="Share your photos from Juriel &amp; Grace's wedding." />
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/share.css" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+</head>
+<body class="is-loading">
+
+  <header class="sh-head">
+    <a class="sh-mono" href="./" aria-label="Juriel &amp; Grace">
+      <img src="media/art/monogram.png" alt="" />
+    </a>
+  </header>
+
+  <!-- BEFORE 1:00 PM ------------------------------------------------------ -->
+  <section id="gate" class="sh-gate" hidden>
+    <h1 class="sh-title">The guest album<br />opens soon</h1>
+    <p class="sh-sub">Come back at <span id="gateOpensAt">1:00 PM</span> and share
+      the night with us.</p>
+    <p id="gateCountdown" class="sh-countdown" role="timer" aria-live="off">—</p>
+    <p class="sh-fineprint">This page will open by itself — no need to refresh.</p>
+  </section>
+
+  <!-- FROM 1:00 PM -------------------------------------------------------- -->
+  <section id="album" class="sh-album" hidden>
+    <h1 class="sh-title">Share your photos</h1>
+    <p class="sh-sub">Everything you send lands straight with us — and appears
+      below for everyone.</p>
+
+    <label class="sh-pick" id="pickBtn" tabindex="0" role="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4 7h3l1.5-2h7L17 7h3v12H4z" fill="none" stroke="currentColor"
+              stroke-width="1.4" stroke-linejoin="round" />
+        <circle cx="12" cy="13" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4" />
+      </svg>
+      <span>Add photos</span>
+      <input id="pickInput" type="file" accept="image/*" multiple />
+    </label>
+    <p class="sh-fineprint">Photos only, up to 10 at a time.</p>
+
+    <ul id="queue" class="sh-queue" aria-live="polite"></ul>
+
+    <div id="wall" class="sh-wall"></div>
+    <p id="wallEmpty" class="sh-empty">No photos yet — be the first.</p>
+  </section>
+
+  <!-- NEITHER: the endpoint is unreachable -------------------------------- -->
+  <section id="offline" class="sh-gate" hidden>
+    <h1 class="sh-title">We can’t reach the album</h1>
+    <p class="sh-sub">Check your connection and try again in a moment.</p>
+  </section>
+
+  <div id="lightbox" class="sh-lightbox" hidden>
+    <button id="lightboxClose" class="sh-lightbox-close" aria-label="Close">&times;</button>
+    <img id="lightboxImg" alt="" />
+  </div>
+
+  <p id="toast" class="sh-toast" role="status" aria-live="polite"></p>
+
+  <script src="js/lib/imageFit.js"></script>
+  <script src="js/shareApi.js"></script>
+  <script src="js/shareUpload.js"></script>
+  <script src="js/shareWall.js"></script>
+  <script src="js/share.js"></script>
+</body>
+</html>

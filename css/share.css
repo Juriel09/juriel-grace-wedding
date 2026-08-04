@@ -1,0 +1,155 @@
+/* Guest photo album — a deliberately small stylesheet. This page is scanned from
+   a QR code on venue wifi, so it carries the wedding's brand and almost nothing
+   else: no scroll library, no WebGL, no frame sequence. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  padding: 0 1.25rem 4rem;
+  background: var(--paper-grain), var(--ivory);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* one body class decides which section is on screen */
+body.is-loading #gate, body.is-loading #album, body.is-loading #offline { display: none; }
+body.is-closed  #gate    { display: block; }
+body.is-open    #album   { display: block; }
+body.is-offline #offline { display: block; }
+
+.sh-head { display: flex; justify-content: center; padding: 1.75rem 0 0.5rem; }
+.sh-mono img { height: 54px; width: auto; display: block; }
+
+.sh-gate, .sh-album { max-width: 940px; margin: 0 auto; text-align: center; }
+.sh-gate { padding-top: 12vh; }
+.sh-album { padding-top: 2.5rem; }
+
+.sh-title {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(2rem, 7vw, 3rem);
+  line-height: 1.12;
+  color: var(--forest-deep);
+  margin: 0 0 0.75rem;
+}
+.sh-sub {
+  font-size: 0.98rem; line-height: 1.6; color: var(--ink-soft);
+  max-width: 30rem; margin: 0 auto 2rem;
+}
+.sh-fineprint { font-size: 0.78rem; color: var(--ink-soft); margin: 0.9rem 0 0; opacity: 0.8; }
+
+.sh-countdown {
+  font-family: var(--serif);
+  font-size: clamp(2.2rem, 9vw, 3.4rem);
+  letter-spacing: 0.06em;
+  margin: 1.5rem 0 0;
+  background: var(--gold-foil);
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+
+/* the one thing a guest has to tap */
+.sh-pick {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 1rem 2rem;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--forest-deep);
+  font-family: var(--sans); font-size: 1.02rem; letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.35s ease, transform 0.35s ease;
+}
+.sh-pick:hover, .sh-pick:focus-visible { background: rgba(191, 163, 114, 0.12); transform: translateY(-1px); }
+.sh-pick svg { width: 22px; height: 22px; }
+.sh-pick input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* upload progress — one row per photo, never silently disappearing */
+.sh-queue { list-style: none; margin: 1.75rem auto 0; padding: 0; max-width: 26rem; text-align: left; }
+.sh-queue li {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.5rem 0; font-size: 0.86rem; color: var(--ink-soft);
+  border-bottom: 1px solid rgba(122, 116, 102, 0.15);
+}
+.sh-queue img { width: 38px; height: 38px; object-fit: cover; border-radius: 4px; flex: none; }
+.sh-queue .sh-qname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sh-queue .sh-qstate { flex: none; font-size: 0.78rem; letter-spacing: 0.05em; }
+.sh-queue li.is-done .sh-qstate { color: var(--olive); }
+.sh-queue li.is-failed .sh-qstate { color: #b4574b; }
+.sh-qretry {
+  border: 1px solid var(--gold); background: none; color: var(--gold-deep);
+  border-radius: 999px; font-size: 0.72rem; padding: 0.2rem 0.7rem; cursor: pointer;
+}
+
+/* the wall — the same masonry idea as the main gallery */
+.sh-wall { columns: 190px; column-gap: 0.6rem; margin-top: 3rem; width: 100%; }
+@media (max-width: 720px) { .sh-wall { columns: 140px; } }
+.sh-tile {
+  position: relative; break-inside: avoid; margin-bottom: 0.6rem;
+  border-radius: 6px; overflow: hidden;
+  background: var(--ivory-deep);
+  box-shadow: 0 2px 12px rgba(60, 79, 67, 0.1);
+  animation: shFade 0.6s ease both;
+}
+@keyframes shFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.sh-tile img { display: block; width: 100%; height: auto; cursor: zoom-in; }
+.sh-tile.is-broken { aspect-ratio: 3 / 4; }
+.sh-empty { color: var(--ink-soft); font-size: 0.88rem; margin-top: 2.5rem; }
+.sh-wall:not(:empty) + .sh-empty { display: none; }
+
+/* admin ✕ — only ever rendered when the key checks out server-side */
+.sh-hide {
+  position: absolute; top: 6px; right: 6px;
+  width: 28px; height: 28px; border-radius: 50%;
+  border: none; background: rgba(20, 26, 20, 0.62); color: #fff;
+  font-size: 15px; line-height: 1; cursor: pointer;
+  display: none;
+}
+body.is-admin .sh-hide { display: block; }
+
+.sh-lightbox {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(16, 20, 16, 0.93);
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+}
+.sh-lightbox[hidden] { display: none; }
+.sh-lightbox img { max-width: 100%; max-height: 100%; border-radius: 4px; }
+.sh-lightbox-close {
+  position: absolute; top: 1rem; right: 1.25rem;
+  background: none; border: none; color: var(--ivory);
+  font-size: 2.2rem; line-height: 1; cursor: pointer;
+}
+
+.sh-toast {
+  position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 1rem);
+  margin: 0; padding: 0.7rem 1.2rem; border-radius: 999px;
+  background: var(--forest-deep); color: var(--ivory);
+  font-size: 0.85rem; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: calc(100vw - 2rem);
+}
+.sh-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---- dark, which is this site's default theme ---- */
+:root[data-theme="dark"] body { background: var(--paper-grain), #0d110b; color: #d8ddd2; }
+:root[data-theme="dark"] .sh-title { color: #e6ede0; }
+:root[data-theme="dark"] .sh-sub,
+:root[data-theme="dark"] .sh-fineprint,
+:root[data-theme="dark"] .sh-empty { color: #9aa694; }
+:root[data-theme="dark"] .sh-mono img { filter: brightness(1.5) saturate(0.85); }
+:root[data-theme="dark"] .sh-pick { color: var(--gold-light); border-color: var(--gold-light); }
+:root[data-theme="dark"] .sh-pick:hover { background: rgba(219, 198, 156, 0.12); }
+:root[data-theme="dark"] .sh-tile { background: #161c15; box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45); }
+:root[data-theme="dark"] .sh-queue li { border-bottom-color: rgba(154, 166, 148, 0.18); }
+:root[data-theme="dark"] .sh-toast { background: #e6ede0; color: #1a221a; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sh-tile { animation: none; }
+  .sh-pick { transition: none; }
+}

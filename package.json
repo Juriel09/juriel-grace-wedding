@@ -10,7 +10,8 @@
     "build:story": "node tools/build-story.js",
     "transcode:drone": "node tools/transcode-drone.js",
     "extract:card": "node tools/extract-card.js",
-    "shoot": "node tools/shoot.js"
+    "shoot": "node tools/shoot.js",
+    "preview:share": "node tools/share-preview.js"
   },
   "devDependencies": {
     "@imgly/background-removal-node": "^1.4.5",
