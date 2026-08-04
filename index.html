@@ -54,10 +54,10 @@
       <img src="media/art/monogram.png" alt="" />
     </a>
     <nav class="nav-links">
-      <a href="#story" data-jump="story">Our Story</a>
-      <a href="#gallery" data-jump="gallery">Gallery</a>
       <a href="#film" data-jump="film">Proposal</a>
       <a href="#teaser" data-jump="teaser">Teaser</a>
+      <a href="#story" data-jump="story">Our Story</a>
+      <a href="#gallery" data-jump="gallery">Gallery</a>
       <a href="#details" data-jump="details"><span class="nav-long">Place &amp; Attire</span><span class="nav-short">Place</span></a>
       <a href="#entourage" data-jump="entourage">Entourage</a>
       <a href="#rsvp" class="nav-cta" data-jump="rsvp">RSVP</a>
@@ -106,6 +106,42 @@
       </div>
     </section>
 
+    <!-- The aerial takes over the moment the envelope is done: the venue from above,
+         landing on their names. Addressed as #hero. -->
+    <section id="hero" class="drone-shot">
+      <video class="drone-video" id="droneVideo" muted loop playsinline preload="none" poster="media/video/drone-shot-poster.jpg"></video>
+      <div class="drone-scrim"></div>
+      <div class="drone-caption reveal">
+        <p class="drone-eyebrow">we're getting married</p>
+        <h2 class="drone-title"><span>Juriel</span> <span class="amp foil">&amp;</span> <span>Grace</span></h2>
+        <span class="drone-rule" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <section id="film" class="section section-film reveal">
+      <p class="eyebrow">how he asked</p>
+      <h2 class="section-title">The Proposal</h2>
+      <div class="flourish"></div>
+
+      <!-- full-bleed on every screen: the stage breaks out of the section's max-width -->
+      <div class="film-stage">
+        <div class="film-panel" id="filmPanelProposal" data-src="media/video/proposal.mp4"
+             data-poster="media/video/proposal-poster.jpg"></div>
+      </div>
+    </section>
+
+    <section id="teaser" class="section section-film reveal">
+      <p class="eyebrow">a glimpse of the day</p>
+      <h2 class="section-title">Wedding Teaser</h2>
+      <div class="flourish"></div>
+
+      <!-- No data-src: the panel renders the "film coming soon" card until the teaser
+           is cut. To publish it, point data-src at the file (and data-poster at a still). -->
+      <div class="film-stage">
+        <div class="film-panel" id="filmPanelPrenup"></div>
+      </div>
+    </section>
+
     <section id="story" class="story">
       <div class="story-scroll" id="storyScroll">
         <div class="story-stage" id="storyStage">
@@ -127,41 +163,6 @@
       <div class="flourish"></div>
       <div class="gallery-grid" id="galleryGrid"></div>
       <button class="gallery-more" id="galleryMore">See more</button>
-    </section>
-
-    <section id="film" class="section section-film reveal">
-      <p class="eyebrow">how he asked</p>
-      <h2 class="section-title">The Proposal</h2>
-      <div class="flourish"></div>
-
-      <!-- full-bleed on every screen: the stage breaks out of the section's max-width -->
-      <div class="film-stage">
-        <div class="film-panel" id="filmPanelProposal" data-src="media/video/proposal.mp4"
-             data-poster="media/video/proposal-poster.jpg"></div>
-      </div>
-    </section>
-
-    <!-- The drone footage closes The Proposal: the aerial pulls back off the moment
-         he asked and lands on their names. Addressed as #hero. -->
-    <section id="hero" class="drone-shot">
-      <video class="drone-video" id="droneVideo" muted loop playsinline preload="none" poster="media/video/drone-shot-poster.jpg"></video>
-      <div class="drone-scrim"></div>
-      <div class="drone-caption reveal">
-        <p class="drone-eyebrow">we're getting married</p>
-        <h2 class="drone-title"><span>Juriel</span> <span class="amp foil">&amp;</span> <span>Grace</span></h2>
-        <span class="drone-rule" aria-hidden="true"></span>
-      </div>
-    </section>
-
-    <section id="teaser" class="section section-film reveal">
-      <p class="eyebrow">a glimpse of the day</p>
-      <h2 class="section-title">Wedding Teaser</h2>
-      <div class="flourish"></div>
-
-      <div class="film-stage">
-        <div class="film-panel" id="filmPanelPrenup" data-src="media/video/prenup.mp4"
-             data-poster="media/video/prenup-poster.jpg"></div>
-      </div>
     </section>
 
     <!-- The Place & Attire.

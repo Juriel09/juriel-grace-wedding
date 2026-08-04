@@ -235,22 +235,25 @@
     //   thing these sections must never do.
     const filmPanels = Array.prototype.slice.call(document.querySelectorAll(".film-panel"));
     if (filmPanels.length) {
+      // shown when a film has no file yet, or when the one named fails to load —
+      // the section still reads as finished rather than as a broken black box
+      const showComingSoon = (panel) => {
+        const ph = document.createElement("div");
+        ph.className = "film-missing";
+        ph.innerHTML = '<span class="film-play">▶</span><span>film coming soon</span>';
+        panel.appendChild(ph);
+      };
+
       const mountFilm = (panel) => {
         if (panel.dataset.mounted) return;
         panel.dataset.mounted = "1";
+        // no data-src at all: the film is not cut yet, so say so and load nothing
+        if (!panel.getAttribute("data-src")) { showComingSoon(panel); return; }
         const v = document.createElement("video");
         v.src = panel.getAttribute("data-src");
         v.poster = panel.getAttribute("data-poster") || "";
         v.controls = true; v.playsInline = true; v.preload = "metadata";
-        // no file yet (or a bad path): fall back to a placeholder rather than a
-        // broken black box, so the section still reads as finished
-        v.addEventListener("error", () => {
-          v.remove();
-          const ph = document.createElement("div");
-          ph.className = "film-missing";
-          ph.innerHTML = '<span class="film-play">▶</span><span>film coming soon</span>';
-          panel.appendChild(ph);
-        });
+        v.addEventListener("error", () => { v.remove(); showComingSoon(panel); });
         v.addEventListener("play", () => {
           filmPanels.forEach((p) => {
             const o = p.querySelector("video");
@@ -309,12 +312,10 @@
     const droneSec = document.getElementById("hero");
     const droneVid = document.getElementById("droneVideo");
     const cardScroll = document.getElementById("cardScroll");
-    // The nav appears as the card scene hands off to the first content section.
-    // That used to be the drone shot, back when it sat directly under the card;
-    // the drone now closes The Proposal, far down the page, so the handoff is
-    // measured from the story instead — otherwise the nav would stay hidden for
-    // the whole story and gallery.
-    const handoffSec = document.getElementById("story") || droneSec;
+    // The nav appears as the card scene hands off to whatever section follows it.
+    // Derived rather than named: the running order has been rearranged more than
+    // once, and hard-coding the wrong section leaves the nav hidden for pages.
+    const handoffSec = (cardScroll && cardScroll.nextElementSibling) || droneSec;
 
     let handoffTop = 0, droneTop = 0;
     const measure = () => {
