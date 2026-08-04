@@ -56,6 +56,7 @@ body.is-offline #offline { display: block; }
 
 /* the one thing a guest has to tap */
 .sh-pick {
+  position: relative;
   display: inline-flex; align-items: center; gap: 0.6rem;
   padding: 1rem 2rem;
   border: 1px solid var(--gold);
@@ -136,9 +137,18 @@ body.is-admin .sh-hide { display: block; }
 }
 .sh-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
 
-/* ---- dark, which is this site's default theme ---- */
-:root[data-theme="dark"] body { background: var(--paper-grain), #0d110b; color: #d8ddd2; }
-:root[data-theme="dark"] .sh-title { color: #e6ede0; }
+/* ---- dark, which is this site's default theme ----
+   css/theme.css (loaded before this file) flips --ivory, --ivory-deep, --ink,
+   --ink-soft, --forest-deep, --forest, --olive and --sage for
+   :root[data-theme="dark"]. Anywhere share.css reads --forest-deep (.sh-title,
+   .sh-toast's background) the swap happens on its own — no override needed.
+   The body background here deliberately goes a shade darker than the flipped
+   --ivory, so it's pinned to --ivory-deep instead (still a token, not a
+   literal). What's left below are true departures from the auto-flip (the
+   pick button goes gold, not the flipped forest-deep) or literals with no
+   token equivalent (the queue/tile surfaces, the toast's near-black ink, the
+   empty/fineprint grey). */
+:root[data-theme="dark"] body { background: var(--paper-grain), var(--ivory-deep); color: #d8ddd2; }
 :root[data-theme="dark"] .sh-sub,
 :root[data-theme="dark"] .sh-fineprint,
 :root[data-theme="dark"] .sh-empty { color: #9aa694; }
@@ -147,7 +157,12 @@ body.is-admin .sh-hide { display: block; }
 :root[data-theme="dark"] .sh-pick:hover { background: rgba(219, 198, 156, 0.12); }
 :root[data-theme="dark"] .sh-tile { background: #161c15; box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45); }
 :root[data-theme="dark"] .sh-queue li { border-bottom-color: rgba(154, 166, 148, 0.18); }
-:root[data-theme="dark"] .sh-toast { background: #e6ede0; color: #1a221a; }
+:root[data-theme="dark"] .sh-toast { color: #1a221a; }
+/* the lightbox scrim is always near-black, independent of site theme (it's built
+   to let photos pop, not to match the page) — re-pin --ivory locally so its close
+   icon stays light instead of following the dark-theme flip, the same way
+   css/theme.css re-pins tokens for #cardStage. */
+:root[data-theme="dark"] .sh-lightbox { --ivory: #f8f3ea; }
 
 @media (prefers-reduced-motion: reduce) {
   .sh-tile { animation: none; }
