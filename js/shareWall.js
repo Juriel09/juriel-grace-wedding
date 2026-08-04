@@ -75,7 +75,22 @@
     img.src = src;
     // Drive can take a few seconds to generate a thumbnail and occasionally rate-
     // limits. One retry, then a soft placeholder — never a broken-image icon.
+    //
+    // A tile still showing a local blob: URL (addLocal, before the poll has
+    // swapped it to Drive) is a different failure entirely — some browsers
+    // can't decode certain camera formats (HEIC, notably) in an <img> at all,
+    // and that will never change no matter how many times it's retried. Worse,
+    // blob: URLs don't have real query-string syntax: appending "&r=..." to
+    // one doesn't cache-bust it, it just produces a different, permanently
+    // unresolvable blob: URL. So for a blob: src, skip the retry-and-give-up
+    // path entirely and leave the element exactly where it is — that's what
+    // swapToServer() needs in order to find and repoint a live <img> once
+    // Drive's real thumbnail is ready; if this branch instead tore the element
+    // down (is-broken + img.remove()) the way it does for a Drive URL, that
+    // later swap would set .src on a node no longer in the wall and the tile
+    // would stay broken forever even after the real photo became available.
     img.addEventListener("error", function () {
+      if (img.src.indexOf("blob:") === 0) return;
       if (d.getAttribute("data-retried")) { d.classList.add("is-broken"); img.remove(); return; }
       d.setAttribute("data-retried", "1");
       setTimeout(function () { img.src = img.src + "&r=" + Date.now(); }, 2500);

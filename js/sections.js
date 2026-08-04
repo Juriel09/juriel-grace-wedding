@@ -289,7 +289,7 @@
         if (e.isIntersecting) { if (!dv.src) dv.src = "media/video/drone-shot.mp4"; dv.play().catch(() => {}); }
         else dv.pause();
       }), { threshold: 0.2 });
-      vio.observe(document.getElementById("drone"));
+      vio.observe(document.getElementById("hero"));
     }
 
     // (Section snapping and the mobile flick-to-next navigation were removed so
@@ -306,16 +306,23 @@
     //   measured once (and on resize) and the transform is written a single time per
     //   frame, so scrolling never triggers a layout.
     const nav = document.getElementById("nav");
-    const droneSec = document.getElementById("drone");
+    const droneSec = document.getElementById("hero");
     const droneVid = document.getElementById("droneVideo");
     const cardScroll = document.getElementById("cardScroll");
+    // The nav appears as the card scene hands off to the first content section.
+    // That used to be the drone shot, back when it sat directly under the card;
+    // the drone now closes The Proposal, far down the page, so the handoff is
+    // measured from the story instead — otherwise the nav would stay hidden for
+    // the whole story and gallery.
+    const handoffSec = document.getElementById("story") || droneSec;
 
-    let handoffTop = 0;
+    let handoffTop = 0, droneTop = 0;
     const measure = () => {
       // offsetTop is layout-relative, so it is stable regardless of scroll position
-      handoffTop = droneSec ? droneSec.offsetTop
+      handoffTop = handoffSec ? handoffSec.offsetTop
                  : cardScroll ? cardScroll.offsetHeight
                  : 0;
+      droneTop = droneSec ? droneSec.offsetTop : 0;
     };
     measure();
     window.addEventListener("resize", measure);
@@ -326,10 +333,12 @@
       const y = window.pageYOffset;
       if (y !== lastY) {
         lastY = y;
-        const dist = handoffTop - y;            // drone section's distance from the top
+        const dist = handoffTop - y;            // handoff section's distance from the top
         if (droneVid) {
-          // snap to a tenth of a pixel: raw sub-pixel values make the video shimmer
-          const shift = Math.round(dist * -0.12 * 10) / 10;
+          // parallax is measured from the drone section itself, which no longer
+          // sits at the handoff point. Snap to a tenth of a pixel: raw sub-pixel
+          // values make the video shimmer.
+          const shift = Math.round((droneTop - y) * -0.12 * 10) / 10;
           droneVid.style.transform = "translate3d(0," + shift + "px,0) scale(1.25)";
         }
         // nav: hidden for the whole card/envelope scene, slides in once the first

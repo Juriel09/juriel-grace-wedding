@@ -1,6 +1,6 @@
 /* URL <-> section routing.
-     - The hash follows what you're reading: #story, #gallery, #film, #entourage,
-       #rsvp, #drone. No hash = home (the invitation itself).
+     - The hash follows what you're reading: #story, #gallery, #film, #hero,
+       #teaser, #details, #entourage, #rsvp. No hash = home (the invitation itself).
      - Opening a link that already has a hash skips the opening film and the
        envelope and lands straight on that section, so a shared link works.
    The hash is written with replaceState so scrolling never floods browser history
@@ -10,7 +10,7 @@
   window.W = window.W || {};
 
   // document order — currentId() walks this backwards to find the section under the probe
-  const IDS = ["drone", "story", "gallery", "film", "details", "entourage", "rsvp"];
+  const IDS = ["story", "gallery", "film", "hero", "teaser", "details", "entourage", "rsvp"];
   const clean = (h) => String(h || "").replace(/^#/, "").trim().toLowerCase();
   const el = (id) => document.getElementById(id);
 
