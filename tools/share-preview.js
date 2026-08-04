@@ -18,21 +18,52 @@ const PHOTOS = Array.from({ length: 9 }, (_, i) => ({
 
 function stub(state) {
   return `(function () {
-    window.__SHARE_STUB__ = ${JSON.stringify(state)};
-    var origFetch = window.fetch;
-    window.fetch = function (url, opts) {
-      var s = window.__SHARE_STUB__;
-      var body = {};
-      if (String(url).indexOf("action=list") > -1) {
-        body = { ok: true, now: s.now, admin: s.admin, photos: s.photos };
-      } else if (String(url).indexOf("action=status") > -1) {
-        body = { ok: true, open: s.open, admin: s.admin, opensAt: s.opensAt,
-                 closesAt: null, now: s.now };
-      } else {
-        body = { ok: true, id: "fake-new", tag: "Guest-4000", ts: Date.now() };
+    var DATA = ${JSON.stringify(state)};
+    var skew = 0;
+    function absorb(d) {
+      if (d && d.now) {
+        var t = Date.parse(d.now);
+        if (!isNaN(t)) skew = t - Date.now();
       }
-      return Promise.resolve({ json: function () { return Promise.resolve(body); } });
-    };
+      return d;
+    }
+    // js/shareApi.js's get()/post() reject before ever touching fetch while
+    // ENDPOINT is "" — the committed, shipped value — so stubbing window.fetch
+    // alone can never be reached. Mutate the real shareApi object's methods in
+    // place instead. js/share.js does "var api = window.W.shareApi" at parse
+    // time, so replacing window.W.shareApi wholesale would not affect it —
+    // only mutating the object it already has a reference to will.
+    function patch() {
+      var api = window.W && window.W.shareApi;
+      if (!api) return false;
+      api.configured = function () { return true; };
+      api.now = function () { return Date.now() + skew; };
+      api.status = function () {
+        return Promise.resolve(absorb({
+          ok: true, open: DATA.open, admin: DATA.admin,
+          opensAt: DATA.opensAt, closesAt: null, now: DATA.now
+        }));
+      };
+      api.list = function () {
+        return Promise.resolve(absorb({
+          ok: true, now: DATA.now, admin: DATA.admin, photos: DATA.photos
+        }));
+      };
+      api.upload = function () {
+        return Promise.resolve({ ok: true, id: "fake-new", tag: "Guest-4000", ts: Date.now() });
+      };
+      api.hide = function () { return Promise.resolve({ ok: true }); };
+      return true;
+    }
+    // addInitScript runs before every page script, including js/shareApi.js,
+    // so window.W.shareApi does not exist yet at this line — patch() is
+    // retried on DOMContentLoaded. That listener is registered here, before
+    // the page has run any of its own <script> tags, so it fires before
+    // js/share.js's own DOMContentLoaded listener (registered later, when
+    // that script executes) — same-target listeners fire in registration
+    // order, so patch() always wins the race and check()'s first call already
+    // sees the stubbed methods.
+    if (!patch()) document.addEventListener("DOMContentLoaded", patch);
   })();`;
 }
 

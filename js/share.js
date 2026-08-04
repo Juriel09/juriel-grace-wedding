@@ -68,10 +68,20 @@
   function showAlbum(st) {
     clearInterval(countdownTimer);
     clearInterval(recheckTimer);
+    // init before flipping the body class: is-open must never be true unless the
+    // album is actually wired up, or a guest gets a fully-dressed page with dead
+    // buttons and nobody watching to notice
+    try {
+      window.W.shareUpload.init({ toast: toast, onUploaded: window.W.shareWall.addLocal });
+      window.W.shareWall.init({ admin: !!st.admin, toast: toast });
+    } catch (err) {
+      console.error("share.js: album failed to start", err);
+      toast("the album hit a snag loading — please refresh");
+      setState("is-offline");
+      return;
+    }
     if (st.admin) body.classList.add("is-admin");
     setState("is-open");
-    window.W.shareUpload.init({ toast: toast, onUploaded: window.W.shareWall.addLocal });
-    window.W.shareWall.init({ admin: !!st.admin, toast: toast });
   }
 
   function check() {
