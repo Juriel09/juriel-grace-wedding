@@ -11,10 +11,13 @@
     "transcode:drone": "node tools/transcode-drone.js",
     "extract:card": "node tools/extract-card.js",
     "shoot": "node tools/shoot.js",
-    "preview:share": "node tools/share-preview.js"
+    "preview:share": "node tools/share-preview.js",
+    "qr": "node tools/make-qr.js"
   },
   "devDependencies": {
     "@imgly/background-removal-node": "^1.4.5",
-    "playwright": "^1.61.1"
+    "jsqr": "^1.4.0",
+    "playwright": "^1.61.1",
+    "qrcode": "^1.5.4"
   }
 }
