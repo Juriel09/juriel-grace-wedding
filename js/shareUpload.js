@@ -1,0 +1,184 @@
+/* Turning a phone photo into something a wedding guest can actually send.
+
+   Each file is redrawn at long-edge 2400px and re-encoded as JPEG — usually
+   under a megabyte, still sharp enough to print, and iPhone HEIC comes out the
+   other side as something Windows can open. Then they go up ONE AT A TIME: a
+   hundred phones hitting one Apps Script deployment will occasionally be
+   refused, and a serial queue with retries turns that into a slower upload
+   rather than a lost photo. Nothing ever fails silently. */
+(function () {
+  "use strict";
+  window.W = window.W || {};
+
+  var MAX_EDGE = 2400;
+  var QUALITY = 0.85;
+  var MAX_BATCH = 10;
+  var RETRIES = 2;
+
+  var api = window.W.shareApi;
+  var queueEl, hooks = {}, pending = [], running = false, uid = 0;
+
+  var MESSAGES = {
+    closed: "the album isn’t open yet",
+    type: "photos only, please",
+    too_large: "that photo is too large",
+    rate: "give us a moment, then try again",
+    server: "something went wrong"
+  };
+
+  function shrink(file) {
+    return createImageBitmap(file).then(function (bmp) {
+      var fit = window.W.imageFit.fitWithin(bmp.width, bmp.height, MAX_EDGE);
+      if (!fit.w) throw new Error("bad image");
+      var c = document.createElement("canvas");
+      c.width = fit.w; c.height = fit.h;
+      c.getContext("2d").drawImage(bmp, 0, 0, fit.w, fit.h);
+      if (bmp.close) bmp.close();
+      return new Promise(function (res, rej) {
+        c.toBlob(function (b) { b ? res(b) : rej(new Error("encode")); }, "image/jpeg", QUALITY);
+      });
+    });
+  }
+
+  function toBase64(blob) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var s = String(fr.result);
+        var comma = s.indexOf(",");
+        comma > -1 ? res(s.substring(comma + 1)) : rej(new Error("read"));
+      };
+      fr.onerror = function () { rej(new Error("read")); };
+      fr.readAsDataURL(blob);
+    });
+  }
+
+  function row(item) {
+    var li = document.createElement("li");
+    li.id = "q" + item.id;
+    var img = document.createElement("img");
+    img.src = item.preview; img.alt = "";
+    var name = document.createElement("span");
+    name.className = "sh-qname";
+    name.textContent = item.file.name || "photo";
+    var state = document.createElement("span");
+    state.className = "sh-qstate";
+    state.textContent = "waiting";
+    li.appendChild(img); li.appendChild(name); li.appendChild(state);
+    queueEl.appendChild(li);
+    return li;
+  }
+
+  function mark(item, cls, text) {
+    var li = document.getElementById("q" + item.id);
+    if (!li) return;
+    li.classList.remove("is-done", "is-failed");
+    if (cls) li.classList.add(cls);
+    li.querySelector(".sh-qstate").textContent = text;
+  }
+
+  function offerRetry(item) {
+    var li = document.getElementById("q" + item.id);
+    if (!li || li.querySelector(".sh-qretry")) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "sh-qretry";
+    b.textContent = "try again";
+    b.addEventListener("click", function () {
+      b.remove();
+      item.attempt = 0;
+      mark(item, null, "waiting");
+      pending.push(item);
+      pump();
+    });
+    li.appendChild(b);
+  }
+
+  function send(item) {
+    mark(item, null, "sending…");
+    return shrink(item.file)
+      .then(toBase64)
+      .then(function (b64) {
+        return api.upload({
+          tag: api.tag(),
+          filename: item.file.name || "photo.jpg",
+          mime: "image/jpeg",
+          data: b64
+        });
+      })
+      .then(function (res) {
+        if (res && res.ok) {
+          mark(item, "is-done", "sent ✓");
+          if (hooks.onUploaded) hooks.onUploaded(res.id, item.preview);
+          return;
+        }
+        var err = (res && res.error) || "server";
+        // a rejection the server will keep making is not worth retrying
+        if (err === "closed" || err === "type" || err === "too_large") {
+          mark(item, "is-failed", MESSAGES[err]);
+          if (hooks.toast) hooks.toast(MESSAGES[err]);
+          return;
+        }
+        throw new Error(err);
+      })
+      .catch(function (e) {
+        if (item.attempt < RETRIES) {
+          item.attempt++;
+          mark(item, null, "retrying…");
+          return new Promise(function (r) { setTimeout(r, 900 * item.attempt); })
+            .then(function () { return send(item); });
+        }
+        mark(item, "is-failed", "didn’t send");
+        offerRetry(item);
+        if (hooks.toast) hooks.toast(MESSAGES[String(e.message)] || "some photos didn’t send");
+      });
+  }
+
+  function pump() {
+    if (running) return;
+    var item = pending.shift();
+    if (!item) return;
+    running = true;
+    send(item).then(function () { running = false; pump(); });
+  }
+
+  function accept(files) {
+    var list = [], i;
+    for (i = 0; i < files.length; i++) {
+      if (String(files[i].type || "").indexOf("image/") === 0) list.push(files[i]);
+    }
+    if (list.length < files.length && hooks.toast) hooks.toast("photos only, please");
+    if (!list.length) return;
+    if (list.length > MAX_BATCH) {
+      list = list.slice(0, MAX_BATCH);
+      if (hooks.toast) hooks.toast("sending the first " + MAX_BATCH + " — add the rest after");
+    }
+    list.forEach(function (f) {
+      var item = { id: ++uid, file: f, attempt: 0, preview: URL.createObjectURL(f) };
+      row(item);
+      pending.push(item);
+    });
+    pump();
+  }
+
+  function init(opts) {
+    hooks = opts || {};
+    queueEl = document.getElementById("queue");
+    var input = document.getElementById("pickInput");
+    var btn = document.getElementById("pickBtn");
+    if (!input || !queueEl) return;
+
+    input.addEventListener("change", function () {
+      accept(input.files || []);
+      input.value = "";                  // so picking the same photo twice still fires
+    });
+    // the label already opens the picker on click; this is only for keyboard users
+    if (btn) {
+      btn.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); }
+      });
+    }
+  }
+
+  window.W.shareUpload = { init: init };
+})();
