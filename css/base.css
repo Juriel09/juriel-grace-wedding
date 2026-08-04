@@ -100,14 +100,14 @@ body.nav-visible .nav { transform: none; opacity: 1; pointer-events: auto; }
 @media (max-width: 480px) {
   .nav { padding: .6rem .7rem; gap: .5rem; }
   .nav-monogram img { height: 1.7rem; }
-  /* if five links still can't fit, let the row scroll sideways instead of colliding */
+  /* if all the links still can't fit, let the row scroll sideways instead of colliding */
   .nav-links {
-    gap: .6rem; min-width: 0; overflow-x: auto;
+    gap: .26rem; min-width: 0; overflow-x: auto;
     scrollbar-width: none; -ms-overflow-style: none;
   }
   .nav-links::-webkit-scrollbar { display: none; }
-  .nav-links a { font-size: .58rem; letter-spacing: .06em; }
-  .nav-cta { padding: .38rem .66rem; }
+  .nav-links a { font-size: .52rem; letter-spacing: 0; }
+  .nav-cta { padding: .38rem .6rem; }
 }
 
 /* OPENING FILM — fullscreen intro video, fades away to reveal the card */
