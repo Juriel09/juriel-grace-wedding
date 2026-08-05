@@ -53,7 +53,13 @@
     <a class="nav-monogram" href="#top" data-jump="intro" aria-label="Juriel &amp; Grace — back to the top">
       <img src="media/art/monogram.png" alt="" />
     </a>
-    <nav class="nav-links">
+    <!-- phones only: opens the drawer. Three gold hairlines, the middle one short —
+         the same rule-and-dot the .flourish divider is built from. -->
+    <button class="nav-burger" id="navBurger" type="button"
+            aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+      <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>
+    </button>
+    <nav class="nav-links" id="navLinks">
       <a href="#film" data-jump="film">Proposal</a>
       <a href="#teaser" data-jump="teaser">Teaser</a>
       <a href="#story" data-jump="story">Our Story</a>
@@ -63,6 +69,7 @@
       <a href="#rsvp" class="nav-cta" data-jump="rsvp">RSVP</a>
       <a href="share.html"><span class="nav-long">Guest Album</span><span class="nav-short">Album</span></a>
     </nav>
+    <div class="nav-scrim" id="navScrim"></div>
   </header>
 
   <!-- background music: a vinyl-record toggle at the bottom-left corner, under the
@@ -400,6 +407,7 @@
   <script src="js/three-scene.js"></script>
   <script src="js/main.js"></script>
   <script src="js/introButterflies.js"></script>
+  <script src="js/navDrawer.js"></script>
   <script src="js/countdown.js"></script>
   <script src="js/rsvp.js"></script>
   <script src="js/intro.js"></script>
