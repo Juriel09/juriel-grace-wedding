@@ -9,7 +9,7 @@
   window.W = window.W || {};
 
   // Paste the photos Apps Script Web app URL here (Deploy → Web app → /exec).
-  var ENDPOINT = "";
+  var ENDPOINT = "https://script.google.com/macros/s/AKfycbzX_gbxGJ4-iRY-Tj-nC-vIp7AUnAzZ3oj7PlE7AbmeGoUEcAJYgLENfPp-s_cYoo9Oqg/exec";
 
   var KEY = "";
   try { KEY = new URLSearchParams(location.search).get("key") || ""; } catch (e) {}
