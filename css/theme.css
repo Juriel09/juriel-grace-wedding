@@ -13,6 +13,26 @@
   /* gold stays as-is; it pops on dark */
 }
 
+/* ---- Daylight legibility ----
+   Two separate faults, both only visible by day.
+
+   The pine backdrop is atmosphere in both themes. At night the headings are
+   near-white and read cleanly over the trees. By day the headings are deep forest
+   green: they score ~8:1 against the ivory paper, but they are not sitting on the
+   paper — they are sitting on a treeline at .82 opacity, which swallows them. So in
+   daylight the forest drops back to a watermark and the paper reads through.
+
+   Separately, --olive is too pale on ivory for the small uppercase type it is used
+   for (2.9:1, under the 4.5:1 floor) — the eyebrows, the field labels, the entourage
+   roles. It deepens by day to clear that bar. Every use of the token is text or a
+   focus ring, so nothing filled changes colour; the attire swatches name their own
+   hex and are untouched. */
+:root[data-theme="light"] {
+  --olive: #5f6f4a;
+}
+:root[data-theme="light"] .bg-canvas { opacity: .2; }
+:root[data-theme="light"] body::after { opacity: .68; }
+
 /* The monogram is fixed artwork — deep forest, olive and mocha on transparent. The
    deep-forest J all but vanishes against the night ground, so the mark is lifted rather
    than recoloured, keeping the three inks in their true relationship. Brightness is

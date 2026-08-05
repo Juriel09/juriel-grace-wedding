@@ -258,8 +258,10 @@
 .party-names li {
   font-family: var(--serif); font-size: 1.12rem; line-height: 1.7; color: var(--ink);
 }
-/* sponsors and bearers read two-up so six pairs don't become a tower */
-.party-pairs { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-4); }
+/* Two independent lists side by side — sponsors split male/female, and bearers
+   against flower girls. Each column reads top to bottom on its own; nothing is
+   paired across the gap, so a longer list on one side simply runs longer. */
+.party-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
 
 .party-aisle {
   display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);
@@ -281,7 +283,8 @@
 @media (max-width: 640px) {
   .party { padding-left: var(--space-3); padding-right: var(--space-3); }
   .party-role { letter-spacing: .26em; }
-  .party-pairs { grid-template-columns: 1fr; }
+  /* the two columns stay side by side — that pairing is the point — just tighter */
+  .party-cols { gap: var(--space-2); }
   .party-trio { grid-template-columns: 1fr; }
   .party-trio > div + div { margin-top: var(--space-2); }
   /* the two sides keep facing each other — that's the point — just tighter */
