@@ -1,0 +1,160 @@
+/* THE NAV — the bar on desktop, a drawer on phones.
+
+   Lifted out of base.css so share.html can wear it too. That page is a separate
+   document with its own stylesheet; loading the whole of base.css there would
+   drag in the body background, the WebGL canvas layers and the section rhythm,
+   all of which the album page deliberately does without. This file is only the
+   bar, the drawer, and the mark that opens it.
+
+   Pair it with js/navDrawer.js, which is the behaviour half. */
+
+.nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 40;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  transform: translateY(-100%); opacity: 0; pointer-events: none; /* hidden during the intro */
+  transition: transform .5s var(--ease), opacity .5s var(--ease), background .4s var(--ease), backdrop-filter .4s var(--ease);
+}
+/* Two ways to be visible. index.html reveals the bar on scroll, as the card
+   scene hands off (body.nav-visible, set by sections.js). share.html has no
+   such scene — it is one screen with no intro to get out of the way — so it
+   marks itself nav-static and the bar is simply always there. */
+body.nav-visible .nav,
+body.nav-static .nav { transform: none; opacity: 1; pointer-events: auto; }
+.nav.scrolled { background: rgba(248,243,234,.9); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(175,191,170,.35); }
+/* The couple's real monogram, in place of the "J & G" this used to set in type.
+   media/art/monogram.png is trimmed to the ink, so height here is the mark's real
+   height (it is portrait, roughly 3:4). */
+/* Carried here rather than leaned on from base.css: that file has the global
+   `a { text-decoration: none }`, and share.html does not load it — the bar came
+   up underlined the moment it moved to a page without base.css. Anything the nav
+   needs, the nav states. */
+.nav a { color: inherit; text-decoration: none; }
+.nav-monogram { flex: none; display: block; line-height: 0; }
+.nav-monogram img { display: block; height: 2.2rem; width: auto; }
+.nav-links { display: flex; gap: var(--space-3); align-items: center; }
+.nav-links a { font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--forest-deep); opacity: .85; white-space: nowrap; }
+.nav-links a:hover { opacity: 1; color: var(--olive); }
+.nav-cta {
+  border: 1px solid var(--gold); border-radius: 999px;
+  padding: .5rem 1.1rem; color: var(--gold-deep) !important; opacity: 1 !important;
+}
+/* "Place & Attire" is the longest label in the bar; on phones it shortens to "Place"
+   so the row still fits without scrolling. */
+.nav-short { display: none; }
+/* both are phone-only furniture — see the drawer below */
+.nav-burger, .nav-scrim { display: none; }
+
+/* PHONES: the bar becomes a drawer.
+   Eight links will not fit a 390px row at any size a guest can read. Squeezing
+   them in meant ~8px type with the letter-spacing stripped out, and that cost
+   every link its legibility to make room for one. So the bar keeps the monogram
+   and a menu mark, and the links move somewhere with room to be set properly:
+   full wording restored ("Place & Attire", not "Place"), and in Cormorant rather
+   than the bar's small caps, so the drawer reads as the invitation's own contents
+   page rather than as app chrome bolted onto it. */
+@media (max-width: 720px) {
+  .nav { padding: var(--space-2); }
+  .nav-monogram img { height: 1.9rem; }
+
+  /* The menu mark. Three hairlines in the same gold as .flourish, the rule that
+     divides every section on this page — an uneven middle keeps it from reading
+     as a stock hamburger. It crosses into an ✕ when the drawer is open. */
+  .nav-burger {
+    display: grid; align-content: center; justify-items: center; gap: 5px;
+    position: relative; z-index: 2; flex: none;
+    width: 2.75rem; height: 2.75rem; padding: 0 .35rem;
+    background: none; border: 0; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-burger:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
+  .nav-burger i {
+    display: block; width: 100%; height: 1px; background: var(--gold-deep);
+    transition: transform .45s var(--ease), opacity .2s var(--ease);
+  }
+  .nav-burger i:nth-child(2) { width: 62%; }
+  /* three 1px rules on a 5px gap sit at y = 0, 6, 12 — so ±6px meets in the middle */
+  body.nav-open .nav-burger i:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  body.nav-open .nav-burger i:nth-child(2) { opacity: 0; }
+  body.nav-open .nav-burger i:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* The panel. visibility (not just transform) is what keeps the links out of the
+     tab order while it is shut — a closed drawer must not be reachable by keyboard. */
+  .nav-links {
+    position: fixed; inset: 0 0 0 auto; z-index: 1;
+    width: min(78vw, 320px);
+    flex-direction: column; align-items: stretch; gap: 0;
+    /* centred, so eight links read as a composed list rather than one that ran
+       out. `safe` matters: a plain `center` in a scrolling flex column pins the
+       overflow to the middle and clips the first items unreachably off the top,
+       which is exactly what a landscape phone does here. */
+    justify-content: center;
+    justify-content: safe center;
+    padding: 4.75rem 1.75rem 2.5rem;
+    background: var(--paper-grain), var(--ivory);
+    border-left: 1px solid var(--gold);
+    box-shadow: -20px 0 50px rgba(24,32,27,.28);
+    overflow-y: auto; overscroll-behavior: contain;
+    transform: translateX(101%); visibility: hidden;
+    transition: transform .5s var(--ease), visibility 0s linear .5s;
+  }
+  body.nav-open .nav-links {
+    transform: none; visibility: visible;
+    transition: transform .5s var(--ease), visibility 0s;
+  }
+  .nav-links a {
+    font-family: var(--serif); font-weight: 500;
+    font-size: 1.4rem; line-height: 1.1; letter-spacing: .01em;
+    text-transform: none; color: var(--forest-deep); opacity: 1;
+    padding: .64rem 0;                       /* ~45px of tappable row */
+  }
+  .nav-links a:hover, .nav-links a:focus-visible { color: var(--olive); opacity: 1; }
+  /* the drawer has the room the bar didn't, so the real wording comes back */
+  .nav-long { display: inline; }
+  .nav-short { display: none; }
+
+  /* Six places to read, then the things to do. The flourish marks the join —
+     the page's own section divider, doing here exactly what it does there.
+     RSVP drops its pill: in a column of serif links a bordered button reads as
+     something borrowed from another site, and the gold already says "act". */
+  .nav-links .nav-cta {
+    position: relative; margin-top: 1.5rem;
+    border: 0; border-radius: 0; padding: .64rem 0;
+    color: var(--gold-deep) !important;
+  }
+  .nav-links .nav-cta::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -.85rem; height: 14px;
+    background:
+      radial-gradient(circle at 50% 50%, var(--gold) 0 2px, transparent 3px) center/14px 14px no-repeat,
+      linear-gradient(90deg, transparent, var(--gold-deep), transparent) center/100% 1px no-repeat;
+  }
+
+  .nav-scrim {
+    display: block; position: fixed; inset: 0;
+    background: rgba(24,32,27,.55); backdrop-filter: blur(3px);
+    opacity: 0; pointer-events: none;
+    transition: opacity .45s var(--ease);
+  }
+  body.nav-open .nav-scrim { opacity: 1; pointer-events: auto; }
+
+  /* The bar owns the screen while the drawer is out: over the theme and vinyl
+     toggles, with the reveal transition cut, and — the important one — with its
+     backdrop blur off.
+     .nav.scrolled carries `backdrop-filter: blur(8px)`, and a filtered element
+     becomes the containing block for every position:fixed descendant. That
+     silently re-anchored the panel and the scrim to the 57px-tall bar instead of
+     the viewport: a drawer 124px tall floating below the monogram, and a scrim
+     that covered nothing. Nothing is lost by dropping it here — the scrim is
+     over the whole page anyway. */
+  body.nav-open .nav {
+    z-index: 60; pointer-events: auto; transition: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+}
+@media (max-width: 480px) {
+  .nav { padding: .6rem .7rem; }
+  .nav-monogram img { height: 1.7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-links, .nav-scrim, .nav-burger i { transition: none; }
+}

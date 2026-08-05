@@ -196,8 +196,16 @@
     }
   }
 
+  // Cleared the first time a poll comes back — answered or failed, either way we
+  // are no longer guessing. Until then css/share.css shows a spinner instead of
+  // "No photos yet", which on a full album would be a confident lie.
+  function settled() {
+    document.body.classList.remove("is-wall-loading");
+  }
+
   function poll() {
     api.list().then(function (d) {
+      settled();
       if (!d || !d.ok || !d.photos) return;
       var ids = {};
       // oldest first on insert, because place() prepends — the result is newest-first
@@ -207,7 +215,11 @@
         place(p.id, thumbUrl(p.id, 600), thumbUrl(p.id, 1600));
       }
       reconcile(ids);
-    }).catch(function () { /* one dropped poll is not worth telling a guest about */ });
+    }).catch(function () {
+      // one dropped poll is not worth telling a guest about — but the spinner
+      // still has to stop, or a wall that never loads spins until the battery does
+      settled();
+    });
   }
 
   function schedule() {
@@ -223,6 +235,7 @@
     lightbox = document.getElementById("lightbox");
     lightboxImg = document.getElementById("lightboxImg");
     if (!wall) return;
+    document.body.classList.add("is-wall-loading");
 
     var close = document.getElementById("lightboxClose");
     if (close) close.addEventListener("click", closeLightbox);

@@ -16,17 +16,44 @@
 <meta name="description" content="Share your photos from Juriel &amp; Grace's wedding." />
 <meta name="robots" content="noindex" />
 <link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/nav.css" />
 <link rel="stylesheet" href="css/theme.css" />
 <link rel="stylesheet" href="css/share.css" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 </head>
-<body class="is-loading">
+<body class="is-loading nav-static">
 
-  <header class="sh-head">
-    <a class="sh-mono" href="./" aria-label="Juriel &amp; Grace">
+  <!-- The same bar and drawer as the invitation (css/nav.css + js/navDrawer.js),
+       so a guest who scanned the QR can reach the rest of the site instead of
+       landing on an island. The links are absolute into index.html and carry no
+       data-jump — that attribute is wired by sections.js, which only runs there.
+       "Guest Album" is left out: you are on it. -->
+  <header class="nav scrolled" id="nav">
+    <a class="nav-monogram" href="index.html" aria-label="Juriel &amp; Grace — the invitation">
       <img src="media/art/monogram.png" alt="" />
     </a>
+    <button class="nav-burger" id="navBurger" type="button"
+            aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+      <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>
+    </button>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html#film">Proposal</a>
+      <a href="index.html#teaser">Teaser</a>
+      <a href="index.html#story">Our Story</a>
+      <a href="index.html#gallery">Gallery</a>
+      <a href="index.html#details"><span class="nav-long">Place &amp; Attire</span><span class="nav-short">Place</span></a>
+      <a href="index.html#entourage">Entourage</a>
+      <a href="index.html#rsvp" class="nav-cta">RSVP</a>
+    </nav>
+    <div class="nav-scrim" id="navScrim"></div>
   </header>
+
+  <!-- WHILE WE ASK THE SERVER WHETHER THE ALBUM IS OPEN ---------------------- -->
+  <div id="shLoader" class="sh-loader">
+    <span class="sh-loader-mono"><img src="media/art/monogram.png" alt="" /></span>
+    <span class="sh-loader-rule" aria-hidden="true"></span>
+    <p class="sh-loader-text">opening the album</p>
+  </div>
 
   <!-- BEFORE THE ALBUM OPENS (open_at in the Config tab) -------------------- -->
   <section id="gate" class="sh-gate" hidden>
@@ -63,11 +90,15 @@
       <span>or choose from your photos</span>
       <input id="pickInput" type="file" accept="image/*" multiple tabindex="-1" />
     </label>
-    <p class="sh-fineprint">Photos only, up to 10 at a time.</p>
+    <p class="sh-fineprint">Photos only, up to 5 at a time.</p>
 
     <ul id="queue" class="sh-queue" aria-live="polite"></ul>
 
     <div id="wall" class="sh-wall"></div>
+    <!-- Until the first poll lands we do not know whether the wall is empty or
+         full, and "No photos yet" is a confident answer to a question nobody has
+         asked yet. shareWall.js clears body.is-wall-loading once it knows. -->
+    <div id="wallSpinner" class="sh-spinner" role="status" aria-label="Loading the album"></div>
     <p id="wallEmpty" class="sh-empty">No photos yet — be the first.</p>
   </section>
 
@@ -84,6 +115,7 @@
 
   <p id="toast" class="sh-toast" role="status" aria-live="polite"></p>
 
+  <script src="js/navDrawer.js"></script>
   <script src="js/lib/imageFit.js"></script>
   <script src="js/shareApi.js"></script>
   <script src="js/shareUpload.js"></script>

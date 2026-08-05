@@ -58,7 +58,11 @@
         const img = document.createElement("img");
         img.loading = "lazy";
         img.alt = "Juriel and Grace, photo " + n;
-        img.onerror = function () { this.remove(); };
+        // both paths settle the tile: the shimmer in sections.css means "still
+        // coming", so a photo that will never arrive must stop it too — otherwise
+        // a single missing file shimmers under the gradient for the whole visit
+        img.onload = function () { el.classList.add("is-loaded"); };
+        img.onerror = function () { el.classList.add("is-loaded"); this.remove(); };
         // Only the preview tiles are put on the wire. The rest stay unfetched until
         // "see more" reaches them: a guest who never expands downloads 9 photos, not 31.
         if (i < PREVIEW) img.src = src;

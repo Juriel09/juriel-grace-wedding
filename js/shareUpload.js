@@ -12,7 +12,7 @@
 
   var MAX_EDGE = 2400;
   var QUALITY = 0.85;
-  var MAX_BATCH = 10;
+  var MAX_BATCH = 5;                       // per pick, not per night — a guest can go again
   var RETRIES = 2;
 
   var api = window.W.shareApi;
