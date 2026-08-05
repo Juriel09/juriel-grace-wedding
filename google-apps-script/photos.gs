@@ -36,6 +36,7 @@ var TZ         = "Asia/Manila";
 var MAX_BYTES  = 8 * 1024 * 1024;      // decoded; the client sends ~1MB, this is a backstop
 var RATE_MAX   = 60;                   // uploads per device tag per rolling hour
 var CACHE_SECS = 20;                   // config + folder listing TTL
+var LIST_MAX   = 300;                  // newest N photos returned to the wall
 
 /* ---------------------------------------------------------------------------
  * Pure helpers. No Apps Script APIs in here, so test/photoGate.test.js can run
@@ -145,7 +146,14 @@ function hiddenSet_() {
 }
 
 /* The wall's contents, cached. getFiles() does not recurse, so anything moved
- * into _hidden/ drops out of the listing for free. */
+ * into _hidden/ drops out of the listing for free.
+ *
+ * Capped at LIST_MAX. Every phone on the wall re-downloads this whole array
+ * every 15 seconds, and each entry is roughly 80 bytes of JSON: uncapped, a
+ * thousand-photo reception would be pushing ~10MB a minute across venue wifi
+ * for a wall nobody scrolls to the bottom of — and worse, CacheService.put
+ * throws above 100KB, so somewhere past ~1,200 photos the cache write would
+ * start failing and take the wall down for everyone at once. */
 function list_() {
   var cache = CacheService.getScriptCache();
   var hit = cache.get("list");
@@ -164,7 +172,10 @@ function list_() {
     out.push({ id: id, tag: u > 0 ? name.substring(0, u) : "", ts: f.getDateCreated().getTime() });
   }
   out.sort(function (a, b) { return b.ts - a.ts; });          // newest first
-  cache.put("list", JSON.stringify(out), CACHE_SECS);
+  if (out.length > LIST_MAX) out = out.slice(0, LIST_MAX);
+  // a cache that refuses the write is a slower wall, not a broken one — the
+  // next poll simply lists the folder again
+  try { cache.put("list", JSON.stringify(out), CACHE_SECS); } catch (err) {}
   return out;
 }
 
@@ -234,8 +245,17 @@ function upload_(d) {
 
   var file = DriveApp.getFolderById(FOLDER_ID)
     .createFile(Utilities.newBlob(bytes, mime, name));
-  // set on the file, not inherited from the folder, so a thumbnail is guaranteed
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  // Set on the file, not inherited from the folder, so a thumbnail is
+  // guaranteed. But a Workspace domain policy can forbid link-sharing outright,
+  // and an exception here would fail the upload AFTER the photo is safely in
+  // Drive — the client would retry twice and leave three copies behind, for
+  // every photo, all night. The photo is what matters; a tile that can't render
+  // is a far smaller loss than an album that rejects everything.
+  try {
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (err) {
+    console.error("setSharing refused for " + file.getId() + ": " + err);
+  }
 
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var sh = ss.getSheetByName("Photos") || ss.insertSheet("Photos");

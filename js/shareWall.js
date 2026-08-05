@@ -95,6 +95,9 @@
       d.setAttribute("data-retried", "1");
       setTimeout(function () { img.src = img.src + "&r=" + Date.now(); }, 2500);
     });
+    // drops the placeholder aspect-ratio css/share.css uses to keep lazy loading
+    // honest, so the photo settles into its own shape
+    img.addEventListener("load", function () { img.classList.add("is-loaded"); });
     img.addEventListener("click", function () { openLightbox(state.fullSrc); });
     d.appendChild(img);
 
@@ -172,14 +175,38 @@
     place(id, previewUrl, previewUrl, true);
   }
 
+  // Removes any tile the server no longer lists. This is the other half of
+  // moderation: the couple's ✕ only ever edits the tapping device's own DOM
+  // (see hide()) — without this, a hidden photo keeps showing on every other
+  // open tab all night.
+  //
+  // A tile still holding a local blob (addLocal, not yet swapped to the real
+  // Drive thumbnail by place()/swapToServer) is deliberately left alone:
+  // upload_() in photos.gs does not invalidate the list cache, so a guest's
+  // own just-sent photo can be legitimately missing from `list` for up to
+  // CACHE_SECS. Removing it here would delete the uploader's own tile
+  // seconds after they sent it.
+  function reconcile(ids) {
+    for (var id in seen) {
+      if (ids[id]) continue;
+      var entry = seen[id];
+      if (entry.blobUrl) continue;      // nothing to release: it is a Drive URL
+      entry.el.remove();
+      delete seen[id];
+    }
+  }
+
   function poll() {
     api.list().then(function (d) {
       if (!d || !d.ok || !d.photos) return;
+      var ids = {};
       // oldest first on insert, because place() prepends — the result is newest-first
       for (var i = d.photos.length - 1; i >= 0; i--) {
         var p = d.photos[i];
+        ids[p.id] = 1;
         place(p.id, thumbUrl(p.id, 600), thumbUrl(p.id, 1600));
       }
+      reconcile(ids);
     }).catch(function () { /* one dropped poll is not worth telling a guest about */ });
   }
 

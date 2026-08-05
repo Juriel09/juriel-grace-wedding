@@ -99,7 +99,18 @@ body.is-offline #offline { display: block; }
   animation: shFade 0.6s ease both;
 }
 @keyframes shFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.sh-tile img { display: block; width: 100%; height: auto; cursor: zoom-in; }
+/* The placeholder ratio is what makes loading="lazy" mean anything. Until an
+   image has decoded, the browser has no intrinsic size for it — every tile
+   collapses to zero height, the whole wall fits inside the viewport, and the
+   browser dutifully requests all of them at once. Giving each tile a plausible
+   height up front pushes the later ones genuinely off-screen, so a guest
+   arriving at a 200-photo wall fetches a screenful instead of the lot.
+   shareWall.js clears the ratio on load, letting each photo take its true one. */
+.sh-tile img {
+  display: block; width: 100%; height: auto; cursor: zoom-in;
+  aspect-ratio: 3 / 4;
+}
+.sh-tile img.is-loaded { aspect-ratio: auto; }
 .sh-tile.is-broken { aspect-ratio: 3 / 4; }
 .sh-empty { color: var(--ink-soft); font-size: 0.88rem; margin-top: 2.5rem; }
 .sh-wall:not(:empty) + .sh-empty { display: none; }

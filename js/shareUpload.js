@@ -26,8 +26,29 @@
     server: "something went wrong"
   };
 
+  /* createImageBitmap is the floor this whole pipeline stands on — no bitmap,
+     no resize, no HEIC→JPEG. iOS Safari 14 and older don't have it, and there
+     is no useful fallback: sending a 12MB HEIC raw would fail server-side
+     anyway. Better to say so plainly than to queue photos that can't go. */
+  function canShrink() { return typeof createImageBitmap === "function"; }
+
+  /* The re-encode below rasterises the pixels and drops EXIF with them, so the
+     camera's rotation has to be baked in here or portrait photos land sideways
+     on the wall. "from-image" is the modern default, but a few older engines
+     reject the options argument outright — fall back rather than lose a photo. */
+  function bitmap(file) {
+    return createImageBitmap(file, { imageOrientation: "from-image" })
+      .catch(function () { return createImageBitmap(file); });
+  }
+
   function shrink(file) {
-    return createImageBitmap(file).then(function (bmp) {
+    // Promise.resolve() first: on a browser without createImageBitmap the call
+    // throws synchronously, and a synchronous throw out of send() would escape
+    // pump()'s .then() and leave `running` latched true — every later photo
+    // stuck at "waiting" with nothing left to restart the queue.
+    return Promise.resolve().then(function () {
+      return bitmap(file);
+    }).then(function (bmp) {
       var fit = window.W.imageFit.fitWithin(bmp.width, bmp.height, MAX_EDGE);
       if (!fit.w) throw new Error("bad image");
       var c = document.createElement("canvas");
@@ -139,7 +160,17 @@
     var item = pending.shift();
     if (!item) return;
     running = true;
-    send(item).then(function () { running = false; pump(); });
+    // `running` has to be cleared on every path there is. send() already catches
+    // its own failures, but anything that escaped it — or threw before send()
+    // returned a promise at all — would latch the queue shut for the rest of the
+    // night, with every remaining photo sitting at "waiting" and no way back.
+    var done = function () { running = false; pump(); };
+    Promise.resolve().then(function () { return send(item); }).then(done, function (e) {
+      console.error("shareUpload: queue error", e);
+      mark(item, "is-failed", "didn’t send");
+      offerRetry(item);
+      done();
+    });
   }
 
   function accept(files) {
@@ -154,13 +185,19 @@
       if (droppedVideo && hooks.toast) hooks.toast("photos only, please");
       return;
     }
+    // nothing below this line can work without it, and a queue of rows that
+    // will never move is worse than an honest refusal
+    if (!canShrink()) {
+      if (hooks.toast) hooks.toast("this browser can’t send photos — try Chrome or update iOS");
+      return;
+    }
     var overCap = list.length > MAX_BATCH;
     if (overCap) list = list.slice(0, MAX_BATCH);
     // both messages can be true at once (12 photos + 3 videos picked together);
     // share.js's toast() has no queue, so a second call silently clobbers the
     // first — say both facts in one toast rather than lose one of them
     if (droppedVideo && overCap && hooks.toast) {
-      hooks.toast("photos only, please — sending the first " + MAX_BATCH + " — add the rest after");
+      hooks.toast("photos only, please. sending the first " + MAX_BATCH + " — add the rest after");
     } else if (droppedVideo && hooks.toast) {
       hooks.toast("photos only, please");
     } else if (overCap && hooks.toast) {

@@ -28,16 +28,18 @@
     </a>
   </header>
 
-  <!-- BEFORE 1:00 PM ------------------------------------------------------ -->
+  <!-- BEFORE THE ALBUM OPENS (open_at in the Config tab) -------------------- -->
   <section id="gate" class="sh-gate" hidden>
     <h1 class="sh-title">The guest album<br />opens soon</h1>
-    <p class="sh-sub">Come back at <span id="gateOpensAt">1:00 PM</span> and share
+    <!-- "soon" is the honest fallback: share.js replaces it with the real
+         opening time only once the server has actually told us one. -->
+    <p class="sh-sub">Come back <span id="gateOpensAt">soon</span> and share
       the night with us.</p>
     <p id="gateCountdown" class="sh-countdown" role="timer" aria-live="off">—</p>
     <p class="sh-fineprint">This page will open by itself — no need to refresh.</p>
   </section>
 
-  <!-- FROM 1:00 PM -------------------------------------------------------- -->
+  <!-- ONCE IT IS OPEN ------------------------------------------------------ -->
   <section id="album" class="sh-album" hidden>
     <h1 class="sh-title">Share your photos</h1>
     <p class="sh-sub">Everything you send lands straight with us — and appears
