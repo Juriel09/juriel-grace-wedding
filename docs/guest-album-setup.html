@@ -1,0 +1,432 @@
+<title>Guest Album — Setup</title>
+
+<style>
+  /* Palette and faces come from css/tokens.css — this runbook is part of the
+     same invitation. The faces are that file's own declared fallbacks
+     (Cormorant → Georgia, Jost → system-ui), since a published page cannot
+     reach a font CDN. */
+  :root {
+    --forest-deep: #3c4f43;
+    --forest: #576f61;
+    --olive: #5f6f4a;
+    --gold: #bfa372;
+    --gold-deep: #9a7d4c;
+    --ground: #f8f3ea;
+    --raised: #f0e9db;
+    --ink: #3f4a41;
+    --ink-soft: #7c7466;
+    --rule: rgba(122, 116, 102, 0.22);
+    --warn: #a8503f;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --forest-deep: #e6ede0; --forest: #c3d0ba; --olive: #b7c79c;
+      --gold: #dbc69c; --gold-deep: #c8ad7c;
+      --ground: #12160f; --raised: #1a2017;
+      --ink: #e7e3d6; --ink-soft: #b0aa9a;
+      --rule: rgba(175, 191, 170, 0.2);
+      --warn: #e08b76;
+    }
+  }
+  :root[data-theme="dark"] {
+    --forest-deep: #e6ede0; --forest: #c3d0ba; --olive: #b7c79c;
+    --gold: #dbc69c; --gold-deep: #c8ad7c;
+    --ground: #12160f; --raised: #1a2017;
+    --ink: #e7e3d6; --ink-soft: #b0aa9a;
+    --rule: rgba(175, 191, 170, 0.2);
+    --warn: #e08b76;
+  }
+  :root[data-theme="light"] {
+    --forest-deep: #3c4f43; --forest: #576f61; --olive: #5f6f4a;
+    --gold: #bfa372; --gold-deep: #9a7d4c;
+    --ground: #f8f3ea; --raised: #f0e9db;
+    --ink: #3f4a41; --ink-soft: #7c7466;
+    --rule: rgba(122, 116, 102, 0.22);
+    --warn: #a8503f;
+  }
+
+  body {
+    margin: 0;
+    padding: 3.5rem 1.5rem 6rem;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; }
+
+  .eyebrow {
+    font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold-deep); margin: 0 0 0.75rem;
+  }
+  h1 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(2rem, 6vw, 2.9rem); line-height: 1.1;
+    color: var(--forest-deep); margin: 0 0 0.9rem; text-wrap: balance;
+  }
+  .standfirst { color: var(--ink-soft); margin: 0 0 1.5rem; max-width: 34rem; }
+
+  .kit {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin: 0 0 3.25rem; padding: 0; list-style: none;
+  }
+  .kit li {
+    font-size: 0.78rem; letter-spacing: 0.04em;
+    border: 1px solid var(--rule); border-radius: 999px;
+    padding: 0.28rem 0.8rem; color: var(--ink-soft);
+  }
+
+  /* The steps are a strict sequence — you cannot deploy before you have the
+     IDs — so they are numbered, and the rail makes the order visible. */
+  .steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+  .step {
+    counter-increment: step;
+    position: relative;
+    padding: 0 0 2.75rem 3.25rem;
+    border-left: 1px solid var(--rule);
+    margin-left: 0.95rem;
+  }
+  .step:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .step::before {
+    content: counter(step);
+    position: absolute; left: -0.95rem; top: -0.2rem;
+    width: 1.9rem; height: 1.9rem; border-radius: 50%;
+    display: grid; place-content: center;
+    background: var(--ground);
+    border: 1px solid var(--gold);
+    color: var(--gold-deep);
+    font-family: var(--serif); font-size: 0.92rem; line-height: 1;
+  }
+  .step > h2 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: 1.5rem; line-height: 1.2;
+    color: var(--forest-deep); margin: 0 0 0.15rem;
+  }
+  .where {
+    font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 1rem;
+  }
+  .step p { margin: 0 0 0.9rem; }
+  .step ul, .step ol.plain { margin: 0 0 0.9rem; padding-left: 1.15rem; }
+  .step li + li { margin-top: 0.35rem; }
+
+  code {
+    font-family: var(--mono); font-size: 0.86em;
+    background: var(--raised); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 0.08em 0.36em;
+    word-break: break-word;
+  }
+  pre {
+    font-family: var(--mono); font-size: 0.82rem; line-height: 1.6;
+    background: var(--raised); border: 1px solid var(--rule);
+    border-radius: 5px; padding: 0.85rem 1rem; margin: 0 0 0.9rem;
+    overflow-x: auto;
+  }
+  pre code { background: none; border: 0; padding: 0; font-size: 1em; }
+  .fill { color: var(--gold-deep); font-style: normal; }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 0 0 0.9rem;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left; padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--rule); vertical-align: top;
+  }
+  th {
+    font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 500;
+  }
+  td:first-child { font-family: var(--mono); font-size: 0.84rem; white-space: nowrap; }
+  .tablewrap { overflow-x: auto; }
+
+  /* Two kinds of aside, and they mean different things: a gate you must clear
+     before moving on, and a trap that is expensive to fall into. */
+  .gate, .trap {
+    border-left: 2px solid var(--gold);
+    background: var(--raised);
+    padding: 0.9rem 1.1rem; margin: 0 0 0.9rem;
+    border-radius: 0 4px 4px 0;
+  }
+  .trap { border-left-color: var(--warn); }
+  .gate > :last-child, .trap > :last-child { margin-bottom: 0; }
+  .gate b, .trap b {
+    display: block; font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 500; margin-bottom: 0.35rem;
+  }
+  .gate b { color: var(--gold-deep); }
+  .trap b { color: var(--warn); }
+
+  .rehearse { list-style: none; margin: 0 0 0.9rem; padding: 0; counter-reset: r; }
+  .rehearse li {
+    counter-increment: r; position: relative;
+    padding: 0.55rem 0 0.55rem 2rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .rehearse li::before {
+    content: counter(r); position: absolute; left: 0; top: 0.62rem;
+    font-family: var(--mono); font-size: 0.78rem; color: var(--gold-deep);
+    font-variant-numeric: tabular-nums;
+  }
+  .rehearse li:last-child { border-bottom: 0; }
+  .who { color: var(--forest); font-weight: 500; }
+
+  .after { margin-top: 4rem; padding-top: 2.5rem; border-top: 1px solid var(--rule); }
+  .after h2 {
+    font-family: var(--serif); font-weight: 400; font-size: 1.35rem;
+    color: var(--forest-deep); margin: 2rem 0 0.5rem;
+  }
+  .after h2:first-child { margin-top: 0; }
+
+  a { color: var(--gold-deep); }
+  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">Juriel &amp; Grace · 11 November 2026</p>
+  <h1>Setting up the guest album</h1>
+  <p class="standfirst">Ten steps, about half an hour, plus a rehearsal with two
+    phones. Nothing here needs code — it is all clicking through Google, with
+    two values pasted into files at the end.</p>
+
+  <ul class="kit">
+    <li>The RSVP spreadsheet</li>
+    <li>Google Drive</li>
+    <li>This repo, on your machine</li>
+    <li>Two phones, for step 10</li>
+  </ul>
+
+  <ol class="steps">
+
+    <li class="step">
+      <h2>Add the Config tab</h2>
+      <p class="where">In the RSVP spreadsheet</p>
+      <p>This tab is the album's control panel. Everything about when it opens
+        and closes lives here, and editing it never needs a redeploy.</p>
+      <p>First: <b>File → Settings → Time zone → (GMT+08:00) Manila</b>. Then add
+        a new tab named exactly <code>Config</code> and fill it in:</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>A — Setting</th><th>B — Value</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td>open_at</td><td>2026-11-11 13:00</td><td>uploads open at this moment, venue time</td></tr>
+            <tr><td>close_at</td><td><i>leave blank</i></td><td>uploads stop; blank means never</td></tr>
+            <tr><td>force_open</td><td>FALSE</td><td>TRUE overrides both dates — open right now</td></tr>
+            <tr><td>admin_key</td><td><i>a long secret you invent</i></td><td>unlocks hiding photos</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Row 1 can be a header (<code>Setting</code> / <code>Value</code>) — it is
+        skipped either way.</p>
+      <div class="gate">
+        <b>Before you type the date</b>
+        <p>Select cell B2 and set <b>Format → Number → Plain text</b>. Sheets
+          otherwise converts <code>2026-11-11 13:00</code> into a date value,
+          which still works — but only if the spreadsheet's time zone is Manila.
+          Plain text takes that dependency away.</p>
+      </div>
+      <p>Pick the <code>admin_key</code> like a password: long, random, not a
+        word. It does two things — it puts the hide button on your phone, and it
+        lets you post before 1:00 PM. Anyone who has it can do both.</p>
+      <p>Do <em>not</em> create a Photos tab. The script writes that one itself
+        on the first upload.</p>
+    </li>
+
+    <li class="step">
+      <h2>Make the Drive folder</h2>
+      <p class="where">In Google Drive</p>
+      <p>Create a folder for the photos — <span class="fill">JG Guest Album</span>
+        is a fine name. Open it and read the ID out of the address bar:</p>
+      <pre><code>drive.google.com/drive/folders/<span class="fill">1AbC…xyz</span>
+                               └─────┬─────┘
+                                 FOLDER_ID</code></pre>
+      <p>Keep it somewhere for a moment; step 4 needs it.</p>
+    </li>
+
+    <li class="step">
+      <h2>Copy the spreadsheet ID</h2>
+      <p class="where">In the RSVP spreadsheet</p>
+      <pre><code>docs.google.com/spreadsheets/d/<span class="fill">1XyZ…abc</span>/edit
+                               └────┬────┘
+                                 SHEET_ID</code></pre>
+    </li>
+
+    <li class="step">
+      <h2>Create the script</h2>
+      <p class="where">script.new</p>
+      <p>Go to <a href="https://script.new">script.new</a>, name the project
+        <span class="fill">JG Guest Album</span>, delete the stub function, and
+        paste in the whole of <code>google-apps-script/photos.gs</code>.</p>
+      <p>Fill in the two lines near the top:</p>
+      <pre><code>var SHEET_ID  = "<span class="fill">1XyZ…abc</span>";
+var FOLDER_ID = "<span class="fill">1AbC…xyz</span>";</code></pre>
+      <p>Then <b>gear icon → Project Settings → Time zone → (GMT+08:00) Manila</b>,
+        and save.</p>
+      <div class="trap">
+        <b>A separate project, not the RSVP one</b>
+        <p>An Apps Script project can only define one <code>doGet</code>, and more
+          to the point: a bug in photo code on the wedding day must not be able to
+          take the RSVP down with it.</p>
+      </div>
+    </li>
+
+    <li class="step">
+      <h2>Deploy it</h2>
+      <p class="where">In the script editor</p>
+      <p><b>Deploy → New deployment → gear → Web app</b>, then:</p>
+      <ul>
+        <li><b>Execute as:</b> Me</li>
+        <li><b>Who has access:</b> Anyone</li>
+      </ul>
+      <p>"Anyone" — not "Anyone with a Google account". Guests scanning a card at
+        a reception will not be signed in.</p>
+      <p>Google will ask you to authorize, then warn that it hasn't verified the
+        app. That is expected for a script you wrote: <b>Advanced → Go to JG Guest
+        Album (unsafe) → Allow</b>.</p>
+      <p>Copy the Web app URL. It ends in <code>/exec</code>.</p>
+    </li>
+
+    <li class="step">
+      <h2>Prove the deployment works</h2>
+      <p class="where">In any browser tab</p>
+      <p>Do this before touching the website. Paste the <code>/exec</code> URL
+        straight into the address bar. You should get JSON:</p>
+      <pre><code>{"ok":true,"open":false,"admin":false,
+ "opensAt":"2026-11-11T13:00:00+08:00",
+ "closesAt":null,"now":"2026-08-05T…+08:00"}</code></pre>
+      <p>Then add <code>?action=list</code> to the same URL. Expect
+        <code>{"ok":true,…,"photos":[]}</code>.</p>
+      <div class="gate">
+        <b>Check the time reads right</b>
+        <p><code>opensAt</code> must say <code>13:00</code> and <code>+08:00</code>.
+          If it says <code>05:00</code>, the time zone is wrong — go back to step 4.</p>
+      </div>
+      <div class="trap">
+        <b>If you get <code>"ok":false</code></b>
+        <p>Read the <code>detail</code> field.</p>
+        <p>If it mentions <b>formatDate</b>, a <b>pattern</b>, or <b>XXX</b> — stop
+          and tell me. The timestamp format is the one thing in the backend I could
+          not test without a live deployment, and if your runtime rejects it, every
+          request fails and the album stays permanently offline. It is a one-line
+          fix, but nothing works until it is made.</p>
+        <p>If it mentions <b>permission</b> or <b>not found</b>, one of the two IDs
+          in step 4 is wrong.</p>
+      </div>
+    </li>
+
+    <li class="step">
+      <h2>Point the site at the script</h2>
+      <p class="where">js/shareApi.js, line 12</p>
+      <pre><code>var ENDPOINT = "<span class="fill">https://script.google.com/macros/s/AKfyc…/exec</span>";</code></pre>
+      <p>Commit and push.</p>
+    </li>
+
+    <li class="step">
+      <h2>Publish the site</h2>
+      <p class="where">On GitHub</p>
+      <p>If Pages isn't on yet: <b>repo → Settings → Pages → Deploy from a branch
+        → main / (root)</b>. The album will be at:</p>
+      <pre><code>https://juriel09.github.io/juriel-grace-wedding/share.html</code></pre>
+      <p>Open it on a phone. You should see <b>"The guest album opens soon"</b>
+        with a live countdown ticking down to 1:00 PM on 11 November. That is the
+        whole front end working — the gate is being read from your sheet.</p>
+    </li>
+
+    <li class="step">
+      <h2>Make the QR and the table cards</h2>
+      <p class="where">In the repo</p>
+      <pre><code>npm run qr -- --url https://juriel09.github.io/juriel-grace-wedding/share.html</code></pre>
+      <p>That writes <code>media/qr/share-qr.svg</code> and
+        <code>media/qr/table-card.html</code>. Open the card and print it to
+        5×7 — it is already laid out for that size, in the invitation's paper and
+        gold.</p>
+      <div class="gate">
+        <b>Scan the printed card, not the screen</b>
+        <p>Paper, ink density and the card's border are what actually decide
+          whether a phone reads the code across a dim reception table. A QR that
+          scans perfectly on a monitor can fail on card stock.</p>
+      </div>
+      <div class="trap">
+        <b>The URL is final once these are printed</b>
+        <p>Be sure of the address before the print run. A printed card cannot be
+          edited, and there is no redirect behind it.</p>
+      </div>
+    </li>
+
+    <li class="step">
+      <h2>Rehearse it, with two phones</h2>
+      <p class="where">Anywhere, about ten minutes</p>
+      <p>Set <code>force_open</code> to <code>TRUE</code> in the Config tab and
+        wait twenty seconds — that is how long the script caches config.</p>
+      <ol class="rehearse">
+        <li><span class="who">Phone A</span> opens the album page. It shows
+          "Share your photos", not the countdown.</li>
+        <li><span class="who">Phone A</span> adds two photos, one of them shot in
+          portrait. Both appear at the top of the wall straight away, the right
+          way up.</li>
+        <li><span class="who">Phone B</span> opens the album page. Phone A's
+          photos appear within about twenty seconds.</li>
+        <li><span class="who">Phone B</span> tries to add a video. It is refused
+          with "photos only, please" and nothing is uploaded.</li>
+        <li><span class="who">Your phone</span> opens
+          <code>…/share.html?key=YOUR_ADMIN_KEY</code>. A ✕ appears on every
+          tile. Hide one — it goes immediately on your phone, and disappears from
+          Phone A and Phone B within about twenty seconds.</li>
+        <li><span class="who">Drive</span> holds files named like
+          <code>Guest-1247_20261111-134512-702.jpg</code>, plus a
+          <code>_hidden</code> folder containing the one you hid.</li>
+        <li><span class="who">The sheet</span> has a new Photos tab: one row per
+          upload, with <code>TRUE</code> in the Hidden column for that photo.</li>
+        <li>Set <code>force_open</code> back to <code>FALSE</code>. Within twenty
+          seconds both phones fall back to the countdown.</li>
+      </ol>
+      <p>Step 5 is the one to watch. Until recently hiding a photo only cleared it
+        from the phone that tapped ✕ — every other guest kept seeing it. If it
+        vanishes from all three phones, the moderation actually works.</p>
+    </li>
+
+  </ol>
+
+  <div class="after">
+
+    <h2>On the day</h2>
+    <p>Nothing to do. <code>open_at</code> opens the album at 1:00 PM by itself,
+      and any phone already sitting on the countdown flips over without a refresh.
+      If you want it open earlier, set <code>force_open</code> to <code>TRUE</code>;
+      to close it, put a time in <code>close_at</code>. Config changes land within
+      twenty seconds and never need a redeploy.</p>
+
+    <h2>If you edit photos.gs later</h2>
+    <p><b>Deploy → Manage deployments → pencil → Version: New version → Deploy.</b>
+      The <code>/exec</code> URL stays the same.</p>
+    <p>Do not use "New deployment" for an update. That mints a different URL, and
+      every printed card would still be pointing at the old one.</p>
+
+    <h2>Keep the admin key secret</h2>
+    <p>It unlocks hiding <em>and</em> bypasses the opening time. Never put it on
+      the card, in the QR, or in a link you send to a group. If it gets out,
+      change the cell — it takes effect in twenty seconds.</p>
+
+    <h2>What the album will and won't do</h2>
+    <ul>
+      <li>Ten photos per pick, as many picks as a guest likes</li>
+      <li>Sixty uploads per phone per hour</li>
+      <li>Photos are shrunk to 2400px in the browser before sending — about 1MB
+        each, still large enough to print</li>
+      <li>iPhone HEIC arrives as JPEG, openable on anything</li>
+      <li>Videos are refused at three separate layers</li>
+      <li>The wall shows the newest 300 photos; everything ever sent stays in
+        Drive</li>
+      <li>Uploaders are anonymous — each phone gets a tag like
+        <code>Guest-1247</code> that groups its files in Drive and is never shown
+        on the wall</li>
+    </ul>
+
+  </div>
+
+</div>
