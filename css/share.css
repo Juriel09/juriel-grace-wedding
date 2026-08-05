@@ -69,7 +69,25 @@ body.is-offline #offline { display: block; }
 }
 .sh-pick:hover, .sh-pick:focus-visible { background: rgba(191, 163, 114, 0.12); transform: translateY(-1px); }
 .sh-pick svg { width: 22px; height: 22px; }
-.sh-pick input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.sh-pick input,
+.sh-pick-alt input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* the way back to the camera roll — deliberately quieter than the pill above it,
+   so the primary action stays obvious without this one being hard to find */
+.sh-pick-alt {
+  position: relative;
+  /* block + fit-content so it drops onto its own line under the pill and still
+     centres — the pill above is inline-flex and would otherwise sit beside it */
+  display: block; width: fit-content; margin: 0.9rem auto 0;
+  padding: 0.4rem 0.3rem;
+  color: var(--ink-soft);
+  font-family: var(--sans); font-size: 0.85rem; letter-spacing: 0.03em;
+  text-decoration: underline; text-underline-offset: 4px;
+  text-decoration-color: rgba(191, 163, 114, 0.5);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.sh-pick-alt:hover, .sh-pick-alt:focus-visible { color: var(--forest-deep); }
 
 /* upload progress — one row per photo, never silently disappearing */
 .sh-queue { list-style: none; margin: 1.75rem auto 0; padding: 0; max-width: 26rem; text-align: left; }
@@ -162,7 +180,10 @@ body.is-admin .sh-hide { display: block; }
 :root[data-theme="dark"] body { background: var(--paper-grain), var(--ivory-deep); color: #d8ddd2; }
 :root[data-theme="dark"] .sh-sub,
 :root[data-theme="dark"] .sh-fineprint,
+:root[data-theme="dark"] .sh-pick-alt,
 :root[data-theme="dark"] .sh-empty { color: #9aa694; }
+:root[data-theme="dark"] .sh-pick-alt:hover,
+:root[data-theme="dark"] .sh-pick-alt:focus-visible { color: var(--gold-light); }
 :root[data-theme="dark"] .sh-mono img { filter: brightness(1.5) saturate(0.85); }
 :root[data-theme="dark"] .sh-pick { color: var(--gold-light); border-color: var(--gold-light); }
 :root[data-theme="dark"] .sh-pick:hover { background: rgba(219, 198, 156, 0.12); }

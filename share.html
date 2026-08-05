@@ -45,13 +45,22 @@
     <p class="sh-sub">Everything you send lands straight with us — and appears
       below for everyone.</p>
 
-    <label class="sh-pick" id="pickBtn" tabindex="0" role="button">
+    <!-- Camera first: most guests arrive here straight off the QR card with the
+         shot still in their hand. `capture` opens the camera instead of the photo
+         library — but it also takes one photo at a time and puts the library out
+         of reach, so the library keeps its own way in underneath. Desktop
+         browsers ignore `capture` and show a normal file dialog. -->
+    <label class="sh-pick" id="shootBtn" tabindex="0" role="button">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M4 7h3l1.5-2h7L17 7h3v12H4z" fill="none" stroke="currentColor"
               stroke-width="1.4" stroke-linejoin="round" />
         <circle cx="12" cy="13" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4" />
       </svg>
-      <span>Add photos</span>
+      <span>Take a photo</span>
+      <input id="shootInput" type="file" accept="image/*" capture="environment" tabindex="-1" />
+    </label>
+    <label class="sh-pick-alt" id="pickBtn" tabindex="0" role="button">
+      <span>or choose from your photos</span>
       <input id="pickInput" type="file" accept="image/*" multiple tabindex="-1" />
     </label>
     <p class="sh-fineprint">Photos only, up to 10 at a time.</p>

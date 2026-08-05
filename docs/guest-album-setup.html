@@ -416,9 +416,12 @@ var FOLDER_ID = "<span class="fill">1AbC…xyz</span>";</code></pre>
       <ol class="rehearse">
         <li><span class="who">Phone A</span> opens the album page. It shows
           "Share your photos", not the countdown.</li>
-        <li><span class="who">Phone A</span> adds two photos, one of them shot in
-          portrait. Both appear at the top of the wall straight away, the right
-          way up.</li>
+        <li><span class="who">Phone A</span> taps <b>Take a photo</b>. The camera
+          opens directly — not the photo library. Shoot something; it uploads and
+          lands on the wall on its own.</li>
+        <li><span class="who">Phone A</span> taps <b>or choose from your photos</b>
+          and picks two, one of them shot in portrait. Both appear at the top of
+          the wall straight away, the right way up.</li>
         <li><span class="who">Phone B</span> opens the album page. Phone A's
           photos appear within about twenty seconds.</li>
         <li><span class="who">Phone B</span> tries to add a video. It is refused
@@ -435,8 +438,11 @@ var FOLDER_ID = "<span class="fill">1AbC…xyz</span>";</code></pre>
         <li>Set <code>force_open</code> back to <code>FALSE</code>. Within twenty
           seconds both phones fall back to the countdown.</li>
       </ol>
-      <p>Step 5 is the one to watch. Until recently hiding a photo only cleared it
-        from the phone that tapped ✕ — every other guest kept seeing it. If it
+      <p>Two to watch. <b>Check 2</b> is the only thing no test on a laptop can
+        reach — a headless browser has no camera, so whether the phone opens the
+        camera rather than the photo roll is decided on real hardware or not at
+        all. And <b>check 6</b>: until recently, hiding a photo only cleared it
+        from the phone that tapped ✕, and every other guest kept seeing it. If it
         vanishes from all three phones, the moderation actually works.</p>
     </li>
 

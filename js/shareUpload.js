@@ -211,23 +211,31 @@
     pump();
   }
 
-  function init(opts) {
-    hooks = opts || {};
-    queueEl = document.getElementById("queue");
-    var input = document.getElementById("pickInput");
-    var btn = document.getElementById("pickBtn");
-    if (!input || !queueEl) return;
-
+  // Two ways in — the camera (capture) and the photo library — feeding one queue.
+  // They differ only in which app the phone opens; everything past the change
+  // event is identical, so neither route can drift away from the other's checks.
+  function wire(inputId, labelId) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
     input.addEventListener("change", function () {
       accept(input.files || []);
       input.value = "";                  // so picking the same photo twice still fires
     });
     // the label already opens the picker on click; this is only for keyboard users
-    if (btn) {
-      btn.addEventListener("keydown", function (e) {
+    var label = document.getElementById(labelId);
+    if (label) {
+      label.addEventListener("keydown", function (e) {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); }
       });
     }
+  }
+
+  function init(opts) {
+    hooks = opts || {};
+    queueEl = document.getElementById("queue");
+    if (!queueEl || !document.getElementById("pickInput")) return;
+    wire("shootInput", "shootBtn");
+    wire("pickInput", "pickBtn");
   }
 
   window.W.shareUpload = { init: init };
