@@ -201,6 +201,15 @@
     <li>Two phones, for step 10</li>
   </ul>
 
+  <div class="gate" style="margin: -1.75rem 0 3.25rem;">
+    <b>Two things here are called "deploy"</b>
+    <p><b>Step 5</b> deploys the Apps Script as a <b>Web app</b> — that is the
+      album's backend, the thing that receives photos and writes them to Drive.
+      <b>Step 8</b> publishes the website on GitHub Pages, so guests have a page
+      to open. Different services, unrelated buttons. The only thread between
+      them is one URL you copy from the first into the second.</p>
+  </div>
+
   <ol class="steps">
 
     <li class="step">
@@ -276,15 +285,28 @@ var FOLDER_ID = "<span class="fill">1AbC…xyz</span>";</code></pre>
     </li>
 
     <li class="step">
-      <h2>Deploy it</h2>
+      <h2>Deploy it as a Web app</h2>
       <p class="where">In the script editor</p>
-      <p><b>Deploy → New deployment → gear → Web app</b>, then:</p>
-      <ul>
+      <p>You are deploying the <em>whole script project</em>. There is no file or
+        function to pick — Google calls <code>doGet</code> and <code>doPost</code>
+        itself whenever a browser hits the URL.</p>
+      <ol class="plain">
+        <li>Blue <b>Deploy</b> button, top right → <b>New deployment</b></li>
+        <li>In the dialog, click the gear labelled <b>Select type</b></li>
+        <li>From the list — <i>Web app · API Executable · Add-on · Library</i> —
+          choose <b>Web app</b></li>
         <li><b>Execute as:</b> Me</li>
         <li><b>Who has access:</b> Anyone</li>
-      </ul>
+        <li><b>Deploy</b></li>
+      </ol>
       <p>"Anyone" — not "Anyone with a Google account". Guests scanning a card at
         a reception will not be signed in.</p>
+      <div class="gate">
+        <b>If "Web app" isn't in the list</b>
+        <p>The type only appears once the project contains a <code>doGet</code>,
+          so <code>photos.gs</code> did not paste in completely. Check the file is
+          all there, save, and reopen the dialog.</p>
+      </div>
       <p>Google will ask you to authorize, then warn that it hasn't verified the
         app. That is expected for a script you wrote: <b>Advanced → Go to JG Guest
         Album (unsafe) → Allow</b>.</p>
