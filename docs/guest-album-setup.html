@@ -230,14 +230,42 @@
           </tbody>
         </table>
       </div>
-      <p>Row 1 can be a header (<code>Setting</code> / <code>Value</code>) — it is
-        skipped either way.</p>
+      <p>The tab name is matched exactly — <code>Config</code>, capital C. Names go
+        in column A, values in column B. Row 1 can be a header
+        (<code>Setting</code> / <code>Value</code>); it is skipped either way.</p>
+
+      <p><b>open_at</b> is the only value with a strict format: ISO date order and
+        a 24-hour clock. One o'clock is <code>13:00</code>.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Reads</th><th>Doesn't read</th></tr></thead>
+          <tbody>
+            <tr><td>2026-11-11 13:00</td><td>2026-11-11 1:00 PM <i>— no AM/PM</i></td></tr>
+            <tr><td>2026-11-11T13:00</td><td>11/11/2026 13:00 <i>— wrong date order</i></td></tr>
+            <tr><td>2026-11-11 13:00:00</td><td>2026-11-11 13:00+08:00 <i>— no offset</i></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><b>close_at</b> — leave the cell genuinely empty; blank means it never
+        closes. <b>force_open</b> reads <code>TRUE</code>, <code>true</code>,
+        <code>yes</code>, <code>1</code> or a ticked checkbox as on; anything else,
+        blank included, is off.</p>
+
       <div class="gate">
         <b>Before you type the date</b>
         <p>Select cell B2 and set <b>Format → Number → Plain text</b>. Sheets
           otherwise converts <code>2026-11-11 13:00</code> into a date value,
           which still works — but only if the spreadsheet's time zone is Manila.
           Plain text takes that dependency away.</p>
+      </div>
+      <div class="gate">
+        <b>You don't have to guess</b>
+        <p>Once the tab is saved, wait twenty seconds and open the
+          <code>/exec</code> URL from step 6. If <code>open_at</code> parsed you
+          will see <code>"opensAt":"2026-11-11T13:00:00+08:00"</code>. If you see
+          <code>"opensAt":null</code>, the cell did not read — the album would then
+          stay shut through the wedding, because opening needs a time to compare
+          against.</p>
       </div>
       <p>Pick the <code>admin_key</code> like a password: long, random, not a
         word. It does two things — it puts the hide button on your phone, and it
