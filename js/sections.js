@@ -33,10 +33,12 @@
         }
         return a;
       };
-      const shots = mix(Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, "0")));
-      // photo-25 opens the gallery — the couple's chosen lead; the rest keep the seeded mix
-      shots.splice(shots.indexOf("25"), 1);
-      shots.unshift("25");
+      const shots = mix(Array.from({ length: 25 }, (_, i) => String(i + 1).padStart(2, "0")));
+      // photo-01 opens the gallery: the tiles are built in the order the couple put
+      // their folder in, so the first of their picks leads. The rest keep the seeded
+      // mix, which is what stops shots from one setup arriving in a clump.
+      shots.splice(shots.indexOf("01"), 1);
+      shots.unshift("01");
       // deliberately mixed tile shapes — this is what gives the mosaic its Pinterest
       // stagger; the couple's photos fill whichever tile they land in. The source
       // frames are landscape, so the cycle mixes landscape ratios (3/2, 4/3) with
