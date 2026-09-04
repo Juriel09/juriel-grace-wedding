@@ -59,9 +59,9 @@
 
   skipBtn.addEventListener("click", dismiss);
 
-  // hand the film's audio to the vinyl: while the film is up, tapping the vinyl
-  // mutes/unmutes this video instead of the background song
-  if (window.W.Music && window.W.Music.bindIntroVideo) window.W.Music.bindIntroVideo(video);
+  // (No film-audio handover: the film is silent by design, so the vinyl over it
+  //  controls the background song directly. A bindIntroVideo() call used to sit here
+  //  for a hook music.js has never exported — it did nothing at all.)
 
   // once playback truly starts, lift the gate and arm the end safety.
   // "playing" is the source of truth — it fires whether the attribute autoplay,

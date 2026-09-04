@@ -3,15 +3,18 @@
    always muted — its own audio is unused), and the same vinyl floats above the
    film and toggles the song there like everywhere else. ALWAYS on by default —
    every visit opens with the vinyl spinning; stopping it lasts for the visit only.
-   Browsers block unmuted autoplay, so playback starts on the visitor's first
-   interaction (tap, scroll, key — the skip button counts).
+   Browsers block unmuted autoplay without user activation, so the song is attempted at
+   once and, if refused, starts on the visitor's first real interaction (tap, click, key
+   — the Skip button counts). It is also re-attempted on jg:intro-done, when the opening
+   film ends or is skipped.
    One more thing: tapping the vinyl 11 times in a row — the couple's 11.11 — swaps
-   in the previous background song; 11 more swaps back. */
+   the record for the joke track; 11 more swaps back. Both filenames live in the two
+   constants below and nowhere else. */
 (function () {
   "use strict";
   window.W = window.W || {};
-  var TRACK_MAIN = "media/audio/bless-the-broken-road.mp3";
-  var TRACK_PREV = "media/audio/bg-music.mp3";      // the old song lives on as the code
+  var TRACK_MAIN = "media/audio/bless-the-broken-road-violin.mp3";
+  var TRACK_PREV = "media/audio/never-gonna-give-you-up.mp3";   // the joke on the B-side
   var audio, btn, wantOn = false, started = false, armed = false;
 
   // reflect the toggle's *intent*: the vinyl spins whenever music is enabled
@@ -27,8 +30,17 @@
     audio.play().then(function () { started = true; disarm(); reflect(true); }).catch(armGesture);
   }
 
-  // autoplay fallback: start the song on the very first interaction, film or no film
-  var GESTURES = ["pointerdown", "touchstart", "keydown", "wheel"], gestureOn = null;
+  // Autoplay fallback: start the song on the very first interaction, film or no film.
+  //
+  // The list names every event that can grant *user activation*, which is what unlocks
+  // sound. click / touchend / pointerup are the canonical ones — a touch grants
+  // activation on release, not on touchstart, and a wheel never grants it at all — so
+  // they lead. The rest follow as a wider net; whichever fires first wins, and the
+  // handler is one-shot. (Measured: the older, narrower list also caught the first tap
+  // under emulated touch. This is hardening for real devices, not a fixed bug.)
+  var GESTURES = ["click", "touchend", "pointerup", "pointerdown", "mousedown",
+                  "keydown", "touchstart", "wheel"];
+  var gestureOn = null;
   function disarm() {
     if (gestureOn) GESTURES.forEach(function (e) { window.removeEventListener(e, gestureOn); });
     gestureOn = null; armed = false;
@@ -56,7 +68,10 @@
     if (taps < 11) return false;
     taps = 0;
     if (!audio) return false;
-    var onPrev = audio.src.indexOf("bg-music") !== -1;
+    // read the constant, never a filename spelled out again here: when the tracks were
+    // last swapped this test still named the retired file, so 11 more taps could never
+    // bring the main song back
+    var onPrev = audio.src.indexOf(TRACK_PREV) !== -1;
     audio.src = onPrev ? TRACK_MAIN : TRACK_PREV;
     wantOn = true; started = false;
     reallyPlay();
@@ -90,9 +105,8 @@
     ducked = false;
     if (!resumeAfter) return;       // it was silent before the film — stay silent
     wantOn = true;
-    reflect(true);
     started = false;
-    reallyPlay();
+    reallyPlay();          // reflect(true) lands only if it really resumes
   }
 
   function init() {
@@ -102,8 +116,18 @@
     if (audio) audio.volume = 0.5;
     wantOn = true;                  // every visit opens with the music on
     btn.addEventListener("click", toggle);
-    reflect(wantOn);
+    // Honest, not hopeful: the vinyl spun from load because this reflected the *intent*
+    // to play. On a browser that refuses autoplay that meant a spinning record over a
+    // silent page — the single loudest reason the music looks broken. It now starts
+    // still and spins when sound actually arrives.
+    reflect(false);
+    // Try immediately: a returning visitor whose browser already trusts this site
+    // gets the song from the moment the page paints, under the opening film.
     if (wantOn) start();
+    // intro.js fires this when the film ends or is skipped, and again when the film is
+    // bypassed outright (reduced motion, deep link). It was being dispatched with
+    // nobody listening, so that second chance to start the song was simply lost.
+    window.addEventListener("jg:intro-done", start);
   }
 
   window.W.Music = { init: init, toggle: toggle, duck: duck, unduck: unduck };
