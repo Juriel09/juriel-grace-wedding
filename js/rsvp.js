@@ -24,20 +24,46 @@
     var active = -1;   // keyboard cursor in the dropdown; -1 = nothing highlighted
 
     var say = function (msg) { if (status) status.textContent = msg; };
+    // the name field's own error, shown under the input rather than by the button
+    var nameErr = document.getElementById("rsvpNameError");
+    var sayName = function (msg) {
+      if (!nameErr) { say(msg); return; }          // no element: better said late than not at all
+      nameErr.textContent = msg || "";
+      nameErr.hidden = !msg;
+      if (nameEl) nameEl.classList.toggle("is-wrong", !!msg);
+    };
 
     // one fetch for the whole visit, deferred until the RSVP section approaches —
     // nobody pays for the guest list while they are still reading the story
+    // One fetch for the whole visit, kicked off as the section approaches. Held as a
+    // promise rather than fired and forgotten, because submit has to be sure the list
+    // really arrived before it decides a name is not on it.
+    var loading = null;
+    var loadGuests = function () {
+      if (loading) return loading;
+      loading = fetch(ENDPOINT)
+        .then(function (r) { return r.json(); })
+        .then(function (d) { guests = (d && d.guests) || []; return guests.length > 0; })
+        .catch(function () { loading = null; return false; });   // null, so a retry refetches
+      return loading;
+    };
     if (ENDPOINT && nameEl) {
       var io = new IntersectionObserver(function (es) {
         if (!es.some(function (e) { return e.isIntersecting; })) return;
         io.disconnect();
-        fetch(ENDPOINT)
-          .then(function (r) { return r.json(); })
-          .then(function (d) { guests = (d && d.guests) || []; })
-          .catch(function () { /* search quietly degrades to a plain input */ });
+        loadGuests();
       }, { rootMargin: "400px 0px" });
       io.observe(form);
     }
+
+    // the one place that decides whether a typed name is a real guest
+    var findGuest = function (v) {
+      var q = String(v || "").trim().toLowerCase();
+      for (var i = 0; i < guests.length; i++) {
+        if (guests[i].name.trim().toLowerCase() === q) return guests[i];
+      }
+      return null;
+    };
 
     var hide = function () { if (list) { list.hidden = true; list.innerHTML = ""; } active = -1; };
 
@@ -78,10 +104,8 @@
     // a typed name that exactly matches the list counts the same as picking it —
     // the cap must not be dodgeable by not touching the dropdown
     var matchTyped = function () {
-      var q = nameEl.value.trim().toLowerCase();
-      for (var i = 0; i < guests.length; i++) {
-        if (guests[i].name.toLowerCase() === q) { applySeats(guests[i]); return; }
-      }
+      var g = findGuest(nameEl.value);
+      if (g) { applySeats(g); return; }
       matched = false;                 // an unrecognised name has no allotment to show
       autoOne = false;
       syncSeatsRow();
@@ -108,11 +132,10 @@
     if (minus) minus.addEventListener("click", function () { step(-1); });
     if (plus) plus.addEventListener("click", function () { step(1); });
 
-    var radios = form.querySelectorAll('input[name="attending"]');
-    radios.forEach(function (r) {
-      r.addEventListener("change", function () {
-        if (r.checked) { declined = r.value.indexOf("declines") !== -1; syncSeatsRow(); }
-      });
+    var attendEl = form.querySelector('select[name="attending"]');
+    if (attendEl) attendEl.addEventListener("change", function () {
+      declined = attendEl.value.indexOf("declines") !== -1;
+      syncSeatsRow();
     });
 
     var render = function (matches) {
@@ -131,6 +154,7 @@
 
     var currentMatches = [];
     var search = function () {
+      sayName("");                                  // they are fixing it; drop the complaint
       var q = nameEl.value.trim().toLowerCase();
       active = -1;
       if (q.length < 2 || !guests.length) { hide(); matchTyped(); return; }
@@ -163,7 +187,7 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       hide();
-      var attending = (form.querySelector('input[name="attending"]:checked') || {}).value || "";
+      var attending = attendEl ? attendEl.value : "";
       var declining = attending.indexOf("declines") !== -1;
       var data = {
         name: nameEl ? nameEl.value.trim() : "",
@@ -174,8 +198,44 @@
       if (!data.name) { say("please tell us your name"); return; }
       if (!ENDPOINT) { say("the rsvp isn’t connected yet — check back soon"); return; }
 
+      // Only a name on the couple's list may be sent. The sheet writes whatever it is
+      // given, so this is the only gate: without it a typo becomes a new guest, and the
+      // seat count it was checked against is meaningless.
+      //
+      // The list may not have arrived yet — a guest can reach the button before the
+      // observer's fetch lands, or the fetch may have failed. Rather than wave those
+      // through (which would leave free text as a hole) or refuse outright (which would
+      // strand a real guest on a flaky connection), wait for it here and say so if it
+      // still cannot be had, so they can try again.
       button.disabled = true;
-      say("sending…");
+      say(guests.length ? "sending…" : "checking the guest list…");
+      Promise.resolve(guests.length ? true : loadGuests()).then(function (ok) {
+        if (!ok && !guests.length) {
+          button.disabled = false;
+          say("we couldn’t reach the guest list — please try again in a moment");
+          return;
+        }
+        if (!findGuest(data.name)) {
+          button.disabled = false;
+          say("");
+          sayName("We can’t find that name on our list — please pick yours from the suggestions.");
+          if (nameEl) { nameEl.focus(); nameEl.select(); }
+          return;
+        }
+        say("sending…");
+        send();
+      });
+    });
+
+    function send() {
+      var attending = attendEl ? attendEl.value : "";
+      var declining = attending.indexOf("declines") !== -1;
+      var data = {
+        name: nameEl ? nameEl.value.trim() : "",
+        attending: attending,
+        guests: declining ? "0" : autoOne ? "1" : (seatsEl ? seatsEl.value : ""),
+        note: (form.querySelector('textarea[name="note"]') || {}).value || ""
+      };
       fetch(ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -199,7 +259,7 @@
           button.disabled = false;
           say("something went wrong — please try again");
         });
-    });
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

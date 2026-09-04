@@ -362,21 +362,21 @@
              The endpoint URL is pasted into js/rsvp.js; until then this is a demo. -->
         <form class="rsvp-form rsvp-card" id="rsvpForm">
           <label class="rsvp-name">Full name
-            <input type="text" name="name" placeholder="Start typing your name&hellip;" autocomplete="off" />
+            <input type="text" name="name" placeholder="Start typing your name&hellip;" autocomplete="off"
+                   aria-describedby="rsvpNameError" />
             <ul class="rsvp-matches" id="rsvpMatches" role="listbox" hidden></ul>
+            <!-- belongs to the field, not to the status line by the button: the thing
+                 to fix is up here, and a message at the far end of the form makes you
+                 hunt for what it means. role=alert so it is announced when it appears. -->
+            <p class="rsvp-name-error" id="rsvpNameError" role="alert" hidden></p>
           </label>
 
-          <fieldset class="rsvp-choice">
-            <legend>Will you attend?</legend>
-            <label class="rsvp-pill">
-              <input type="radio" name="attending" value="Joyfully accepts" checked />
-              <span>Joyfully accepts</span>
-            </label>
-            <label class="rsvp-pill">
-              <input type="radio" name="attending" value="Regretfully declines" />
-              <span>Regretfully declines</span>
-            </label>
-          </fieldset>
+          <label>Will you attend?
+            <select name="attending">
+              <option value="Joyfully accepts">Joyfully accepts</option>
+              <option value="Regretfully declines">Regretfully declines</option>
+            </select>
+          </label>
 
           <!-- starts hidden (is-moot) so it never flashes before rsvp.js has
                matched the name; the script owns the class from then on -->

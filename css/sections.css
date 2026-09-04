@@ -364,27 +364,7 @@
 }
 
 /* attend / decline as two tappable answers, not a dropdown */
-.rsvp-choice { border: 0; margin: 0; padding: 0; display: grid; gap: .5rem; }
-.rsvp-choice legend {
-  padding: 0; margin-bottom: .55em;
-  font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; color: var(--olive);
-}
-.rsvp-pill { position: relative; display: block; cursor: pointer; }
-.rsvp-pill input { position: absolute; opacity: 0; pointer-events: none; }
-.rsvp-pill span {
-  display: block; padding: .8em 1.1em; border-radius: 999px;
-  border: 1px solid var(--sage); background: rgba(255, 255, 255, .55);
-  font-family: var(--serif); font-size: 1.05rem; color: var(--ink); text-align: center;
-  text-transform: none; letter-spacing: 0;   /* undo the label chrome it sits inside */
-  transition: background .3s var(--ease), border-color .3s var(--ease), color .3s var(--ease);
-}
-.rsvp-pill input:checked + span {
-  background: #3c4f43; border-color: var(--gold); color: #f4ede1;
-}
-.rsvp-pill input:focus-visible + span { outline: 2px solid var(--olive); outline-offset: 2px; }
 @media (min-width: 480px) {
-  .rsvp-choice { grid-template-columns: 1fr 1fr; }
-  .rsvp-choice legend { grid-column: 1 / -1; }
 }
 
 /* seat count as a stepper; the whole row steps aside when the answer is "declines" */
@@ -454,6 +434,16 @@
 /* type-ahead guest search: an ivory sheet floating under the name field. Literal
    colours like the detail panels — it must stay readable in the night palette too. */
 .rsvp-name { position: relative; }
+/* the name field's own error. Terracotta rather than a browser red — it is the same
+   ink the dress-code guide uses for what to avoid, so a refusal still looks like part
+   of the invitation. */
+.rsvp-name-error {
+  margin: .1rem 0 0; font-family: var(--sans); font-size: .72rem; line-height: 1.45;
+  letter-spacing: .02em; text-transform: none; color: #a1442f;
+}
+.rsvp-form input.is-wrong { border-color: #a1442f; background: rgba(161, 68, 47, .06); }
+:root[data-theme="dark"] .rsvp-name-error { color: #e08a72; }
+:root[data-theme="dark"] .rsvp-form input.is-wrong { border-color: #e08a72; background: rgba(224, 138, 114, .1); }
 .rsvp-matches {
   position: absolute; left: 0; right: 0; top: 100%; z-index: 5;
   margin: .35rem 0 0; padding: .3rem; list-style: none;
