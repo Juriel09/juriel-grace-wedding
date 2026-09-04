@@ -81,8 +81,9 @@
     window.W.cardFrameAspect = this.v.fw / this.v.fh; // so the countdown can sit on the card's bottom edge
     if (this.still) this.still.src = this.v.still;   // swap in the matching still
     this.eased = 0; this.target = 0; this.lastIdx = -1;
-    this.opened = false;  // the card has finished opening at least once — gate is done
+    this.opened = false;  // the card has actually finished opening — gate is done for good
     this.armed = false;   // we have actually been inside the scene (not a deep link)
+    this.bypass = false;  // let the page past for THIS jump only; cleared on return
     this.firstDrawn = false; // the closed envelope has been painted; the loader may lift
   }
 
@@ -108,7 +109,11 @@
     // Anything that jumps the page on purpose (nav links, deep links, "skip our
     // story") lifts the gate — it exists to stop a flick overshooting the scrub, not
     // to trap someone who asked to be somewhere else.
-    window.W.cardOpened = function () { self.opened = true; };
+    // Router and nav call this before a deliberate jump past the card. It lifts the
+    // gate for that jump ONLY. It used to set `opened`, which is permanent — so one
+    // nav click, or arriving on a deep link, disabled the envelope for the whole
+    // visit: scrolling back to the top left it sealed and it never played again.
+    window.W.cardOpened = function () { self.bypass = true; };
 
     this.sizeCanvas();
     window.addEventListener("resize", () => { self.sizeCanvas(); self.render(); });
@@ -224,8 +229,11 @@
     const end = this.sceneEnd();
     const l = window.__lenis;
     const y = l ? l.animatedScroll : window.pageYOffset;
-    if (y <= end + 1) { this.armed = true; return; }  // still inside the scene
-    if (!this.armed) { this.opened = true; return; }  // deep link / restored scroll — never gate
+    // Back inside the scene, so the gate applies again from here — and a bypass is
+    // spent. A jump is allowed past the card once; it does not buy the whole visit.
+    if (y <= end + 1) { this.armed = true; this.bypass = false; return; }
+    if (!this.armed) { this.bypass = true; return; }  // landed past it: deep link, restored scroll
+    if (this.bypass) return;                          // a deliberate jump is in flight
     if (this.eased >= 0.995) { this.opened = true; return; }
     // hold the line, and drop the momentum Lenis has already banked so the page
     // does not lurch forward the instant the gate lifts
@@ -238,7 +246,11 @@
     this.target = this.progress();
     this.eased += (this.target - this.eased) * 0.09;        // smoothing
     if (Math.abs(this.target - this.eased) < 0.0002) this.eased = this.target;
-    if (this.eased >= 0.995) this.opened = true;
+    // Latch only when the card really scrubbed through. Parking the page far past the
+    // scene — a deep link, or a nav jump — drives progress() to 1 and eased with it,
+    // and that must not count as "the envelope has opened": it would disable the gate
+    // for the rest of the visit, so scrolling back up left it sealed and unplayable.
+    if (this.eased >= 0.995 && !this.bypass) this.opened = true;
     this.render();
   };
 
