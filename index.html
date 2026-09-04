@@ -225,7 +225,7 @@
             <img src="media/attire/dress-code.webp" loading="lazy"
                  alt="Guest dress code: Enchanted Forest Elegance, semi formal — a
                       polished yet relaxed look. Wear sage, olive, moss, taupe, beige,
-                      champagne, soft mocha, warm gray or dusty blue. Please avoid
+                      champagne, soft mocha or warm gray. Please avoid
                       flashy colours (yellow, orange, red, pink), overly formal attire
                       such as suits and ties, casual wear such as t-shirts, jeans and
                       sneakers, and colours that are too dark.">
@@ -378,7 +378,9 @@
             </label>
           </fieldset>
 
-          <div class="rsvp-seats" id="rsvpSeats">
+          <!-- starts hidden (is-moot) so it never flashes before rsvp.js has
+               matched the name; the script owns the class from then on -->
+          <div class="rsvp-seats is-moot" id="rsvpSeats">
             <p class="rsvp-seats-label" id="rsvpSeatsLabel">Number of guests</p>
             <div class="rsvp-stepper">
               <button type="button" class="rsvp-step" id="seatMinus" aria-label="One guest fewer">&minus;</button>
@@ -389,8 +391,24 @@
             <p class="rsvp-seats-hint" id="rsvpSeatsHint"></p>
           </div>
 
-          <label>A note for the couple <textarea name="note" rows="3"
-                 placeholder="A song request, a memory, a blessing&hellip;"></textarea></label>
+          <!-- Sits immediately above the note field because that is where it asks the
+               guest to act — a plus-one notice further up the card would be read and
+               then scrolled past before the box it refers to appears. -->
+          <div class="rsvp-plusone">
+            <p class="rsvp-plusone-title">Bringing a Plus One?</p>
+            <p class="rsvp-plusone-body">As we have a limited number of seats available, we
+              kindly ask that you indicate the name of your plus one in the note textbox when
+              submitting your RSVP. This will allow us to properly account for our guest list.
+              <strong>We will review your request and get back to you with confirmation.</strong>
+              We sincerely appreciate your understanding and consideration.</p>
+            <!-- The box lives inside the notice, not after it: the paragraph above tells
+                 the guest to write here, so a divider and a field name between the two
+                 would separate an instruction from the thing it points at. It keeps a
+                 label for screen readers, which the placeholder alone cannot supply. -->
+            <textarea class="rsvp-note-box" name="note" rows="3"
+                      aria-label="A note for the couple"
+                      placeholder="A song request, a memory, a blessing&hellip;"></textarea>
+          </div>
           <button class="btn-forest" type="submit">Send RSVP</button>
           <p class="rsvp-status" id="rsvpStatus" role="status"></p>
         </form>

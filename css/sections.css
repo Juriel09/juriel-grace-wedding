@@ -391,6 +391,27 @@
 .rsvp-step:last-of-type { border-radius: 0 3px 3px 0; }
 .rsvp-step:hover { background: rgba(191, 163, 114, .22); }
 .rsvp-step:focus-visible { outline: 2px solid var(--olive); outline-offset: 1px; }
+/* The plus-one notice. Set as prose, not as another form label: the rest of the card
+   is small uppercase field names, and one more of those would read as a field the guest
+   has to fill in rather than something to read. Ruled top and bottom so it reads as an
+   aside between the seat stepper and the note box. */
+.rsvp-plusone {
+  border-top: 1px solid rgba(191, 163, 114, .35);
+  padding: var(--space-3) 0 0;
+}
+/* the box belongs to the paragraph above it — close enough to read as one thought */
+.rsvp-note-box { margin-top: var(--space-2); }
+.rsvp-plusone-title {
+  margin: 0 0 .5em; font-family: var(--serif); font-style: italic;
+  font-size: 1.15rem; color: var(--forest-deep);
+}
+.rsvp-plusone-body {
+  margin: 0; font-family: var(--serif); font-size: .98rem; line-height: 1.55;
+  color: var(--ink);
+}
+.rsvp-plusone-body strong { font-weight: 600; color: var(--forest-deep); }
+:root[data-theme="dark"] .rsvp-plusone-body strong { color: var(--gold-light); }
+
 .rsvp-seats-hint {
   margin: .2rem 0 0; min-height: 1.2em;
   font-family: var(--serif); font-style: italic; font-size: .92rem; color: var(--gold-deep);

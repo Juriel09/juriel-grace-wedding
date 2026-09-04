@@ -43,16 +43,27 @@
 
     var seatsHint = document.getElementById("rsvpSeatsHint");
     var seatsRow = document.getElementById("rsvpSeats");
-    // the guest-count row steps aside when there is no choice to make: a decline,
-    // or a party allotted 0 or 1 seats — accepting then simply means "1 seat"
-    var declined = false, autoOne = false;
+    // The guest-count row steps aside when there is no choice to make: a decline, a
+    // party allotted 0 or 1 seats (accepting then simply means "one seat"), or — the
+    // default — no name matched yet. Until the sheet says how many seats this party
+    // has, a stepper is asking a question nobody can answer: it would start at 1 with
+    // no ceiling, and any number typed into it would be a guess. It appears once the
+    // name is recognised and there is a real allotment to spend.
+    var declined = false, autoOne = false, matched = false;
     var syncSeatsRow = function () {
-      if (seatsRow) seatsRow.classList.toggle("is-moot", declined || autoOne);
+      var moot = declined || autoOne || !matched;
+      if (seatsRow) seatsRow.classList.toggle("is-moot", moot);
+      // A stepper nobody can see must not submit a number nobody chose. Matching a
+      // party of four and then editing the name left "4" sitting in a hidden field.
+      // Not reset on a decline: that count is moot either way, and flipping back to
+      // accepting should not have quietly wiped the number they had already picked.
+      if ((!matched || autoOne) && seatsEl) seatsEl.value = 1;
     };
     // the sheet says how many seats this party was given: that number becomes the
     // stepper's hard ceiling, and the default answer
     var applySeats = function (g) {
       if (!seatsEl) return;
+      matched = true;
       autoOne = g.seats <= 1;
       syncSeatsRow();
       if (autoOne) { if (seatsHint) seatsHint.textContent = ""; return; }
@@ -71,6 +82,7 @@
       for (var i = 0; i < guests.length; i++) {
         if (guests[i].name.toLowerCase() === q) { applySeats(guests[i]); return; }
       }
+      matched = false;                 // an unrecognised name has no allotment to show
       autoOne = false;
       syncSeatsRow();
       if (seatsEl) { seatsEl.removeAttribute("max"); }
