@@ -100,8 +100,7 @@ window.W.storyAlbums = {
     "album": [
       "media/story/2025/01.jpg",
       "media/story/2025/02.jpg",
-      "media/story/2025/03.jpg",
-      "media/story/2025/04.jpg"
+      "media/story/2025/03.jpg"
     ]
   },
   "bike": {

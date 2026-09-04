@@ -1,35 +1,15 @@
-/* "Our Story" — a one-screen timeline you swipe sideways through the years.
-   .story-scroll is exactly one viewport tall (height set by story.js), .story-stage
-   fills it, and .story-track (as wide as the whole timeline) slides left with your
-   finger. Scrolling is deliberately NOT wired to the pan: scroll straight down and the
-   page carries on past Our Story. */
-.story { position: relative; background: var(--ivory-deep); }
+/* "Our Story" — a timeline you read by scrolling the page, like everything else.
+   .story-track is as tall as the whole story (height set by story.js) and sits in
+   normal flow; each milestone is absolutely positioned within it and fades in as it
+   arrives. Nothing is pinned and nothing is dragged. */
+.story { position: relative; background: var(--ivory-deep); --disc: clamp(64px, min(20vw, 11vh), 104px); }
 .story::before { /* faint paper grain, matching the rest of the site */
   content: ""; position: absolute; inset: 0; background: var(--paper-grain); opacity: .5; pointer-events: none;
 }
-/* one viewport, always — owned by CSS rather than JS so the section can never
-   collapse if a measurement lands before the viewport has a size */
-.story-scroll { position: relative; height: 100vh; }
-.story-stage {
-  position: sticky; top: 0; height: 100vh; overflow: hidden;
-  display: flex; flex-direction: column;
-}
+.story-inner { position: relative; z-index: 1; padding: clamp(3.5rem, 10vh, 7rem) 1rem clamp(3rem, 8vh, 5.5rem); }
 
-/* headline sits above the timeline in flow, so the two can never collide; the
-   timeline then centres itself in whatever height is left (.story-viewport) */
-.story-head {
-  flex: none; z-index: 3; padding: clamp(3.2rem, 9vh, 6.5rem) 1rem 0;
-  text-align: center; pointer-events: none; transition: opacity .4s var(--ease);
-}
-/* `pan-y` keeps vertical scrolling with the browser and reserves the horizontal
-   gesture for the swipe handler in story.js; without it the browser claims the
-   sideways drag and the timeline never moves. */
-.story-viewport {
-  position: relative; flex: 1; min-height: 0; width: 100%;
-  touch-action: pan-y; cursor: grab;
-}
-.story-viewport.is-dragging { cursor: grabbing; user-select: none; }
-.story-viewport.is-dragging .story-disc { pointer-events: none; }
+/* headline sits above the timeline in flow */
+.story-head { text-align: center; margin-bottom: clamp(1.5rem, 4vh, 3rem); }
 .story-head .eyebrow {
   font-family: var(--sans); text-transform: uppercase; letter-spacing: .45em;
   font-size: .72rem; color: var(--olive); margin: 0 0 .5rem;
@@ -39,8 +19,8 @@
   font-size: clamp(2rem, 5vw, 3.2rem); color: var(--forest-deep); margin: 0; line-height: 1;
 }
 
-/* the sliding timeline */
-.story-track { position: absolute; left: 0; top: 50%; will-change: transform; }
+/* the timeline itself — width and height both come from storyGeometry via story.js */
+.story-track { position: relative; margin: 0 auto; }
 .story-lines { position: absolute; inset: 0; overflow: visible; }
 /* the two lifelines each ride their own colour, fusing into gold at the merge */
 .story-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
@@ -48,24 +28,66 @@
 .story-line-g    { stroke: var(--mocha);  stroke-width: 2.5; }
 .story-line-gold { stroke: var(--gold);   stroke-width: 3.5; }
 
-/* a milestone: photo disc + tick to the line + year + caption. The wrapper sits on
-   the line (top = the line point) and grows outward: upward for is-above, down for
-   is-below. */
+/* A milestone sits on the string (top/left = the point on the line) and grows
+   sideways: tick, disc, then year + caption furthest out. is-left reverses the row,
+   so the tick still touches the string on that side too. */
 .story-node {
-  position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: center;
-  transform: translate(-50%, 0);
+  position: absolute; z-index: 2; display: flex; align-items: center; gap: .85rem;
+  transform: translate(0, -50%);
   opacity: 0; transition: opacity .7s var(--ease), translate .7s var(--ease);
-  translate: 0 14px;
+  translate: -12px 0;
 }
-.story-node.is-above { transform: translate(-50%, -100%); }
+.story-node.is-left {
+  transform: translate(-100%, -50%); flex-direction: row-reverse; translate: 12px 0;
+}
 .story-node.in { opacity: 1; translate: 0 0; }
 
-.story-tick { width: 1px; height: var(--tick, 60px); background: linear-gradient(var(--gold), transparent); }
-.story-node.is-below .story-tick { background: linear-gradient(transparent, var(--gold)); }
+.story-tick { flex: none; width: var(--tick, 60px); height: 1px; background: linear-gradient(to right, var(--gold), transparent); }
+.story-node.is-left .story-tick { background: linear-gradient(to left, var(--gold), transparent); }
+
+.story-node-text { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+.story-node.is-left .story-node-text { align-items: flex-end; text-align: right; }
+
+/* an era marker sitting inside its milestone, above the year */
+.story-node-era {
+  font-family: var(--sans); text-transform: uppercase; letter-spacing: .28em;
+  font-size: .58rem; color: var(--gold-deep); opacity: .85; margin-bottom: .3rem;
+}
+
+/* Narrow screens: the string stays centred, so there is no room for a caption beside
+   the disc. The milestone becomes a column instead — disc, then year and caption under
+   it — standing off to one side of the line, which storyGeometry has already allowed
+   for. The column hangs from its disc rather than being centred on the whole block, so
+   the disc still sits exactly on the milestone's point on the string. */
+/* `:not(.story-pair)` throughout — a pair is not a column of its own but a rule laid
+   across the whole band, already placed by the x's in the geometry. Letting these
+   rules touch it drags the whole thing half a band off-centre. */
+.story-track.is-stacked .story-node:not(.story-pair),
+.story-track.is-stacked .story-node.is-left:not(.story-pair) {
+  flex-direction: column; align-items: center; gap: .45rem; text-align: center;
+}
+.story-track.is-stacked .story-node:not(.story-pair) {
+  transform: translate(calc(-50% + var(--tick, 60px)), calc(var(--disc) / -2));
+}
+.story-track.is-stacked .story-node.is-left:not(.story-pair) {
+  transform: translate(calc(-50% - var(--tick, 60px)), calc(var(--disc) / -2));
+}
+/* the tick lies across to the string, so it leaves the column's flow and is drawn at
+   the disc's height; the disc paints over the half that would run under it */
+.story-track.is-stacked .story-node:not(.story-pair) .story-tick {
+  position: absolute; top: calc(var(--disc) / 2); left: 50%;
+  width: var(--tick, 60px); height: 1px; margin-left: calc(var(--tick, 60px) * -1);
+}
+.story-track.is-stacked .story-node.is-left:not(.story-pair) .story-tick { margin-left: 0; }
+.story-track.is-stacked .story-node-text,
+.story-track.is-stacked .story-node.is-left .story-node-text { align-items: center; text-align: center; }
+/* scoped to the milestone's own text — a pair's caption is not in one, and must stay
+   free to run to its full width on a single line */
+.story-track.is-stacked .story-node-text .story-caption { max-width: 17ch; }
 
 .story-disc {
   position: relative;
-  width: clamp(64px, min(22vw, 14vh), 104px); aspect-ratio: 1; border-radius: 999px; overflow: hidden;
+  width: var(--disc); aspect-ratio: 1; border-radius: 999px; overflow: hidden;
   border: 2px solid var(--gold); background: var(--mint);
   display: grid; place-content: center; flex: none; cursor: pointer;
   box-shadow: 0 8px 26px rgba(60, 79, 67, .18);
@@ -82,95 +104,73 @@
 .story-node.is-kiss .story-disc { border-color: var(--gold-light); }
 .story-node.is-merge .story-disc { border-width: 3px; box-shadow: 0 8px 30px rgba(154, 125, 76, .3); }
 
-/* childhood matched pair: two discs (his + hers) joined by a dashed connector */
-.story-pair { display: block; }
+/* childhood matched pair: two discs (his + hers) joined by a dashed connector, with
+   one caption underneath. The wrapper is a zero-height rule across the band, so its
+   children can be placed by the x's storyGeometry worked out. */
+.story-pair { display: block; height: 0; transform: translate(0, -50%); translate: 0 12px; }
+.story-pair.in { translate: 0 0; }
 .story-pair-string {
-  position: absolute; left: 50%; width: 0; transform: translateX(-50%);
-  border-left: 2px dashed var(--gold); opacity: .7;
+  position: absolute; top: 0; height: 0;
+  border-top: 2px dashed var(--gold); opacity: .7;
 }
-.story-pair-disc { position: absolute; left: 50%; transform: translate(-50%, -50%); }
-.story-pair-caption {
-  position: absolute; left: 50%; transform: translateX(-50%); width: 15ch;
-  margin-top: clamp(2.6rem, 8vh, 3.8rem); font-style: italic;
+.story-pair-disc { position: absolute; top: 0; transform: translate(-50%, -50%); }
+/* the caption sits under the pair, where the string runs straight through it — the
+   chip of section colour lets the text win without breaking the line's continuity */
+/* It wants to be one line: wrapped to two it reached down into the next milestone's
+   disc, and the spacing is uniform, so there is no extra room here to grow into. */
+/* both classes, to outrank the plain .story-caption's 15ch further down the file */
+.story-caption.story-pair-caption {
+  position: absolute; top: calc(var(--disc) / 2 + .5rem); transform: translateX(-50%);
+  width: max-content; max-width: 94%; font-style: italic; text-align: center;
+  padding: .2rem .6rem; background: var(--ivory-deep); border-radius: .4rem;
 }
 
 /* a quiet gap in the years: a marker sitting on the line */
-.story-gap { transform: translate(-50%, -50%); flex-direction: column; }
+.story-gap { gap: .5rem; }
 .story-gap-dots { color: var(--gold); letter-spacing: .3em; font-size: 1.3rem; opacity: .6; line-height: 1; }
 .story-gap-label {
   font-family: var(--sans); font-size: .62rem; letter-spacing: .2em; text-transform: uppercase;
-  color: var(--ink-soft); opacity: .75; margin-top: .35rem; white-space: nowrap;
+  color: var(--ink-soft); opacity: .75; white-space: nowrap;
 }
 
-/* era captions floating over the track — legible on both the light and dark ground */
+/* the one free-floating era label, above the lanes before they have met. It lies
+   across both strings, so it carries the section's colour with it. */
 .story-era {
-  position: absolute; z-index: 2; pointer-events: none;
+  position: absolute; z-index: 2; pointer-events: none; transform: translateX(-50%);
   font-family: var(--sans); text-transform: uppercase; letter-spacing: .3em;
   font-size: .64rem; color: var(--gold-deep); opacity: .82; white-space: nowrap;
+  padding: .3rem .8rem; background: var(--ivory-deep); border-radius: 999px;
 }
-.story-era.is-knot { transform: translateX(-50%); opacity: .9; }
 
 .story-year {
-  font-family: var(--sans); font-weight: 500; letter-spacing: .18em; font-size: .82rem;
-  color: var(--gold-deep); margin: .55rem 0 .15rem;
+  font-family: var(--sans); letter-spacing: .18em; font-size: .82rem;
+  color: var(--gold-deep); margin: 0 0 .2rem;
 }
 .story-caption {
   font-family: var(--serif); font-size: clamp(.95rem, 1.9vw, 1.2rem); color: var(--ink);
-  max-width: 15ch; text-align: center; line-height: 1.25;
+  max-width: 15ch; line-height: 1.25;
 }
-/* above the line the text reads above the disc, so flip the vertical margins */
-.story-node.is-above .story-year { margin: .15rem 0 .55rem; }
 
-/* Swipe cue — bottom-left. Since scrolling no longer moves the years, this is the
-   only thing telling anyone the timeline is draggable; it retires the moment they
-   swipe (.has-panned, set by story.js). */
-/* centred, because bottom-left belongs to the music + theme toggles */
-.story-hint {
-  position: absolute; left: 50%; translate: -50% 0; bottom: 1.55rem; z-index: 4; margin: 0;
-  pointer-events: none; color: var(--gold-deep);
-  font-family: var(--sans); letter-spacing: .2em; text-transform: uppercase; font-size: .66rem;
-  opacity: .85; transition: opacity .5s var(--ease), transform .5s var(--ease);
-  animation: story-hint-nudge 2.6s var(--ease) infinite;
-}
-.story.has-panned .story-hint { opacity: 0; transform: translateX(-8px); animation: none; }
-@keyframes story-hint-nudge {
-  0%, 100% { transform: translateX(0); }
-  50%      { transform: translateX(-7px); }
-}
-@media (prefers-reduced-motion: reduce) { .story-hint { animation: none; } }
-
-/* ---- reduced-motion / very small: a plain vertical list, no pin ---- */
-.story--lite .story-stage { position: static; height: auto; display: block; overflow: visible; padding: var(--space-6) var(--space-3); }
-.story--lite .story-track { position: static; top: auto; width: auto !important; height: auto !important; transform: none; }
-.story--lite .story-head { position: static; opacity: 1 !important; margin-bottom: var(--space-4); }
-.story-list { list-style: none; max-width: 520px; margin: 0 auto; padding: 0; display: grid; gap: var(--space-3); }
-.story-list-item { display: flex; align-items: center; gap: var(--space-3); }
-.story-list-item .story-disc { width: 64px; }
-.story-list-text { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
-.story-list-text .story-caption { max-width: none; text-align: left; }
+/* ---- reduced motion: the same timeline, shown all at once ---- */
+.story--lite .story-node { opacity: 1; translate: 0 0; transition: none; }
+.story--lite .story-disc { transition: none; }
 
 /* ---- dark theme ---- */
 /* .story background uses --ivory-deep, which already flips to night in dark theme —
    do NOT re-point it at --forest-deep (that token is a *light* heading colour in dark). */
 :root[data-theme="dark"] .story-line-j { stroke: var(--sage); }
 :root[data-theme="dark"] .story-line-g { stroke: var(--nude); }
+/* --gold-deep is a daylight ink: on the night ground these three go to the light gold,
+   the same lift the nav and the toggles already take in theme.css */
 :root[data-theme="dark"] .story-era { color: var(--gold-light); opacity: .9; }
+:root[data-theme="dark"] .story-node-era,
+:root[data-theme="dark"] .story-year { color: var(--gold-light); }
 :root[data-theme="dark"] .story-disc { background: rgba(255, 255, 255, .06); box-shadow: 0 8px 26px rgba(0, 0, 0, .4); }
 :root[data-theme="dark"] .story-disc.is-empty { background: radial-gradient(circle at 32% 28%, #2b352d, #1c241e); }
 :root[data-theme="dark"] .story-disc-glyph { color: var(--mint); }
-:root[data-theme="dark"] .story-hint { color: var(--gold-light); }
 
 @media (max-width: 720px) {
   .story-caption { font-size: 1rem; }
-  .story-hint { bottom: 1.15rem; font-size: .6rem; letter-spacing: .16em; }
-}
-/* short viewports (landscape phones): tighten the headline and labels so the
-   milestones still fit in the height left over below the title */
-@media (max-height: 560px) {
-  .story-head { padding-top: 4.2rem; }  /* clears the fixed nav bar */
-  .story-head .story-title { font-size: 1.45rem; }
-  .story-head .eyebrow { font-size: .6rem; margin-bottom: .25rem; }
-  .story-year { font-size: .7rem; margin: .3rem 0 .1rem; }
-  .story-node.is-above .story-year { margin: .1rem 0 .3rem; }
-  .story-caption { font-size: .85rem; }
+  .story-node { gap: .6rem; }
+  .story-gap-label { white-space: normal; max-width: 18ch; }
 }

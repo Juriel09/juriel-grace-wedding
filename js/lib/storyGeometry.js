@@ -1,10 +1,15 @@
 /* Pure geometry for the "Our Story" timeline. UMD: browser global
    (window.W.storyGeom) and CommonJS (require) for Node tests. No DOM.
 
-   Two horizontal lines — Juriel (top lane) and Grace (bottom lane) — run left to
-   right across the years. At "kiss" nodes both lines dip to the centre and touch
-   (they met, then parted). At the "merge" node they fuse and stay on the centre
-   line to the end — drawn once more in gold to mark the union. */
+   Two vertical lines — Juriel (left lane) and Grace Ann (right lane) — run down the
+   page through the years. At "kiss" nodes both lines lean into the centre and touch
+   (they met, then parted). At the "merge" node they fuse and stay on the centre line
+   to the end — drawn once more in gold to mark the union.
+
+   The timeline runs along y; x is the cross-axis the two lanes straddle. `band` is
+   how wide the whole thing is, `height` how far it falls. On a narrow screen there is
+   no room for a caption beside the disc, so the milestone stacks its text under the
+   disc instead (`stack`). The string itself is centred at every width. */
 (function (root, factory) {
   const api = factory();
   if (typeof module !== "undefined" && module.exports) module.exports = api;
@@ -26,90 +31,109 @@
     return d;
   }
 
-  // control points for one life-line ("juriel" rides topY, "grace" rides bottomY).
-  // Pre-merge it sits in its own lane, dropping to the centre only at a kiss and
-  // bowing back out to its lane between meetings (touched, then parted). From the
-  // merge node on it stays on the centre line.
+  // control points for one life-line ("juriel" rides leftX, "grace" rides rightX).
+  // Pre-merge it sits in its own lane, crossing to the centre only at a kiss and
+  // bowing back out to its lane between meetings (touched, then parted). At a
+  // childhood pair it swings wide to pass through its own disc — the lanes run too
+  // close together to carry a photo, so the string reaches out for one. From the merge
+  // node on it stays on the centre line.
   function linePoints(laid, which) {
-    const own = which === "juriel" ? laid.topY : laid.bottomY;
+    const own = which === "juriel" ? laid.leftX : laid.rightX;
+    const at = (n) => (n.kiss ? laid.centerX : n.pair ? n.pairX[which] : own);
     const nodes = laid.nodes, mi = laid.mergeIndex;
-    const pts = [{ x: 0, y: own }];
+    const pts = [{ x: own, y: 0 }];
     for (let i = 0; i < mi && i < nodes.length; i++) {
       // between two meetings the line returns to its own lane, so the pair visibly parts
-      if (i > 0) pts.push({ x: (nodes[i - 1].x + nodes[i].x) / 2, y: own });
-      pts.push({ x: nodes[i].x, y: nodes[i].kiss ? laid.centerY : own });
+      if (i > 0) pts.push({ x: own, y: (nodes[i - 1].y + nodes[i].y) / 2 });
+      pts.push({ x: at(nodes[i]), y: nodes[i].y });
     }
     if (mi < nodes.length) {                     // part once more, then dive into the merge
-      if (mi > 0) pts.push({ x: (nodes[mi - 1].x + nodes[mi].x) / 2, y: own });
-      for (let i = mi; i < nodes.length; i++) pts.push({ x: nodes[i].x, y: laid.centerY });
-      pts.push({ x: laid.width, y: laid.centerY });
+      if (mi > 0) pts.push({ x: own, y: (nodes[mi - 1].y + nodes[mi].y) / 2 });
+      for (let i = mi; i < nodes.length; i++) pts.push({ x: laid.centerX, y: nodes[i].y });
+      pts.push({ x: laid.centerX, y: laid.height });
     } else {
-      pts.push({ x: laid.width, y: own });
+      pts.push({ x: own, y: laid.height });
     }
     return pts;
   }
 
   // Lay the timeline out in px. `opts.nodes` is the story data (year/who/kiss/merge…);
-  // vw/vh size the stage. Nodes travel from screen-centre to screen-centre, so the
-  // lead-in/out pad is half a viewport and each stop passes dead-centre as you scroll.
+  // vw/vh size the stage. The page's own scroll walks the years, so the spacing is
+  // chosen to keep the whole story inside about two and a half screens rather than one
+  // stop per screen, so consecutive milestones read as one falling thread.
   function layout(opts) {
     const nodes = opts.nodes || [];
     const vw = opts.vw, vh = opts.vh;
-    // vh here is the height actually available to the timeline (below the headline),
-    // so short/landscape screens get a proportionally shorter band rather than clipping
-    const band = opts.band != null ? opts.band : clamp(Math.min(vh * 0.62, 380), 150, 420);
-    // spacing between milestones — snug enough that several read as one flowing
-    // timeline rather than one-per-screen islands, but wide enough that captions clear
-    const gap = opts.gap != null ? opts.gap : clamp(vw * 0.34, 190, 300);
-    const padX = opts.padX != null ? opts.padX : vw / 2;
-    const centerY = band / 2;
-    const laneGap = band * 0.17;   // how far the two lanes sit from centre
-    const lane = band * 0.28;      // how far a photo sits from its line
-    const topY = centerY - laneGap, bottomY = centerY + laneGap;
+    const band = opts.band != null ? opts.band : clamp(Math.min(vw * 0.92, 860), 300, 860);
+    // The string is centred at every width. What changes on a narrow screen is the
+    // milestone itself: there is no room for a caption beside the disc, so the text
+    // stacks underneath it and the whole block stands further out from the line.
+    const stack = opts.stack != null ? opts.stack : vw < 640;
+    // A stacked milestone is a tall column rather than a wide row, so it needs more
+    // room down the page — at the side-by-side spacing its caption lands in the next
+    // milestone's photo. Within one screen the step never varies.
+    const gap = opts.gap != null ? opts.gap
+              : stack ? clamp(vh * 0.2, 165, 205) : clamp(vh * 0.165, 140, 180);
+    const padY = opts.padY != null ? opts.padY : clamp(vh * 0.09, 60, 110);
+    const centerX = band / 2;
+    const laneGap = band * 0.045;                          // lanes' distance from centre
+    const lane = stack ? clamp(band * 0.26, 80, 115)       // a disc's distance from its line
+                       : clamp(band * 0.17, 44, 150);
+    const leftX = centerX - laneGap, rightX = centerX + laneGap;
+    // A childhood pair puts a disc either side of the string. The lanes themselves run
+    // far too close together to hold two discs, so the pair sets its own spread and
+    // each lifeline bows out to meet its half of it.
+    const pairMid = centerX;
+    const pairSpread = clamp(band * 0.085, 56, 100);
 
-    const width = padX * 2 + Math.max(0, nodes.length - 1) * gap;
+    const height = padY * 2 + Math.max(0, nodes.length - 1) * gap;
     let mergeIndex = nodes.findIndex((n) => n.merge);
     if (mergeIndex < 0) mergeIndex = nodes.length; // no merge -> lines never fuse
 
-    let mergedSeen = 0;
+    // Every milestone that sits on the centre line — the kisses as well as the merged
+    // years — takes the next side, so no two in a row stand in the same column with
+    // their captions overlapping. A pair or a gap takes no turn.
+    let staggerSeen = 0;
     const laid = nodes.map((n, i) => {
-      const x = padX + i * gap;
+      const y = padY + i * gap;
       const side = n.who || "both";
-      let anchorY, laneY, above;
-      // Childhood "matched pair": a disc on each lane at this x, joined by the red
-      // string. Rendering reads topY/bottomY; it consumes no merge-stagger parity.
+      let anchorX, laneX, left;
+      // Childhood "matched pair": a disc either side of the string at this y, joined
+      // across by it. Consumes no merge-stagger parity.
       if (n.pair) {
-        return { data: n, index: i, x: x, side: "pair", pair: true, kiss: false,
-                 anchorY: centerY, laneY: centerY, above: true };
+        return { data: n, index: i, y: y, side: "pair", pair: true, kiss: false,
+                 anchorX: centerX, laneX: centerX, left: true,
+                 pairMid: pairMid,
+                 pairX: { juriel: pairMid - pairSpread, grace: pairMid + pairSpread } };
       }
-      // A quiet gap in the years (2020–21): no disc, just a marker on the line.
+      // A quiet gap in the years: no disc, just a marker on the line.
       if (n.gap) {
-        return { data: n, index: i, x: x, side: "gap", gap: true, kiss: false,
-                 anchorY: centerY, laneY: centerY, above: true };
+        return { data: n, index: i, y: y, side: "gap", gap: true, kiss: false,
+                 anchorX: centerX, laneX: centerX, left: true };
       }
-      if (i >= mergeIndex) {                 // merged: alternate above/below the gold line
-        above = (mergedSeen % 2 === 0);
-        anchorY = centerY;
-        laneY = centerY + (above ? -lane : lane);
-        mergedSeen++;
+      if (i >= mergeIndex || (side !== "juriel" && side !== "grace")) {
+        // on the centre line — merged, or a kiss the two lines have come in to meet
+        left = (staggerSeen % 2 === 0);
+        anchorX = centerX;
+        laneX = centerX + (left ? -lane : lane);
+        staggerSeen++;
       } else if (side === "juriel") {
-        above = true; anchorY = topY; laneY = topY - lane;
-      } else if (side === "grace") {
-        above = false; anchorY = bottomY; laneY = bottomY + lane;
-      } else {                                // pre-merge shared moment (a kiss)
-        above = true; anchorY = centerY; laneY = centerY - lane;
+        left = true; anchorX = leftX; laneX = leftX - lane;   // his own lane, his own side
+      } else {
+        left = false; anchorX = rightX; laneX = rightX + lane;
       }
-      return { data: n, index: i, x: x, side: side, kiss: !!n.kiss,
-               anchorY: anchorY, laneY: laneY, above: above };
+      return { data: n, index: i, y: y, side: side, kiss: !!n.kiss,
+               anchorX: anchorX, laneX: laneX, left: left };
     });
 
-    const out = { width: width, band: band, centerY: centerY, topY: topY, bottomY: bottomY,
-                  gap: gap, padX: padX, nodes: laid, mergeIndex: mergeIndex,
-                  mergeX: mergeIndex < nodes.length ? padX + mergeIndex * gap : width };
+    const out = { height: height, band: band, centerX: centerX, leftX: leftX, rightX: rightX,
+                  gap: gap, padY: padY, lane: lane, stack: stack, nodes: laid,
+                  mergeIndex: mergeIndex,
+                  mergeY: mergeIndex < nodes.length ? padY + mergeIndex * gap : height };
     out.paths = {
       juriel: smoothPath(linePoints(out, "juriel")),
       grace: smoothPath(linePoints(out, "grace")),
-      gold: "M " + out.mergeX + " " + centerY + " L " + width + " " + centerY,
+      gold: "M " + centerX + " " + out.mergeY + " L " + centerX + " " + height,
     };
     return out;
   }
