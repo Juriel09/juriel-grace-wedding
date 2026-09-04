@@ -218,7 +218,11 @@
         if (!findGuest(data.name)) {
           button.disabled = false;
           say("");
-          sayName("We can’t find that name on our list — please pick yours from the suggestions.");
+          // Two ways to land here, and the wording has to serve both: a typo, and a
+          // guest who has already answered — the sheet drops those from the list, so
+          // their own name genuinely is not on offer any more.
+          sayName("We can’t find that name — please pick yours from the suggestions. " +
+                  "If you’ve already sent your RSVP, message us and we’ll update it for you.");
           if (nameEl) { nameEl.focus(); nameEl.select(); }
           return;
         }
