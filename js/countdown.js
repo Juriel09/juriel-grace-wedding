@@ -19,7 +19,10 @@
     if (!el) return;
     el.innerHTML =
       '<span class="cd-label">counting down to forever</span>' +
-      '<div class="cd-row">' + unit("d") + sep() + unit("h") + sep() + unit("m") + sep() + unit("s") + '</div>';
+      '<div class="cd-row">' + unit("d") + sep() + unit("h") + sep() + unit("m") + sep() + unit("s") + '</div>' +
+      // the panel only exists once the card is open, so this reads as "you have"
+      // "read it — keep going" rather than an instruction for the envelope
+      '<span class="cd-next">Swipe up</span>';
     var d = el.querySelector('[data-u="d"] .cd-num'), h = el.querySelector('[data-u="h"] .cd-num'),
         m = el.querySelector('[data-u="m"] .cd-num'), s = el.querySelector('[data-u="s"] .cd-num');
 

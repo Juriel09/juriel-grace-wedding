@@ -205,6 +205,32 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0; line-height
 :root[data-theme="dark"] .cd-num  { color: #f4ede1; }
 :root[data-theme="dark"] .cd-cap  { color: #cabfad; }
 :root[data-theme="dark"] .cd-sep  { color: var(--gold); }
+/* "Swipe up to continue" under the numbers. The countdown panel is pointer-events:
+   none, so this is a cue and never a control. It rises gently, which is the gesture
+   it is naming. */
+/* "Swipe up", set BELOW the frosted panel rather than inside it — absolutely
+   positioned against .countdown so it still inherits the panel's opacity fade and its
+   scroll-driven placement, but paints outside the box's background and padding. It
+   picks up a shadow because out there it is on the artwork, not on frosted glass. */
+.cd-next {
+  display: none;                 /* shown only where a swipe is the gesture — see below */
+  position: absolute; top: 100%; left: 0; right: 0; margin-top: .6rem;
+  font-family: var(--sans); font-weight: var(--label-weight);
+  text-transform: uppercase; letter-spacing: .24em; font-size: .62rem;
+  color: #4a4438; text-shadow: 0 1px 6px rgba(255, 255, 255, .55);
+  animation: cdNudge 2.4s var(--ease) infinite;
+}
+.cd-next::before { content: "↑"; display: block; font-size: .8rem; line-height: 1; margin-bottom: .15em; }
+@keyframes cdNudge {
+  0%, 100% { transform: translateY(2px); opacity: .62; }
+  50%      { transform: translateY(-2px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .cd-next { animation: none; opacity: .85; } }
+:root[data-theme="dark"] .cd-next { color: #e6dcc9; text-shadow: 0 1px 8px rgba(0, 0, 0, .75); }
+/* The cue is for touch. On a desktop the gesture is a scroll, and telling someone to
+   swipe a mouse is worse than saying nothing. 720px is the same line the nav becomes
+   a drawer on, so "mobile" means one thing across the site. */
+@media (max-width: 720px) { .cd-next { display: block; } }
 @media (max-width: 480px) { .cd-unit { min-width: 2.2rem; } .countdown { gap: .35rem; } }
 
 /* LIGHTBOX */
