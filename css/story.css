@@ -138,8 +138,19 @@
 .story-era {
   position: absolute; z-index: 2; pointer-events: none; transform: translateX(-50%);
   font-family: var(--sans); text-transform: uppercase; letter-spacing: .3em;
-  font-size: .64rem; color: var(--gold-deep); opacity: .82; white-space: nowrap;
+  font-size: .64rem; color: var(--gold-deep); opacity: .82;
   padding: .3rem .8rem; background: var(--ivory-deep); border-radius: 999px;
+  white-space: nowrap; text-align: center; line-height: 1.5;
+}
+/* At .3em of tracking this line is 440px wide and a small phone's band is 331px, so
+   nowrap clipped it at BOTH ends, off-screen either side. Narrow screens wrap it and
+   pull the tracking in, which is what keeps it to two lines rather than four. The
+   label is measured in build(), so a taller box moves the timeline down by itself. */
+@media (max-width: 720px) {
+  .story-era {
+    white-space: normal; width: max-content; max-width: 86%;
+    letter-spacing: .16em; font-size: .6rem;
+  }
 }
 
 .story-year {

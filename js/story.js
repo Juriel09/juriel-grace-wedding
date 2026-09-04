@@ -23,19 +23,19 @@
     { pair: true, key: "bike",    label: "we had the same little bike" },
     { pair: true, key: "glasses", label: "and even the same glasses" },
     { who: "both", kiss: true,  key: "2002", year: 2002, caption: "We met in kindergarten" },
-    { who: "both", kiss: true,  key: "2008", year: 2008, caption: "Mr. & Ms. Agham — won together" },
+    { who: "both", kiss: true,  key: "2008", year: 2008, caption: "Winning Mr. & Ms. Agham together" },
     { merge: true,              key: "2015", year: 2015, era: "it all started",
-                                caption: "She said yes 💚 — it all started" },
-    {                           key: "2016", year: 2016, caption: "Our first date" },
-    {                           key: "2017", year: 2017, caption: "Enchanted Kingdom & graduation" },
-    {                           key: "2018", year: 2018, caption: "Palawan, together" },
-    {                           key: "2019", year: 2019, caption: "Siargao & our first glamp" },
-    {                           key: "2020", year: 2020, caption: "Anniversary at home" },
-    {                           key: "2021", year: 2021, caption: "Just the two of us" },
-    {                           key: "2022", year: 2022, caption: "Coron anniversary · LANY" },
-    {                           key: "2023", year: 2023, caption: "Mt. Pulag, Bohol, Cebu" },
-    {                           key: "2024", year: 2024, caption: "La Union & Baguio" },
-    {                           key: "2025", year: 2025, caption: "The proposal 💍" },
+                                caption: "She said yes 💚" },
+    {                           key: "2016", year: 2016, caption: "Our first Anniversary" },
+    {                           key: "2017", year: 2017, caption: "Adventures & reaching our goals together" },
+    {                           key: "2018", year: 2018, caption: "Palawan — our first trip together" },
+    {                           key: "2019", year: 2019, caption: "Siargao — discovering the world together" },
+    {                           key: "2020", year: 2020, caption: "But we also like to stay at home and surprise each other" },
+    {                           key: "2021", year: 2021, caption: "Not even the pandemic could stop us" },
+    {                           key: "2022", year: 2022, caption: "Another anniversary trip & our first concert together" },
+    {                           key: "2023", year: 2023, caption: "Because we love exploring together" },
+    {                           key: "2024", year: 2024, caption: "Just us, making more memories" },
+    {                           key: "2025", year: 2025, caption: "When the magic began" },
   ];
 
   const SVGNS = "http://www.w3.org/2000/svg";
@@ -207,7 +207,7 @@
     const first = L.nodes[0];
     if (first) {
       const GAP = 16, TOP = 6;
-      const lab = labelEl("before 2002 · we were already parallel", L.centerX, TOP, "is-prologue");
+      const lab = labelEl("before 2002 · already sharing the little things", L.centerX, TOP, "is-prologue");
       this.track.appendChild(lab);
       const disc = this.track.querySelector(".story-disc");
       const discHalf = disc ? disc.offsetHeight / 2 : 0;
