@@ -50,7 +50,7 @@
       '</div>' +
       '<div class="doc-block" data-at="0.4">' +
         '<span class="doc-rule" aria-hidden="true"></span>' +
-        '<p class="doc-body">We save a seat for you.<br />' +
+        '<p class="doc-body">We saved a seat for you.<br />' +
           'Come celebrate as our hearts become one and our forever begins.</p>' +
       '</div>' +
     '</div>';
