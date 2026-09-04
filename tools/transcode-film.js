@@ -4,6 +4,8 @@
      --crf <n>       quality, lower is better; 21 is high, 23 is still good (default 21)
      --height <n>    output height, width follows the source aspect (default 1080)
      --preset <p>    x264 preset (default slow — this runs once, so spend the time)
+     --mute          drop the audio track. For a background loop the <video> plays
+                     muted anyway, so its soundtrack is bytes nobody can ever hear.
      --maxrate <r>   ceiling, e.g. 4M. Use it on anything with a lot of moving
                      detail — grass, leaves, water, confetti. CRF alone chases that
                      detail forever: the proposal clip is a hillside of wind-blown
@@ -32,6 +34,7 @@ const CRF = arg("crf", "21");
 const HEIGHT = arg("height", "1080");
 const PRESET = arg("preset", "slow");
 const MAXRATE = arg("maxrate", null);
+const MUTE = process.argv.indexOf("--mute") > -1;
 const NAME = arg("out", null);
 
 const input = process.argv[2] && !process.argv[2].startsWith("--") ? path.resolve(process.argv[2]) : null;
@@ -54,7 +57,7 @@ execFileSync("ffmpeg", ["-y", "-i", input,
   "-vf", "scale=-2:'min(" + HEIGHT + ",ih)'",
   "-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p",
   "-crf", CRF, "-preset", PRESET, ...cap,
-  "-c:a", "aac", "-b:a", "160k", "-ac", "2",
+  ...(MUTE ? ["-an"] : ["-c:a", "aac", "-b:a", "160k", "-ac", "2"]),
   "-movflags", "+faststart", mp4], { stdio: "inherit" });
 
 // `thumbnail` picks the most representative frame of the batch it is given, which

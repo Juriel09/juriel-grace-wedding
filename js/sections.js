@@ -339,11 +339,11 @@
       filmPanels.forEach((p) => playio.observe(p));
     }
 
-    // drone-shot section video: lazy-load + play only when visible (perf)
+    // hero section background loop: lazy-load + play only when visible (perf)
     const dv = document.getElementById("droneVideo");
     if (dv) {
       const vio = new IntersectionObserver((es) => es.forEach((e) => {
-        if (e.isIntersecting) { if (!dv.src) dv.src = "media/video/drone-shot.mp4"; dv.play().catch(() => {}); }
+        if (e.isIntersecting) { if (!dv.src) dv.src = "media/video/hero-loop.mp4"; dv.play().catch(() => {}); }
         else dv.pause();
       }), { threshold: 0.2 });
       vio.observe(document.getElementById("hero"));
