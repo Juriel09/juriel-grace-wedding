@@ -334,6 +334,22 @@
 }
 
 .rsvp-note { font-family: var(--serif); font-size: 1.2rem; color: var(--ink); max-width: 540px; margin: 0 auto var(--space-4); }
+
+/* ---- Guest album: the last thing on the page before the sign-off ---- */
+/* No card or panel here on purpose. It is one invitation with one button, and
+   framing it like the RSVP would imply another form to fill in. */
+.album-note {
+  font-family: var(--serif); font-size: 1.2rem; line-height: 1.5; color: var(--ink);
+  max-width: 34ch; margin: 0 auto var(--space-4); text-wrap: balance;
+}
+.album-cta {
+  justify-self: center; align-self: center; width: max-content;
+  text-decoration: none; display: inline-block;
+}
+.album-fine {
+  margin: var(--space-2) 0 0; font-family: var(--sans); font-size: .68rem;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--olive); opacity: .85;
+}
 .rsvp-form { display: grid; gap: var(--space-3); max-width: 500px; margin: 0 auto; text-align: left; }
 /* text inputs have an intrinsic width (~20ch) and grid items won't shrink below it —
    without these two rules the fields punch through the card's edge on phones */
@@ -504,7 +520,7 @@
    single-class selectors overriding other single-class rules, so source order is
    what decides. */
 @media (max-width: 720px) {
-  .section-film, .section-details, .section-entourage, .section-rsvp {
+  .section-film, .section-details, .section-entourage, .section-rsvp, .section-album {
     min-height: 0;
     padding: var(--space-4) var(--space-2);
   }
