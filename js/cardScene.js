@@ -23,6 +23,7 @@
       still: "media/card/open-card.png",
       riseFrame: 130 / 189, riseAt: 0.35,          // flap opens, then the card rises
       ax0: 0.357, ax1: 0.643, ay0: 0.15, ay1: 0.52, // card face (above the fold)
+      envTop: 0.233, envBottom: 0.781,             // the envelope's own edges in the frame
       fontKW: 0.075, fontKH: 0.06,                  // type scale vs rect width / height
     },
     mobile: {
@@ -32,6 +33,7 @@
       riseFrame: 168 / 189, riseAt: 0.35,
       // the portrait card is large, so the details use a generous slice of its face
       ax0: 0.24, ax1: 0.76, ay0: 0.25, ay1: 0.58,
+      envTop: 0.300, envBottom: 0.716,
       fontKW: 0.09, fontKH: 0.072,
     },
   };
@@ -152,6 +154,7 @@
     if (!w || !h) return;
     this.canvas.width = Math.round(w * this.dpr);
     this.canvas.height = Math.round(h * this.dpr);
+    this.placeIntro();
     this.draw(this.lastIdx < 0 ? 0 : this.lastIdx);
   };
 
@@ -166,6 +169,31 @@
   CardScene.prototype.acRect = function () {
     const f = this.frameDrawRect(this.canvas.clientWidth, this.canvas.clientHeight), v = this.v;
     return { x: f.x + v.ax0 * f.w, y: f.y + v.ay0 * f.h, w: (v.ax1 - v.ax0) * f.w, h: (v.ay1 - v.ay0) * f.h };
+  };
+
+  // Sit the greeting above the envelope and the cue below it, measured from where the
+  // envelope is ACTUALLY drawn rather than from a percentage of the viewport.
+  //
+  // The frame is contain-fitted, so how much of the screen it covers depends entirely
+  // on the viewport's aspect ratio: on a narrow 390x844 it is width-limited with deep
+  // letterbox bands, and on a phone whose aspect is near the artwork's own 9:16 it
+  // fills the screen and the envelope rides much higher. Fixed viewport percentages
+  // were tuned on the first of those and collided with the envelope on the second.
+  // envTop/envBottom are fractions of the drawn FRAME, so they hold at every ratio.
+  CardScene.prototype.placeIntro = function () {
+    if (!this.canvas || !this.intro) return;
+    const h = this.canvas.clientHeight;
+    if (!h) return;
+    const f = this.frameDrawRect(this.canvas.clientWidth, h);
+    const gap = Math.max(14, f.h * 0.035);
+    // bottom-anchored, so the block grows upward and the number of lines never matters
+    this.intro.style.top = "auto";
+    this.intro.style.bottom = Math.round(h - (f.y + this.v.envTop * f.h) + gap) + "px";
+    const cue = this.intro.querySelector(".card-intro-cue");
+    if (cue) {
+      cue.style.top = Math.round(f.y + this.v.envBottom * f.h + gap) + "px";
+      cue.style.bottom = "auto";
+    }
   };
 
   // size/position the details onto the acrylic page; type scales with the page

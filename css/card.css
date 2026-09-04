@@ -13,6 +13,8 @@
 /* "A Love Letter from Juriel & Grace" — the greeting on the closed-card screen.
    Sits in the top band above the sealed envelope; JS fades it out as scrolling
    begins. Readable on the studio-gray backdrop (deep forest ink). */
+/* top/bottom here are only a pre-script fallback: cardScene.placeIntro() measures the
+   envelope where it is actually drawn and sets these inline on load and on resize. */
 .card-intro {
   position: absolute; left: 0; right: 0; top: 8%; z-index: 5;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
