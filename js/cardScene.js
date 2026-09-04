@@ -41,19 +41,17 @@
   const pickVariant = () =>
     window.matchMedia("(orientation: portrait)").matches ? VARIANTS.mobile : VARIANTS.desktop;
 
+  // The card the envelope holds. Two blocks, because reveals() staggers them by the
+  // data-at fractions as the card finishes rising.
   const DOC_HTML =
     '<div class="doc-inner">' +
-      '<div class="doc-block doc-names" data-at="0.0">' +
-        '<p class="doc-eyebrow">together with their families</p>' +
-        '<h1 class="doc-couple"><span>Juriel</span> <span class="amp foil">&amp;</span> <span>Grace</span></h1>' +
+      '<div class="doc-block" data-at="0.0">' +
+        '<h1 class="doc-title">And So Our Next Chapter Begins&hellip;</h1>' +
       '</div>' +
       '<div class="doc-block" data-at="0.4">' +
         '<span class="doc-rule" aria-hidden="true"></span>' +
-        '<div class="doc-facts">' +
-          '<div><span class="k">When</span><span class="v">November 11, 2026 · 3:00 PM</span></div>' +
-          '<div><span class="k">Where</span><span class="v">The Forest Barn, Alfonso, Cavite</span></div>' +
-          '<div><span class="k">Attire</span><span class="v">Formal · Forest Greens &amp; Soft Neutrals</span></div>' +
-        '</div>' +
+        '<p class="doc-body">We save a seat for you.<br />' +
+          'Come celebrate as our hearts become one and our forever begins.</p>' +
       '</div>' +
     '</div>';
 

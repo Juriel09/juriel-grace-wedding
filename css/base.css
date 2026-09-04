@@ -47,6 +47,30 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0; line-height
   color: var(--gold-deep);
   margin: 0 0 var(--space-2);
 }
+
+/* Every small uppercase label on the site, in one place. They all used to inherit the
+   body's Jost 300 and none of them could carry it: this type is small, spaced wide
+   apart and usually sitting over the treeline, where a light weight simply dissolves.
+   Listed explicitly rather than hung off a shared class so no label is restyled by
+   accident — adding one here is a deliberate act. */
+.eyebrow,
+.card-intro-eyebrow,
+.card-intro-cue,
+.detail-label,
+.drone-eyebrow,
+.party-role,
+.rsvp-seats-label,
+.rsvp-seats-hint,
+.attire-zoom,
+.story-era,
+.story-node-era,
+.story-year,
+.story-gap-label,
+.cd-label,
+.cd-unit,
+.loader-text {
+  font-weight: var(--label-weight);
+}
 .foil {
   background: var(--gold-foil);
   -webkit-background-clip: text;
@@ -191,6 +215,18 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0; line-height
 .lightbox.open { display: grid; }
 .lightbox-body { max-width: 90vw; max-height: 85vh; }
 .lightbox-body img, .lightbox-body iframe, .lightbox-body video { max-width: 90vw; max-height: 85vh; }
+/* A wide reference chart is not a photograph. Fitted to a phone's width, the dress
+   code's colour names come out about three pixels tall — which is exactly what the
+   guest tapped "enlarge" to escape. It fills the height instead and pans sideways.
+   `safe center` for the same reason the nav drawer needs it: a plain centred grid
+   pins its overflow to the middle and puts the left edge out of reach. */
+@media (max-width: 720px) {
+  .lightbox.is-chart { place-content: safe center; padding: var(--space-2); overflow: auto; }
+  .lightbox.is-chart .lightbox-body { max-width: none; max-height: none; }
+  .lightbox.is-chart .lightbox-body img {
+    max-width: none; max-height: none; height: 84vh; width: auto;
+  }
+}
 .lightbox-close {
   position: absolute; top: 1.2rem; right: 1.4rem; background: none; border: 0;
   color: var(--cream); font-size: 2rem; cursor: pointer;

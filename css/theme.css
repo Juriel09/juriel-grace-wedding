@@ -147,6 +147,7 @@ body { transition: background-color .6s var(--ease), color .6s var(--ease); }
 }
 :root[data-theme="dark"] .party-side-label,
 :root[data-theme="dark"] .rsvp-seats-hint { color: var(--gold-light); }
+:root[data-theme="dark"] .attire-zoom { color: var(--gold-light); }
 :root[data-theme="dark"] .rsvp-pill span {
   background: rgba(255, 255, 255, .06); border-color: rgba(175, 191, 170, .3); color: var(--ink);
 }

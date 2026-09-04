@@ -1,5 +1,5 @@
 /* URL <-> section routing.
-     - The hash follows what you're reading: #hero, #film, #teaser, #story,
+     - The hash follows what you're reading: #hero, #story, #film, #teaser,
        #gallery, #details, #entourage, #rsvp. No hash = home (the invitation itself).
      - Opening a link that already has a hash skips the opening film and the
        envelope and lands straight on that section, so a shared link works.
@@ -10,7 +10,7 @@
   window.W = window.W || {};
 
   // document order — currentId() walks this backwards to find the section under the probe
-  const IDS = ["hero", "film", "teaser", "story", "gallery", "details", "entourage", "rsvp"];
+  const IDS = ["hero", "story", "film", "teaser", "gallery", "details", "entourage", "rsvp"];
   const clean = (h) => String(h || "").replace(/^#/, "").trim().toLowerCase();
   const el = (id) => document.getElementById(id);
 
@@ -60,15 +60,32 @@
       setTimeout(go, 350);
     }
 
+    // The nav follows the same reading of the page the hash does — one source of truth,
+    // so the highlighted link and the URL can never disagree. Both bars are the same
+    // element (#navLinks is the desktop row and the mobile drawer), so this marks both.
+    // The Guest Album link carries no data-jump and is left alone: it leaves the page.
+    const navLinks = Array.prototype.slice.call(
+      document.querySelectorAll("#navLinks a[data-jump]"));
+    const markNav = (id) => {
+      navLinks.forEach((a) => {
+        const here = a.getAttribute("data-jump") === id;
+        a.classList.toggle("is-here", here);
+        if (here) a.setAttribute("aria-current", "true");
+        else a.removeAttribute("aria-current");
+      });
+    };
+
     // keep the hash in step with the section being read
     let last = deepLink, tid;
     const sync = () => {
       const id = currentId();
       if (id === last) return;
       last = id;
+      markNav(id);
       const url = id ? "#" + id : location.pathname + location.search;
       try { history.replaceState(null, "", url); } catch (e) {}
     };
+    markNav(deepLink);         // a deep-linked visitor arrives with it already lit
     const onScroll = () => { clearTimeout(tid); tid = setTimeout(sync, 120); };
     window.addEventListener("scroll", onScroll, { passive: true });
     if (window.__lenis) window.__lenis.on("scroll", onScroll);

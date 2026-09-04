@@ -168,7 +168,7 @@
     const counter = document.getElementById("lightboxCount");
     const openBox = (html) => { body.innerHTML = html; box.classList.add("open"); box.setAttribute("aria-hidden", "false"); };
     const shut = () => {
-      box.classList.remove("open", "has-nav"); body.innerHTML = ""; box.setAttribute("aria-hidden", "true");
+      box.classList.remove("open", "has-nav", "is-chart"); body.innerHTML = ""; box.setAttribute("aria-hidden", "true");
       tour = []; at = -1;
     };
     document.getElementById("lightboxClose").addEventListener("click", shut);
@@ -222,6 +222,25 @@
       show(Number(item.getAttribute("data-index")) || 0);
     });
 
+    // The dress-code guide opens in this same lightbox — the colour names printed on it
+    // are tiny on a phone, and "what do I wear" is the thing a guest most wants to zoom
+    // into. Deliberately NOT the `tour` path: it is one image, so it gets no arrows and
+    // no "1 / 1" counter, and it keeps its own alt text rather than the gallery's.
+    const attireBtn = document.querySelector(".attire-guide");
+    if (attireBtn) attireBtn.addEventListener("click", () => {
+      const img = attireBtn.querySelector("img");
+      if (!img) return;
+      tour = []; at = -1;
+      if (counter) counter.textContent = "";
+      // a reference chart, not a photo — see .lightbox.is-chart in base.css
+      box.classList.add("is-chart");
+      openBox("");
+      const big = document.createElement("img");
+      big.src = img.currentSrc || img.src;
+      big.alt = img.alt;
+      body.appendChild(big);
+    });
+
     // Shared opener so other sections (Our Story) can reuse this one lightbox and its
     // arrow/swipe tour instead of standing up a second one.
     window.W.openLightbox = (srcs, start) => {
@@ -246,6 +265,14 @@
         ph.className = "film-missing";
         ph.innerHTML = '<span class="film-play">▶</span><span>film coming soon</span>';
         panel.appendChild(ph);
+      };
+
+      // Seeking before the metadata has landed is ignored by some browsers and throws
+      // in others, so a film that is not ready yet is rewound the moment it is.
+      const rewind = (v) => {
+        const zero = () => { try { v.currentTime = 0; } catch (e) {} };
+        if (v.readyState >= 1) zero();
+        else v.addEventListener("loadedmetadata", zero, { once: true });
       };
 
       const mountFilm = (panel) => {
@@ -281,12 +308,35 @@
         panel.appendChild(v);
       };
 
+      // Mount early — 200px before the section arrives — so the <video> exists and has
+      // its metadata by the time the play observer below wants it.
       const fio = new IntersectionObserver((es) => es.forEach((e) => {
         if (!e.isIntersecting) return;
         mountFilm(e.target);
         fio.unobserve(e.target);
       }), { rootMargin: "200px 0px" });
       filmPanels.forEach((p) => fio.observe(p));
+
+      // Scrolling to a film starts it, and starting it pauses the song (the `play`
+      // handler above ducks). Scrolling away pauses it and rewinds, so the film always
+      // opens on its first frame rather than resuming from wherever it was abandoned —
+      // and pausing lets the song back in through `unduckIfIdle`.
+      //
+      // The play() may be refused: browsers only allow sound without a gesture once the
+      // visitor has interacted with the page. There is no fallback to muted playback on
+      // purpose — a wedding film running silently is worse than one waiting politely on
+      // its poster, and the controls are right there.
+      const playio = new IntersectionObserver((es) => es.forEach((e) => {
+        const v = e.target.querySelector("video");
+        if (!v) return;
+        if (e.isIntersecting) {
+          rewind(v);
+          v.play().catch(() => {});
+        } else if (!v.paused) {
+          v.pause();                       // `pause` unducks; rewind waits for re-entry
+        }
+      }), { threshold: 0.5 });
+      filmPanels.forEach((p) => playio.observe(p));
     }
 
     // drone-shot section video: lazy-load + play only when visible (perf)

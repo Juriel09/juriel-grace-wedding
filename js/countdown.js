@@ -1,10 +1,10 @@
 /* Wedding countdown, shown at the bottom of the opening/envelope screen. Ticks to
-   the ceremony (Nov 11, 2026, 3:00 PM Philippine time) and fades out as the card
+   the ceremony (Nov 11, 2026, 2:00 PM Philippine time) and fades out as the card
    opens — so it lives "in the initial screen up to the opened card". */
 (function () {
   "use strict";
   window.W = window.W || {};
-  var TARGET = new Date("2026-11-11T15:00:00+08:00").getTime();
+  var TARGET = new Date("2026-11-11T14:00:00+08:00").getTime();
   var CAPS = { d: "days", h: "hrs", m: "min", s: "sec" };
 
   function two(n) { return (n < 10 ? "0" : "") + n; }

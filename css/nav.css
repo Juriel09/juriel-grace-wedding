@@ -35,6 +35,15 @@ body.nav-static .nav { transform: none; opacity: 1; pointer-events: auto; }
 .nav-links { display: flex; gap: var(--space-3); align-items: center; }
 .nav-links a { font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--forest-deep); opacity: .85; white-space: nowrap; }
 .nav-links a:hover { opacity: 1; color: var(--olive); }
+/* the section being read, marked by router.js. A gold rule under the word — the same
+   hairline the flourish and Our Story's string are drawn with — rather than a colour
+   swap, which at this size just reads as a hover that will not go away. */
+.nav-links a.is-here { opacity: 1; color: var(--olive); position: relative; }
+.nav-links a.is-here::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -.42rem; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.nav-links .nav-cta.is-here { background: rgba(191, 163, 114, .14); }
 .nav-cta {
   border: 1px solid var(--gold); border-radius: 999px;
   padding: .5rem 1.1rem; color: var(--gold-deep) !important; opacity: 1 !important;
@@ -84,13 +93,14 @@ body.nav-static .nav { transform: none; opacity: 1; pointer-events: auto; }
     position: fixed; inset: 0 0 0 auto; z-index: 1;
     width: min(78vw, 320px);
     flex-direction: column; align-items: stretch; gap: 0;
-    /* centred, so eight links read as a composed list rather than one that ran
-       out. `safe` matters: a plain `center` in a scrolling flex column pins the
-       overflow to the middle and clips the first items unreachably off the top,
-       which is exactly what a landscape phone does here. */
-    justify-content: center;
-    justify-content: safe center;
-    padding: 4.75rem 1.75rem 2.5rem;
+    /* Anchored to the top, not centred. Centred in a full-height panel, eight links
+       left 248px of nothing above the first one — a third of the screen — and the menu
+       read as though it began halfway down. Starting from the top also sidesteps the
+       old hazard the centring needed `safe` for: a centred scrolling flex column pins
+       its overflow to the middle and puts the first items out of reach, which is
+       exactly what a landscape phone did here. */
+    justify-content: flex-start;
+    padding: 6rem 1.75rem 2.5rem;
     background: var(--paper-grain), var(--ivory);
     border-left: 1px solid var(--gold);
     box-shadow: -20px 0 50px rgba(24,32,27,.28);
@@ -109,6 +119,13 @@ body.nav-static .nav { transform: none; opacity: 1; pointer-events: auto; }
     padding: .64rem 0;                       /* ~45px of tappable row */
   }
   .nav-links a:hover, .nav-links a:focus-visible { color: var(--olive); opacity: 1; }
+  /* In the drawer the links are stacked rows, so a full-width rule under one would
+     read as a divider between two. It becomes a short gold tick at the start of the
+     row instead, sitting inside the row's own padding. */
+  .nav-links a.is-here::after {
+    left: 0; right: auto; width: 1.8rem; bottom: .34rem;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
   /* the drawer has the room the bar didn't, so the real wording comes back */
   .nav-long { display: inline; }
   .nav-short { display: none; }

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap");
 
 :root {
   /* palette — sampled from the couple's wedding vision board (11.11.26) */
@@ -29,6 +29,11 @@
 
   --serif: "Cormorant Garamond", Georgia, serif;
   --sans: "Jost", system-ui, sans-serif;
+  /* Body copy is Jost 300, which the small wide-tracked uppercase labels used to
+     inherit — at .6-.8rem with .3em+ of tracking, over a treeline, that reads as a
+     smudge in either theme. They carry their own weight now. 600 is a real cut in the
+     import above, not a synthesised bold. */
+  --label-weight: 600;
 
   --space-1: 0.5rem;
   --space-2: 1rem;

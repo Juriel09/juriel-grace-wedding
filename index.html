@@ -61,9 +61,9 @@
       <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>
     </button>
     <nav class="nav-links" id="navLinks">
+      <a href="#story" data-jump="story">Our Story</a>
       <a href="#film" data-jump="film">Proposal</a>
       <a href="#teaser" data-jump="teaser">Teaser</a>
-      <a href="#story" data-jump="story">Our Story</a>
       <a href="#gallery" data-jump="gallery">Gallery</a>
       <a href="#details" data-jump="details"><span class="nav-long">Place &amp; Attire</span><span class="nav-short">Place</span></a>
       <a href="#entourage" data-jump="entourage">Entourage</a>
@@ -75,9 +75,12 @@
 
   <!-- background music: a vinyl-record toggle at the bottom-left corner, under the
        theme button. The one soundtrack for the whole page, intro film included.
-       (Tapping the vinyl 11 times in a row — the couple's 11.11 — spins up the
-       previous song, media/audio/bg-music.mp3. Another 11 spins back.) -->
-  <audio id="bgMusic" src="media/audio/bless-the-broken-road.mp3" loop preload="auto"></audio>
+       (Tapping the vinyl 11 times in a row — the couple's 11.11 — spins up the joke
+       track, media/audio/never-gonna-give-you-up.mp3. Another 11 spins back.) -->
+  <!-- autoplay as well as music.js's play(): the attribute starts the attempt at parse
+       time, before any script runs, so on a browser that allows sound the song is already
+       going as the opening film appears. Where it is refused, music.js takes over. -->
+  <audio id="bgMusic" src="media/audio/bless-the-broken-road-violin.mp3" loop autoplay preload="auto"></audio>
   <button class="music-toggle" id="musicToggle" type="button" aria-pressed="false" aria-label="Turn music on">
     <span class="vinyl" aria-hidden="true"></span>
   </button>
@@ -108,6 +111,13 @@
               <span class="card-intro-eyebrow">A Love Letter from</span>
               <span class="card-intro-names">Juriel <span class="amp foil">&amp;</span> Grace</span>
             </div>
+            <!-- cardScene.js has always opened the card on a click; nothing said so.
+                 Inside #cardIntro so the fade that clears the title as scrolling starts
+                 takes the cue with it — but OUTSIDE .card-intro-inner, whose introRise
+                 animation (fill-mode: both) leaves a transform in place forever, and a
+                 transformed ancestor captures `position: fixed`. On a phone the cue is
+                 fixed below the envelope, so it has to anchor to the viewport. -->
+            <span class="card-intro-cue">Click to open</span>
           </div>
           <div class="card-doc" id="cardDoc" aria-hidden="true"></div>
         </div>
@@ -126,8 +136,18 @@
       </div>
     </section>
 
+    <section id="story" class="story">
+      <div class="story-inner">
+        <div class="story-head">
+          <p class="eyebrow">how we began</p>
+          <h2 class="story-title">Our Story</h2>
+        </div>
+        <div class="story-track" id="storyTrack"></div>
+      </div>
+    </section>
+
     <section id="film" class="section section-film reveal">
-      <p class="eyebrow">how he asked</p>
+      <p class="eyebrow">The Question That Changed Everything</p>
       <h2 class="section-title">The Proposal</h2>
       <div class="flourish"></div>
 
@@ -139,29 +159,13 @@
     </section>
 
     <section id="teaser" class="section section-film reveal">
-      <p class="eyebrow">a glimpse of the day</p>
+      <p class="eyebrow">A Glimpse of Our Most Awaited Day</p>
       <h2 class="section-title">Wedding Teaser</h2>
       <div class="flourish"></div>
 
-      <!-- No data-src: the panel renders the "film coming soon" card until the teaser
-           is cut. To publish it, point data-src at the file (and data-poster at a still). -->
       <div class="film-stage">
-        <div class="film-panel" id="filmPanelPrenup"></div>
-      </div>
-    </section>
-
-    <section id="story" class="story">
-      <div class="story-scroll" id="storyScroll">
-        <div class="story-stage" id="storyStage">
-          <div class="story-head">
-            <p class="eyebrow">how we began</p>
-            <h2 class="story-title">Our Story</h2>
-          </div>
-          <div class="story-viewport">
-            <div class="story-track" id="storyTrack"></div>
-          </div>
-          <p class="story-hint" id="storyHint">&lsaquo;&nbsp; Drag or swipe left</p>
-        </div>
+        <div class="film-panel" id="filmPanelTeaser" data-src="media/video/teaser.mp4"
+             data-poster="media/video/teaser-poster.jpg"></div>
       </div>
     </section>
 
@@ -174,11 +178,10 @@
     </section>
 
     <!-- The Place & Attire.
-         PLACEHOLDERS to replace with the couple's real details, marked [like this]:
-         the ceremony time and the dress code. The street address came from the venue's
-         own Maps listing — worth confirming. The dress code
-         and the swatch names are a starting point — the five colours are the site's own
-         palette, so changing one here should change it in css/tokens.css too. -->
+         The street address came from the venue's own Maps listing — worth confirming.
+         The dress code is now the couple's own guide artwork (media/attire/), which is
+         the single source of truth for the palette: it is no longer tied to the site's
+         tokens, so do not "fix" one to match the other. -->
     <section id="details" class="section section-details reveal">
       <p class="eyebrow">the day itself</p>
       <h2 class="section-title">The Place &amp; Attire</h2>
@@ -193,7 +196,7 @@
           </div>
           <h3 class="detail-venue">The Forest Barn</h3>
           <p class="detail-address">Kaysuyo Road &middot; Alfonso, Cavite</p>
-          <p class="detail-when">November 11, 2026 &middot; 3:00 PM</p>
+          <p class="detail-when">November 11, 2026 &middot; 2:00 PM</p>
           <!-- Google Maps is the primary action; Waze sits beside it for the guests who
                drive with it. The waze.com/ul link opens the app when it's installed and
                falls back to Waze's own web map when it isn't. -->
@@ -209,18 +212,25 @@
 
         <article class="detail detail-attire">
           <p class="detail-label">what to wear</p>
-          <h3 class="detail-code">[Garden Formal]</h3>
+          <h3 class="detail-code">[Semi Formal]</h3>
           <p class="detail-note">
             We're marrying among the trees &mdash; dress beautifully, and wear shoes you
             can walk the grounds in.
           </p>
-          <ul class="swatches">
-            <li class="swatch"><span class="swatch-chip" style="--c:#3c4f43"></span><span class="swatch-name">Deep Forest</span></li>
-            <li class="swatch"><span class="swatch-chip" style="--c:#85966e"></span><span class="swatch-name">Olive</span></li>
-            <li class="swatch"><span class="swatch-chip" style="--c:#afbfaa"></span><span class="swatch-name">Soft Sage</span></li>
-            <li class="swatch"><span class="swatch-chip" style="--c:#b7ada2"></span><span class="swatch-name">Soft Mocha</span></li>
-            <li class="swatch"><span class="swatch-chip" style="--c:#d9c6b2"></span><span class="swatch-name">Muted Nude</span></li>
-          </ul>
+          <!-- The guide now carries the palette and the do-nots. A button, not a bare
+               image: the swatch names are small on a phone, so it opens in the shared
+               lightbox, and this way the keyboard gets that for free. The alt text
+               spells the whole thing out — it is the only place this palette lives. -->
+          <button class="attire-guide" type="button">
+            <img src="media/attire/dress-code.webp" loading="lazy"
+                 alt="Guest dress code: Enchanted Forest Elegance, semi formal — a
+                      polished yet relaxed look. Wear sage, olive, moss, taupe, beige,
+                      champagne, soft mocha, warm gray or dusty blue. Please avoid
+                      flashy colours (yellow, orange, red, pink), overly formal attire
+                      such as suits and ties, casual wear such as t-shirts, jeans and
+                      sneakers, and colours that are too dark.">
+            <span class="attire-zoom">Tap to enlarge &rsaquo;</span>
+          </button>
         </article>
       </div>
     </section>
@@ -235,7 +245,9 @@
       <div class="party">
         <div class="party-block">
           <h3 class="party-role">Principal Sponsors</h3>
-          <!-- individuals, not couples: ninongs read down one column, ninangs the other -->
+          <!-- individuals, not couples: two columns of names, read down rather than
+               across. Unlabelled — the names carry it, and "male / female" over a
+               list of ninongs and ninangs states the obvious twice. -->
           <div class="party-cols">
             <div>
               <ul class="party-names">
@@ -244,7 +256,6 @@
                 <li>Dennis Delmo</li>
                 <li>Marcelo Jamilla</li>
                 <li>Ernan Jamilla</li>
-                <li>Peter Avelino</li>
                 <li>Eric Adion</li>
               </ul>
             </div>
@@ -252,58 +263,68 @@
               <ul class="party-names">
                 <li>Julsie Schmid</li>
                 <li>Marites Reyes</li>
-                <li>Tita Joy</li>
+                <li>Angeline Avelino</li>
                 <li>Lany Zamora</li>
                 <li>Genalyn Jamilla</li>
-                <li>Angeline Avelino</li>
                 <li>Jasmin Adion</li>
               </ul>
             </div>
           </div>
         </div>
 
-        <div class="party-aisle">
-          <div class="party-side">
-            <p class="party-side-label">groom's side</p>
-            <h3 class="party-role">Best Man</h3>
-            <ul class="party-names"><li>Jessriel Jamilla</li></ul>
-            <h3 class="party-role">Groomsmen</h3>
-            <ul class="party-names">
-              <li>John Paul Cabilan</li>
-              <li>Jhon Victor Yap</li>
-              <li>Kelvin Ilagan</li>
-              <li>Micah Abiang</li>
-              <li>Jasmin Joie Sapungan</li>
-            </ul>
+        <div class="party-block">
+          <h3 class="party-role">Secondary Sponsors</h3>
+          <div class="party-cols">
+            <div>
+              <p class="party-side-label">best man</p>
+              <ul class="party-names"><li>Jessriel Jamilla</li></ul>
+            </div>
+            <div>
+              <p class="party-side-label">man of honor</p>
+              <ul class="party-names"><li>Deo Paolo Recto</li></ul>
+            </div>
           </div>
-          <div class="party-side">
-            <p class="party-side-label">bride's side</p>
-            <h3 class="party-role">Man of Honor</h3>
-            <ul class="party-names"><li>Deo Paolo Recto</li></ul>
-            <h3 class="party-role">Bridesmaids</h3>
-            <ul class="party-names">
-              <li>Kim Desiree Baladad</li>
-              <li>Jinkee Santos</li>
-              <li>Maureen Joy Fampulme</li>
-              <li>Merierose Escol</li>
-              <li>Grycy Aldaba</li>
-            </ul>
+          <!-- These three are couples, and which rite each pair carries is the point,
+               so the role sits between the two names rather than above a column. -->
+          <div class="party-pairs">
+            <div class="party-pair">
+              <span class="party-pair-name">John Paul Cabilan</span>
+              <span class="party-pair-role">Veil</span>
+              <span class="party-pair-name">Karen Recto</span>
+            </div>
+            <div class="party-pair">
+              <span class="party-pair-name">Arnold Mendoza</span>
+              <span class="party-pair-role">Cord</span>
+              <span class="party-pair-name">Mary Pauline Mendoza</span>
+            </div>
+            <div class="party-pair">
+              <span class="party-pair-name">Micah Abiang</span>
+              <span class="party-pair-role">Candle</span>
+              <span class="party-pair-name">Maureen Fampulme</span>
+            </div>
           </div>
         </div>
 
-        <!-- the three secondary-sponsor pairs, in the order they serve -->
-        <div class="party-trio">
-          <div>
-            <h3 class="party-role">Candle</h3>
-            <ul class="party-names"><li>Deo Paolo Recto</li><li>Bea Trisha Recto</li></ul>
-          </div>
-          <div>
-            <h3 class="party-role">Veil</h3>
-            <ul class="party-names"><li>Arnold Mendoza</li><li>Mary Pauline Mendoza</li></ul>
-          </div>
-          <div>
-            <h3 class="party-role">Cord</h3>
-            <ul class="party-names"><li>Bernard Buan</li><li>Ma. Veronica Buan</li></ul>
+        <div class="party-block">
+          <div class="party-cols">
+            <div>
+              <h3 class="party-role">Groomsmen</h3>
+              <ul class="party-names">
+                <li>Jhon Victor Yap</li>
+                <li>Kelvin Ilagan</li>
+                <li>Bernard Buan</li>
+                <li>Jasmin Joie Sapungan</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="party-role">Bridesmaids</h3>
+              <ul class="party-names">
+                <li>Kim Desiree Baladad</li>
+                <li>Jinkee Santos</li>
+                <li>Ma Veronica Buan</li>
+                <li>Merierose Escol</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -311,10 +332,11 @@
           <div class="party-cols">
             <div>
               <h3 class="party-role">Bearers</h3>
-              <ul class="party-names">
-                <li>Elijah Jae Clarence</li>
-                <li>Miggy Jamilla</li>
-                <li>Brix Tenorio</li>
+              <!-- each bearer carries a different thing, so each says which -->
+              <ul class="party-names party-names-roled">
+                <li><span class="party-name-role">Ring Bearer</span>Elijah Jae Clarence</li>
+                <li><span class="party-name-role">Coin Bearer</span>Miggy Jamilla</li>
+                <li><span class="party-name-role">Bible Bearer</span>Brix Tenorio</li>
               </ul>
             </div>
             <div>
@@ -322,7 +344,7 @@
               <ul class="party-names">
                 <li>Ingrid Romen</li>
                 <li>Eunice Manay</li>
-                <li>Briel Peradilla</li>
+                <li>Briel De Mesa</li>
               </ul>
             </div>
           </div>
@@ -377,8 +399,7 @@
 
     <footer class="footer" id="footer">
       <div class="footer-overlay">
-        <p class="footer-names foil">Juriel &amp; Grace</p>
-        <p class="footer-date">November 11, 2026</p>
+        <p class="footer-signoff foil">See you there!!! &hearts;</p>
       </div>
     </footer>
   </main>

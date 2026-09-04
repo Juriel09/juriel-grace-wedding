@@ -15,19 +15,46 @@
    begins. Readable on the studio-gray backdrop (deep forest ink). */
 .card-intro {
   position: absolute; left: 0; right: 0; top: 8%; z-index: 5;
-  display: flex; justify-content: center; text-align: center;
-  pointer-events: none; padding: 0 6vw;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; pointer-events: none; padding: 0 6vw;
 }
 .card-intro-inner { animation: introRise 1.5s var(--ease) both; }
+/* The floor matters more than the ceiling here: 1.6vw is 6px on a phone, so this line
+   was pinned at its old .62rem minimum and read as a grey smear over the envelope.
+   Weight comes from the shared label rule in base.css. */
 .card-intro-eyebrow {
   display: block; font-family: var(--sans); text-transform: uppercase;
-  letter-spacing: .42em; font-size: clamp(.62rem, 1.6vw, .85rem);
-  color: var(--forest-deep); opacity: .82;
+  letter-spacing: .42em; font-size: clamp(.78rem, 2.4vw, .9rem);
+  color: var(--forest-deep); opacity: .9;
 }
+/* Upright, like the names on the drone shot — only the ampersand leans (see below).
+   The two are the same couple on the same site and should be set the same way. */
 .card-intro-names {
-  display: block; font-family: var(--serif); font-style: italic; font-weight: 500;
-  font-size: clamp(1.8rem, 6vw, 3.2rem); line-height: 1.1; color: var(--forest-deep);
+  display: block; font-family: var(--serif); font-weight: 500;
+  font-size: clamp(2.1rem, 7vw, 3.2rem); line-height: 1.1; color: var(--forest-deep);
   margin-top: .35em;
+}
+/* Quieter than the title above it — an instruction, not a headline. It breathes so it
+   reads as an invitation rather than a caption, and the pulse is cut for anyone who
+   has asked for less motion.
+
+   It sits at the foot of the envelope rather than under the names, at both widths: the
+   thing it is asking you to click is the envelope, so the words belong beside it, not
+   stacked into the title block. Fixed to the viewport — no ancestor of it is
+   transformed, and .card-intro-inner (which is) is deliberately not its parent. */
+.card-intro-cue {
+  position: fixed; left: 0; right: 0; top: 78%; margin-top: 0;
+  font-family: var(--sans); text-transform: uppercase;
+  letter-spacing: .3em; font-size: clamp(.62rem, 1.9vw, .72rem);
+  color: var(--gold-deep); opacity: .9;
+  animation: cardCueBreathe 2.8s var(--ease) infinite;
+}
+@keyframes cardCueBreathe {
+  0%, 100% { opacity: .55; }
+  50%      { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-intro-cue { animation: none; opacity: .9; }
 }
 .card-intro-names .amp { font-style: italic; }
 @keyframes introRise {
@@ -50,25 +77,42 @@
 .doc-block { opacity: 0; transform: translateY(0.5em); transition: opacity .9s var(--ease), transform .9s var(--ease); }
 .doc-block.show { opacity: 1; transform: none; }
 
-.doc-eyebrow { font-family: var(--sans); text-transform: uppercase; letter-spacing: .2em; font-size: .44em; color: var(--forest-deep); margin: 0; white-space: nowrap; }
-.doc-couple { font-family: var(--serif); font-weight: 500; font-size: 1.8em; line-height: 1.05; color: var(--forest-deep); margin: .25em 0; }
-.doc-couple .amp { font-style: italic; }
-.doc-date { font-family: var(--serif); font-size: .8em; letter-spacing: .1em; color: var(--forest); margin: 0; }
+/* Everything here is sized in em against .card-doc, which JS scales with the card, so
+   the writing grows and shrinks with the paper it is printed on. */
+.doc-title {
+  font-family: var(--serif); font-weight: 500; font-size: 1.5em; line-height: 1.2;
+  color: var(--forest-deep); margin: 0; text-wrap: balance;
+}
 .doc-rule { display: block; width: 40%; height: 1px; margin: .9em auto; background: linear-gradient(90deg, transparent, var(--gold-deep), transparent); }
-.doc-facts { display: grid; gap: .65em; }
-.doc-facts .k { display: block; font-family: var(--sans); text-transform: uppercase; letter-spacing: .2em; font-size: .46em; color: var(--gold-deep); margin-bottom: .12em; }
-.doc-facts .v { display: block; font-family: var(--serif); font-size: .78em; color: var(--forest-deep); }
+/* balance, or the closing sentence drops its last word onto a line of its own —
+   an orphan in the middle of the card face */
+.doc-body {
+  font-family: var(--serif); font-size: 1.1em; line-height: 1.45; color: var(--forest);
+  margin: 0; text-wrap: balance;
+}
 
 /* portrait card is narrower/taller: tighten the vertical rhythm so the same
    content packs onto the card face without shrinking the type. Not in lite (that
    layout stacks the details below the card and sets its own sizes). */
 @media (orientation: portrait) {
+  /* Upright, the envelope sits lower in the frame and the sky above it is empty, so
+     the title drops with it rather than floating alone at the top of the screen. */
+  .card-intro { top: 24%; }
+  /* the envelope sits higher in a portrait frame, so its foot is higher too */
+  .card-intro-cue {
+    top: 70%;
+    font-size: .75rem;          /* the 9pt asked for; in rem so it still honours zoom */
+  }
+  /* The page rect the artwork calibrates runs behind the envelope flap at its foot, so
+     centring the writing in it drops the closing lines onto the green. Upright, the
+     text hangs from the top of the page instead, where the card is actually visible. */
+  body:not(.lite) .card-doc { align-items: flex-start; }
   body:not(.lite) .doc-inner { padding: 3% 5%; }
-  body:not(.lite) .doc-couple { margin: .12em 0; }
-  body:not(.lite) .doc-rule { margin: .55em auto; }
-  body:not(.lite) .doc-facts { gap: .42em; }
-  body:not(.lite) .doc-facts .k { font-size: .5em; margin-bottom: .08em; }
-  body:not(.lite) .doc-facts .v { font-size: .82em; }
+  body:not(.lite) .doc-rule { margin: .45em auto; }
+  body:not(.lite) .doc-title { font-size: 1.12em; }
+  /* tighter leading upright: it buys the closing line enough room to finish above the
+     flap without giving back any of the type size */
+  body:not(.lite) .doc-body { font-size: .95em; line-height: 1.38; }
 }
 
 /* reduced-motion / lite: static open card, details below it on the ivory paper */
