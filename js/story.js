@@ -172,8 +172,11 @@
     this.io = null;
   }
 
-  StoryScene.prototype.build = function () {
-    const L = geom.layout({ nodes: STORY, vw: window.innerWidth, vh: window.innerHeight });
+  // `padY` is only ever passed by build() calling itself once, after it has measured
+  // that the prologue label does not fit in the lead-in it was given.
+  StoryScene.prototype.build = function (padY) {
+    const L = geom.layout({ nodes: STORY, vw: window.innerWidth, vh: window.innerHeight,
+                            padY: padY });
     this.L = L;
 
     this.track.style.width = L.band + "px";
@@ -193,12 +196,25 @@
 
     L.nodes.forEach((n) => this.track.appendChild(nodeEl(n, L)));
 
-    // one era label, over the top of the two lanes before they have met. The knot's
-    // own marker rides inside the 2015 milestone instead (see `era` in STORY).
+    // One era label, over the top of the two lanes before they have met. The knot's own
+    // marker rides inside the 2015 milestone instead (see `era` in STORY).
+    //
+    // Measured, not guessed. This used to sit at `first.y - gap * 0.55`, clamped to a
+    // 10px floor — and on a phone the lead-in is short enough that the clamp always won,
+    // parking the label on top of the first pair of photos. Now the label is placed off
+    // its own height and the disc it has to clear, and if the lead-in cannot hold it the
+    // layout is redone once with a longer one.
     const first = L.nodes[0];
-    if (first) this.track.appendChild(
-      labelEl("before 2002 · we were already parallel", L.centerX,
-              Math.max(10, first.y - L.gap * 0.55), "is-prologue"));
+    if (first) {
+      const GAP = 16, TOP = 6;
+      const lab = labelEl("before 2002 · we were already parallel", L.centerX, TOP, "is-prologue");
+      this.track.appendChild(lab);
+      const disc = this.track.querySelector(".story-disc");
+      const discHalf = disc ? disc.offsetHeight / 2 : 0;
+      const need = Math.ceil(lab.offsetHeight + GAP + TOP + discHalf);
+      if (padY === undefined && need > L.padY) return this.build(need);
+      lab.style.top = Math.round(Math.max(TOP, first.y - discHalf - GAP - lab.offsetHeight)) + "px";
+    }
 
     this.reveal();
     this.built = true;
